@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+# -*- coding: ISO-8859-15 -*-
 #
 # pkpgcounter : a generic Page Description Language parser
 #
@@ -18,3 +20,25 @@
 #
 # $Id$
 #
+
+import sys
+import re
+
+from pdlanalyzer.pdlparser import PDLParser
+
+class PDFParser(PDLParser) :
+    """A parser for PDF documents."""
+    def getJobSize(self) :    
+        """Counts pages in a PDF document."""
+        regexp = re.compile(r"(/Type) ?(/Page)[/ \t\r\n]")
+        pagecount = 0
+        for line in self.infile.xreadlines() : 
+            pagecount += len(regexp.findall(line))
+        return pagecount    
+        
+def test() :        
+    """Test function."""
+    raise RuntimeError, "Not implemented !"
+    
+if __name__ == "__main__" :    
+    test()

@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+# -*- coding: ISO-8859-15 -*-
 #
 # pkpgcounter : a generic Page Description Language parser
 #
@@ -18,3 +20,86 @@
 #
 # $Id$
 #
+
+import sys
+import popen2
+
+from pdlanalyzer.pdlparser import PDLParser, PDLParserError
+
+class PostScriptParser(PDLParser) :
+    """A parser for PostScript documents."""
+    def throughGhostScript(self) :
+        """Get the count through GhostScript, useful for non-DSC compliant PS files."""
+        if self.debug :
+            sys.stderr.write("Internal parser sucks, using GhostScript instead...\n")
+        self.infile.seek(0)
+        command = 'gs -sDEVICE=bbox -dNOPAUSE -dBATCH -dQUIET - 2>&1 | grep -c "%%HiResBoundingBox:" 2>/dev/null'
+        child = popen2.Popen4(command)
+        try :
+            data = self.infile.read(MEGABYTE)    
+            while data :
+                child.tochild.write(data)
+                data = self.infile.read(MEGABYTE)
+            child.tochild.flush()
+            child.tochild.close()    
+        except (IOError, OSError), msg :    
+            raise PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+            
+        pagecount = 0
+        try :
+            pagecount = int(child.fromchild.readline().strip())
+        except (IOError, OSError, AttributeError, ValueError), msg :
+            raise PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+        child.fromchild.close()
+        
+        try :
+            child.wait()
+        except OSError, msg :    
+            raise PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+        return pagecount * self.copies
+        
+    def natively(self) :
+        """Count pages in a DSC compliant PostScript document."""
+        self.infile.seek(0)
+        pagecount = 0
+        for line in self.infile.xreadlines() : 
+            if line.startswith("%%Page: ") :
+                pagecount += 1
+            elif line.startswith("%%Requirements: numcopies(") :    
+                try :
+                    number = int(line.strip().split('(')[1].split(')')[0])
+                except :     
+                    pass
+                else :    
+                    if number > self.copies :
+                        self.copies = number
+            elif line.startswith("%%BeginNonPPDFeature: NumCopies ") :
+                # handle # of copies set by some Windows printer driver
+                try :
+                    number = int(line.strip().split()[2])
+                except :     
+                    pass
+                else :    
+                    if number > self.copies :
+                        self.copies = number
+            elif line.startswith("1 dict dup /NumCopies ") :
+                # handle # of copies set by mozilla/kprinter
+                try :
+                    number = int(line.strip().split()[4])
+                except :     
+                    pass
+                else :    
+                    if number > self.copies :
+                        self.copies = number
+        return pagecount * self.copies
+        
+    def getJobSize(self) :    
+        """Count pages in PostScript document."""
+        return self.natively() or self.throughGhostScript()
+        
+def test() :        
+    """Test function."""
+    raise RuntimeError, "Not implemented !"
+    
+if __name__ == "__main__" :    
+    test()

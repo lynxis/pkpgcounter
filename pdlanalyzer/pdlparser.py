@@ -19,6 +19,15 @@
 # $Id$
 #
 
+class PDLParserError(Exception):
+    """An exception for PDLParser related stuff."""
+    def __init__(self, message = ""):
+        self.message = message
+        Exception.__init__(self, message)
+    def __repr__(self):
+        return self.message
+    __str__ = __repr__
+        
 class PDLParser :
     """Generic PDL parser."""
     def __init__(self, infile, debug=0) :
