@@ -44,7 +44,7 @@ for mofile in mofiles :
     data_files.append((directory, [ mofile ]))
     
 docdir = "share/doc/pkpgcounter"    
-docfiles = ["README", "FAQ", "SECURITY", "COPYING", "LICENSE", "CREDITS", "TODO", "NEWS"]
+docfiles = ["README", "COPYING", "BUGS", "CREDITS", "NEWS"]
 data_files.append((docdir, docfiles))
 
 directory = os.sep.join(["share", "man", "man1"])
