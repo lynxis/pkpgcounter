@@ -1,0 +1,87 @@
+# $Id$
+
+pkpgcounter : a generic Page Description Language parser
+
+(c) 2005 Jerome Alet <alet@librelogiciel.com>
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+=============================================================================
+
+pkpgcounter is a generic Page Description Language parser.
+
+It can currently compute the number of pages in several types of files :
+
+        - PostScript (both DSC compliant and binary)
+        
+        - PDF
+        
+        - PCL3/4/5
+        
+        - PCLXL (aka PCL6)
+        
+        - ESC/P2
+        
+When launched, pkpgcounter prints on its standard output a single 
+integer representing the total number of pages in all the files 
+which filenames you've passed on the command line. 
+
+With no argument, or with a single dash in non-option arguments,
+pkpgcounter reads datas to parse from its standard input in addition
+to other non-options arguments which are treated as filenames
+representing the files to parse.
+
+In the future other possibilities will be added.        
+
+=============================================================================
+
+Installation :
+--------------
+
+  0 - Download pkpgcounter from :
+  
+        http://www.librelogiciel.com/software/pkpgcounter/action_Presentation
+        
+      and extract it :  
+      
+        $ tar -zxf pkpgcounter-x.yy.tar.gz
+        
+        where x.yy is pkpgcounter' version number.
+        
+  1 - Copy the 'pkpgcounter' command into a directory present in your PATH. 
+      for example :
+      
+        $ cp pkpgcounter /usr/bin
+        
+  2 - Use pkpgcounter :
+  
+      $ pkpgcounter file1.ps file2.pclxl ... <fileN.escp2
+      
+      pkpgcounter will display the total size in pages of all the files
+      passed on the command line.
+      
+  3 - That's all !    
+  
+=============================================================================
+
+Troubleshooting : 
+-----------------
+
+  If pkpgcounter gives incorrect results to you, please make an incorrectly
+  parsed data file available to us on some website, and tell us which 
+  driver was used.
+  
+=============================================================================
+
+Please e-mail bugs to : alet@librelogiciel.com (Jerome Alet)
