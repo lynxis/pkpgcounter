@@ -22,8 +22,8 @@
 #
 #
 
-from pdlanalyzer import pdlparser
+from pdlanalyzer import analyzer
 
 if __name__ == "__main__" : 
-    pdlparser.main()
+    analyzer.main()
 

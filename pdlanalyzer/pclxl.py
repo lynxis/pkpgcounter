@@ -22,6 +22,7 @@
 #
 
 import sys
+import os
 import mmap
 from struct import unpack
 

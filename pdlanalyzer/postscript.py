@@ -95,6 +95,7 @@ class PostScriptParser(pdlparser.PDLParser) :
         
     def getJobSize(self) :    
         """Count pages in PostScript document."""
+        self.copies = 1
         return self.natively() or self.throughGhostScript()
         
 def test() :        
