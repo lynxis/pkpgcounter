@@ -59,10 +59,12 @@ Installation :
         
         where x.yy is pkpgcounter' version number.
         
-  1 - Copy the 'pkpgcounter' command into a directory present in your PATH. 
-      for example :
+  1 - Run the installation script :
       
-        $ cp pkpgcounter /usr/bin
+        $ python setup.py install
+        
+      This will usually install the pkpgcounter into /usr/bin and  
+      the library into /usr/lib/python2.?/site-packages/pdlanalyzer/
         
   2 - Use pkpgcounter :
   
