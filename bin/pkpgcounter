@@ -208,6 +208,10 @@ class PDLAnalyzer :
             
 def main() :    
     """Entry point for PDL Analyzer."""
+    
+    sys.stderr.write("Big changes are currently occuring in the developpment version, please use the stable version for now !\n")
+    sys.exit(-1)
+    
     if (len(sys.argv) < 2) or ((not sys.stdin.isatty()) and ("-" not in sys.argv[1:])) :
         sys.argv.append("-")
         
