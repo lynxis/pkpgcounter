@@ -1,6 +1,4 @@
 #! /usr/bin/env python
-#
-# pkpgcounter
 # -*- coding: ISO-8859-15 -*-
 #
 # pkpgcounter : a generic Page Description Language parser
