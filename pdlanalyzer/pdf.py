@@ -24,9 +24,9 @@
 import sys
 import re
 
-from pdlanalyzer.pdlparser import PDLParser, PDLParserError
+from pdlanalyzer import pdlparser
 
-class PDFParser(PDLParser) :
+class PDFParser(pdlparser.PDLParser) :
     """A parser for PDF documents."""
     def getJobSize(self) :    
         """Counts pages in a PDF document."""
@@ -51,7 +51,7 @@ def test() :
         try :
             parser = PDFParser(infile, debug=1)
             totalsize += parser.getJobSize()
-        except PDLParserError, msg :    
+        except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)
             sys.stderr.flush()
         if mustclose :    

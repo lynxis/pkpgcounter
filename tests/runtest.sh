@@ -10,9 +10,9 @@ for device in lj250 lj4dithp ljet2p ljet4pjl ljetplus laserjet ljet3 ljet4 lj5gr
 echo 
 
 echo -n "File master.ps should be 16 pages long, result is : "
-python ../pdlanalyzer/pdlanalyzer.py master2.ps
+python ../pdlanalyzer/pdlparser.py master2.ps
 
 echo "Analyzing testsuite..."
 for file in testsuite.* ; do
-    echo -n "$file ===> " && python ../pdlanalyzer/pdlanalyzer.py "$file" ;
+    echo -n "$file ===> " && python ../pdlanalyzer/pdlparser.py "$file" ;
 done    

@@ -23,9 +23,9 @@
 
 import sys
 
-from pdlanalyzer.pdlparser import PDLParser, PDLParserError
+from pdlanalyzer import pdlparser
 
-class ESCP2Parser(PDLParser) :
+class ESCP2Parser(pdlparser.PDLParser) :
     """A parser for ESC/P2 documents."""
     def getJobSize(self) :    
         """Counts pages in an ESC/P2 document."""
@@ -77,7 +77,7 @@ def test() :
         try :
             parser = ESCP2Parser(infile, debug=1)
             totalsize += parser.getJobSize()
-        except PDLParserError, msg :    
+        except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)
             sys.stderr.flush()
         if mustclose :    

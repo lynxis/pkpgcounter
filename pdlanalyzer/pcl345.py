@@ -24,9 +24,9 @@
 import sys
 import mmap
 
-from pdlanalyzer.pdlparser import PDLParser, PDLParserError
+from pdlanalyzer import pdlparser
 
-class PCLParser(PDLParser) :
+class PCL345Parser(pdlparser.PDLParser) :
     """A parser for PCL3, PCL4, PCL5 documents."""
     mediasizes = {  # ESC&l####A
                     0 : "Default",
@@ -344,7 +344,7 @@ def test() :
         try :
             parser = PCL345Parser(infile, debug=1)
             totalsize += parser.getJobSize()
-        except PDLParserError, msg :    
+        except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)
             sys.stderr.flush()
         if mustclose :    

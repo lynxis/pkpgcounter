@@ -24,9 +24,9 @@
 import sys
 import popen2
 
-from pdlanalyzer.pdlparser import PDLParser, PDLParserError
+from pdlanalyzer import pdlparser
 
-class PostScriptParser(PDLParser) :
+class PostScriptParser(pdlparser.PDLParser) :
     """A parser for PostScript documents."""
     def throughGhostScript(self) :
         """Get the count through GhostScript, useful for non-DSC compliant PS files."""
@@ -43,19 +43,19 @@ class PostScriptParser(PDLParser) :
             child.tochild.flush()
             child.tochild.close()    
         except (IOError, OSError), msg :    
-            raise PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+            raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
             
         pagecount = 0
         try :
             pagecount = int(child.fromchild.readline().strip())
         except (IOError, OSError, AttributeError, ValueError), msg :
-            raise PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+            raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
         child.fromchild.close()
         
         try :
             child.wait()
         except OSError, msg :    
-            raise PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+            raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
         return pagecount * self.copies
         
     def natively(self) :
@@ -112,7 +112,7 @@ def test() :
         try :
             parser = PostScriptParser(infile, debug=1)
             totalsize += parser.getJobSize()
-        except PDLParserError, msg :    
+        except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)
             sys.stderr.flush()
         if mustclose :    

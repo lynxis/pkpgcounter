@@ -25,9 +25,9 @@ import sys
 import mmap
 from struct import unpack
 
-from pdlanalyzer.pdlparser import PDLParser, PDLParserError
+from pdlanalyzer import pdlparser
 
-class PCLXLParser(PDLParser) :
+class PCLXLParser(pdlparser.PDLParser) :
     """A parser for PCLXL (aka PCL6) documents."""
     mediasizes = { 
                     0 : "Letter",
@@ -149,7 +149,7 @@ class PCLXLParser(PDLParser) :
         elif length == 4 :    
             return unpack(self.endianness + "I", self.minfile[pos:posl])[0]
         else :    
-            raise PDLParserError, "Error on array size at %s" % self.pos
+            raise pdlparser.PDLParserError, "Error on array size at %s" % self.pos
         
     def array_16(self) :    
         """Handles byte arrays."""
@@ -170,7 +170,7 @@ class PCLXLParser(PDLParser) :
         elif length == 4 :    
             return 2 * unpack(self.endianness + "I", self.minfile[pos:posl])[0]
         else :    
-            raise PDLParserError, "Error on array size at %s" % self.pos
+            raise pdlparser.PDLParserError, "Error on array size at %s" % self.pos
         
     def array_32(self) :    
         """Handles byte arrays."""
@@ -191,7 +191,7 @@ class PCLXLParser(PDLParser) :
         elif length == 4 :    
             return 4 * unpack(self.endianness + "I", self.minfile[pos:posl])[0]
         else :    
-            raise PDLParserError, "Error on array size at %s" % self.pos
+            raise pdlparser.PDLParserError, "Error on array size at %s" % self.pos
         
     def embeddedDataSmall(self) :
         """Handle small amounts of data."""
@@ -244,9 +244,9 @@ class PCLXLParser(PDLParser) :
                 # elif endian == 0x27 : # TODO : This is the ESC code : parse it for PJL statements !
                 # 
                 else :    
-                    raise PDLParserError, "Unknown endianness marker 0x%02x at start !" % endian
+                    raise pdlparser.PDLParserError, "Unknown endianness marker 0x%02x at start !" % endian
         if not found :
-            raise PDLParserError, "This file doesn't seem to be PCLXL (aka PCL6)"
+            raise pdlparser.PDLParserError, "This file doesn't seem to be PCLXL (aka PCL6)"
             
         # Initialize table of tags
         self.tags = [ 0 ] * 256    
@@ -344,7 +344,7 @@ def test() :
         try :
             parser = PCLXLParser(infile, debug=1)
             totalsize += parser.getJobSize()
-        except PDLParserError, msg :    
+        except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)
             sys.stderr.flush()
         if mustclose :    
