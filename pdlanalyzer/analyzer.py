@@ -22,7 +22,7 @@
 import sys
 import tempfile
 
-from pdlanalyzer import pdlparser, postscript, pdf, pcl345, pclxl, escp2
+from pdlanalyzer import version, pdlparser, postscript, pdf, pcl345, pclxl, escp2
 
 KILOBYTE = 1024    
 MEGABYTE = 1024 * KILOBYTE    
