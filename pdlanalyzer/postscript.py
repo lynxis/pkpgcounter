@@ -99,7 +99,25 @@ class PostScriptParser(PDLParser) :
         
 def test() :        
     """Test function."""
-    raise RuntimeError, "Not implemented !"
+    if (len(sys.argv) < 2) or ((not sys.stdin.isatty()) and ("-" not in sys.argv[1:])) :
+        sys.argv.append("-")
+    totalsize = 0    
+    for arg in sys.argv[1:] :
+        if arg == "-" :
+            infile = sys.stdin
+            mustclose = 0
+        else :    
+            infile = open(arg, "rb")
+            mustclose = 1
+        try :
+            parser = PostScriptParser(infile, debug=1)
+            totalsize += parser.getJobSize()
+        except PDLParserError, msg :    
+            sys.stderr.write("ERROR: %s\n" % msg)
+            sys.stderr.flush()
+        if mustclose :    
+            infile.close()
+    print "%s" % totalsize
     
 if __name__ == "__main__" :    
     test()
