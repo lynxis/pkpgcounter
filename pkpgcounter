@@ -32,6 +32,8 @@ import tempfile
 import mmap
 import popen2
     
+__version__ = "1.00"
+
 KILOBYTE = 1024    
 MEGABYTE = 1024 * KILOBYTE    
 LASTBLOCKSIZE = int(KILOBYTE / 4)
@@ -976,7 +978,7 @@ def main() :
         
     if ("-h" in sys.argv[1:]) or ("--help" in sys.argv[1:]) :
         print "usage : pkpgcounter file1 file2 ... fileN"
-    elif ("-v" in sys.argv[1:]) or ("--version" in sys.argv[1:])) :
+    elif ("-v" in sys.argv[1:]) or ("--version" in sys.argv[1:]) :
         print "%s" % __version__
     else :
         totalsize = 0    
