@@ -131,6 +131,12 @@ class PCLXLParser(pdlparser.PDLParser) :
             self.pages[self.pagecount]["copies"] = unpack(self.endianness + "H", minfile[pos-5:pos-3])[0]
         return 0
         
+    def setColorSpace(self) :    
+        """Changes the color space."""
+        if self.minfile[self.pos-4:self.pos-1] == (chr(0x02) + chr(0xf8) + chr(0x03)) : 
+            self.isColor = 1
+        return 0
+            
     def array_8(self) :    
         """Handles byte arrays."""
         pos = self.pos
@@ -229,6 +235,7 @@ class PCLXLParser(pdlparser.PDLParser) :
            Protocol Class 2.0
            http://www.hpdevelopersolutions.com/downloads/64/358/xl_ref20r22.pdf 
         """
+        self.isColor = None
         self.endianness = None
         found = 0
         while not found :
@@ -259,6 +266,8 @@ class PCLXLParser(pdlparser.PDLParser) :
         
         self.tags[0x43] = self.beginPage    # BeginPage
         self.tags[0x44] = self.endPage      # EndPage
+        
+        self.tags[0x6a] = self.setColorSpace
         
         self.tags[0xc0] = 1 # ubyte
         self.tags[0xc1] = 2 # uint16
@@ -316,6 +325,8 @@ class PCLXLParser(pdlparser.PDLParser) :
             self.minfile.close() # reached EOF
             
         # now handle number of copies for each page (may differ).
+        if self.debug :
+            sys.stderr.write("Color mode : %s\n" % self.isColor)
         for pnum in range(1, self.pagecount + 1) :
             # if no number of copies defined, take 1, as explained
             # in PCLXL documentation.
