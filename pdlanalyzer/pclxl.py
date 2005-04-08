@@ -122,19 +122,20 @@ class PCLXLParser(pdlparser.PDLParser) :
     def endPage(self) :    
         """Indicates the end of a page."""
         pos = self.pos
+        pos3 = pos - 3
         minfile = self.minfile
-        if (ord(minfile[pos-3]) == 0xf8) and (ord(minfile[pos-2]) == 0x31) :
+        if minfile[pos3:pos-1] == self.setNumberOfCopies :
             # The EndPage operator may be preceded by a PageCopies attribute
             # So set number of copies for current page.
             # From what I read in PCLXL documentation, the number
             # of copies is an unsigned 16 bits integer
-            self.pages[self.pagecount]["copies"] = unpack(self.endianness + "H", minfile[pos-5:pos-3])[0]
+            self.pages[self.pagecount]["copies"] = unpack(self.endianness + "H", minfile[pos-5:pos3])[0]
         return 0
         
     def setColorSpace(self) :    
         """Changes the color space."""
-        if self.minfile[self.pos-4:self.pos-1] == (chr(0x02) + chr(0xf8) + chr(0x03)) : 
-            self.isColor = 1
+        if self.minfile[self.pos-4:self.pos-1] == self.RGBColorSpace :
+            self.iscolor = 1
         return 0
             
     def array_8(self) :    
@@ -235,7 +236,7 @@ class PCLXLParser(pdlparser.PDLParser) :
            Protocol Class 2.0
            http://www.hpdevelopersolutions.com/downloads/64/358/xl_ref20r22.pdf 
         """
-        self.isColor = None
+        self.iscolor = None
         self.endianness = None
         found = 0
         while not found :
@@ -267,7 +268,7 @@ class PCLXLParser(pdlparser.PDLParser) :
         self.tags[0x43] = self.beginPage    # BeginPage
         self.tags[0x44] = self.endPage      # EndPage
         
-        self.tags[0x6a] = self.setColorSpace
+        self.tags[0x6a] = self.setColorSpace    # to detect color/b&w mode
         
         self.tags[0xc0] = 1 # ubyte
         self.tags[0xc1] = 2 # uint16
@@ -303,6 +304,14 @@ class PCLXLParser(pdlparser.PDLParser) :
         self.tags[0xfa] = self.embeddedData      # dataLength
         self.tags[0xfb] = self.embeddedDataSmall # dataLengthByte
             
+        # color spaces    
+        self.BWColorSpace = "".join([chr(0x00), chr(0xf8), chr(0x03)])
+        self.GrayColorSpace = "".join([chr(0x01), chr(0xf8), chr(0x03)])
+        self.RGBColorSpace = "".join([chr(0x02), chr(0xf8), chr(0x03)])
+        
+        # set number of copies
+        self.setNumberOfCopies = "".join([chr(0xf8), chr(0x31)]) 
+        
         infileno = self.infile.fileno()
         self.pages = {}
         self.minfile = minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
@@ -325,8 +334,10 @@ class PCLXLParser(pdlparser.PDLParser) :
             self.minfile.close() # reached EOF
             
         # now handle number of copies for each page (may differ).
-        if self.debug :
-            sys.stderr.write("Color mode : %s\n" % self.isColor)
+        if self.iscolor :
+            colormode = "Color"
+        else :    
+            colormode = "Black"
         for pnum in range(1, self.pagecount + 1) :
             # if no number of copies defined, take 1, as explained
             # in PCLXL documentation.
@@ -337,7 +348,7 @@ class PCLXLParser(pdlparser.PDLParser) :
             copies = page["copies"]
             self.pagecount += (copies - 1)
             if self.debug :
-                sys.stderr.write("%s*%s*%s*%s*%s\n" % (copies, page["mediatype"], page["mediasize"], page["orientation"], page["mediasource"]))
+                sys.stderr.write("%s*%s*%s*%s*%s*%s\n" % (copies, page["mediatype"], page["mediasize"], page["orientation"], page["mediasource"], colormode))
             
         return self.pagecount
         
