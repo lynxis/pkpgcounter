@@ -348,7 +348,12 @@ class PCLXLParser(pdlparser.PDLParser) :
             copies = page["copies"]
             self.pagecount += (copies - 1)
             if self.debug :
-                sys.stderr.write("%s*%s*%s*%s*%s*%s\n" % (copies, page["mediatype"], page["mediasize"], page["orientation"], page["mediasource"], colormode))
+                sys.stderr.write("%s*%s*%s*%s*%s*%s\n" % (copies, 
+                                                          page["mediatype"], 
+                                                          page["mediasize"], 
+                                                          page["orientation"], 
+                                                          page["mediasource"], 
+                                                          colormode))
             
         return self.pagecount
         
