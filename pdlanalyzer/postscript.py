@@ -63,9 +63,9 @@ class PostScriptParser(pdlparser.PDLParser) :
         self.infile.seek(0)
         pagecount = 0
         for line in self.infile.xreadlines() : 
-            if line.startswith("%%Page: ") :
+            if line.startswith(r"%%Page: ") :
                 pagecount += 1
-            elif line.startswith("%%Requirements: numcopies(") :    
+            elif line.startswith(r"%%Requirements: numcopies(") :    
                 try :
                     number = int(line.strip().split('(')[1].split(')')[0])
                 except :     
@@ -73,7 +73,7 @@ class PostScriptParser(pdlparser.PDLParser) :
                 else :    
                     if number > self.copies :
                         self.copies = number
-            elif line.startswith("%%BeginNonPPDFeature: NumCopies ") :
+            elif line.startswith(r"%%BeginNonPPDFeature: NumCopies ") :
                 # handle # of copies set by some Windows printer driver
                 try :
                     number = int(line.strip().split()[2])

@@ -30,10 +30,16 @@ class PDFParser(pdlparser.PDLParser) :
     """A parser for PDF documents."""
     def getJobSize(self) :    
         """Counts pages in a PDF document."""
-        regexp = re.compile(r"(/Type) ?(/Page)[/ \t\r\n]")
+        self.iscolor = None
+        newpageregexp = re.compile(r"(/Type) ?(/Page)[/ \t\r\n]", re.I)
+        colorregexp = re.compile(r"(/ColorSpace) ?(/DeviceRGB|/DeviceCMYK)[/ \t\r\n]", re.I)
         pagecount = 0
         for line in self.infile.xreadlines() : 
-            pagecount += len(regexp.findall(line))
+            pagecount += len(newpageregexp.findall(line))
+            if colorregexp.match(line) :
+                self.iscolor = 1
+                if self.debug :
+                    sys.stderr.write("ColorSpace : %s\n" % line)
         return pagecount    
         
 def test() :        
