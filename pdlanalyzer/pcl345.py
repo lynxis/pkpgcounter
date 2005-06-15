@@ -319,6 +319,8 @@ class PCL345Parser(pdlparser.PDLParser) :
             pagecount = startgfx
         elif startgfx == (endgfx - 1) :    
             pagecount = startgfx
+        elif (startgfx == 1) and not endgfx :    
+            pass
         else :    
             pagecount = abs(startgfx - endgfx)
             
