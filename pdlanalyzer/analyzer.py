@@ -182,7 +182,7 @@ class PDLAnalyzer :
         """   
         # Try to detect file type by reading first block of datas    
         self.infile.seek(0)
-        firstblock = self.infile.read(4 * KILOBYTE)
+        firstblock = self.infile.read(16 * KILOBYTE)
         try :
             self.infile.seek(-LASTBLOCKSIZE, 2)
             lastblock = self.infile.read(LASTBLOCKSIZE)
