@@ -22,7 +22,7 @@
 import sys
 import tempfile
 
-from pdlanalyzer import version, pdlparser, postscript, pdf, pcl345, pclxl, escp2
+from pdlanalyzer import version, pdlparser, postscript, pdf, pcl345, pclxl, escp2, dvi
 
 KILOBYTE = 1024    
 MEGABYTE = 1024 * KILOBYTE    
@@ -56,6 +56,7 @@ class PDLAnalyzer :
             psyco.bind(escp2.ESCP2Parser.getJobSize)
             psyco.bind(pcl345.PCL345Parser.getJobSize)
             psyco.bind(pclxl.PCLXLParser.getJobSize)
+            psyco.bind(dvi.DVIParser.getJobSize)
         
     def getJobSize(self) :    
         """Returns the job's size."""
@@ -174,6 +175,15 @@ class PDLAnalyzer :
             return 1
         else :    
             return 0
+            
+    def isDVI(self, sdata, edata) :        
+        """Returns 1 if data is DVI, else 0."""
+        if (ord(sdata[0]) == 0xf7) and (ord(edata[-1]) == 0xdf) :
+            if self.debug :  
+                sys.stderr.write("%s is an DVI file\n" % str(self.filename))
+            return 1
+        else :    
+            return 0
     
     def detectPDLHandler(self) :    
         """Tries to autodetect the document format.
@@ -199,6 +209,8 @@ class PDLAnalyzer :
             return pcl345.PCL345Parser
         elif self.isESCP2(firstblock, lastblock) :    
             return escp2.ESCP2Parser
+        elif self.isDVI(firstblock, lastblock) :    
+            return dvi.DVIParser
         else :    
             raise pdlparser.PDLParserError, "Analysis of first data block failed."
             

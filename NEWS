@@ -21,6 +21,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
    
+  * 1.51 : 
+  
+    - Basic support for the DVI format.
+    
   * 1.50 :
   
     - Major code changes to modularize. The pkpgcounter command line tool
