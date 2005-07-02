@@ -56,7 +56,8 @@ class DVIParser(pdlparser.PDLParser) :
                 raise IndexError, "Invalid DVI file."
             pagecount = unpack(">H", minfile[pos + 27: pos + 29])[0]
         except IndexError : # EOF ?
-            minfile.close() # reached EOF
+            pass
+        minfile.close() # reached EOF
         return pagecount
         
 def test() :        
