@@ -22,7 +22,7 @@
 import sys
 import tempfile
 
-from pdlanalyzer import version, pdlparser, postscript, pdf, pcl345, pclxl, escp2, dvi
+from pdlanalyzer import version, pdlparser, postscript, pdf, pcl345, pclxl, escp2, dvi, tiff
 
 KILOBYTE = 1024    
 MEGABYTE = 1024 * KILOBYTE    
@@ -57,6 +57,7 @@ class PDLAnalyzer :
             psyco.bind(pcl345.PCL345Parser.getJobSize)
             psyco.bind(pclxl.PCLXLParser.getJobSize)
             psyco.bind(dvi.DVIParser.getJobSize)
+            psyco.bind(tiff.TIFFParser.getJobSize)
         
     def getJobSize(self) :    
         """Returns the job's size."""
@@ -180,7 +181,18 @@ class PDLAnalyzer :
         """Returns 1 if data is DVI, else 0."""
         if (ord(sdata[0]) == 0xf7) and (ord(edata[-1]) == 0xdf) :
             if self.debug :  
-                sys.stderr.write("%s is an DVI file\n" % str(self.filename))
+                sys.stderr.write("%s is a DVI file\n" % str(self.filename))
+            return 1
+        else :    
+            return 0
+            
+    def isTIFF(self, sdata, edata) :        
+        """Returns 1 if data is TIFF, else 0."""
+        littleendian = (chr(0x49)*2) + chr(0x2a) + chr(0)
+        bigendian = (chr(0x4d)*2) + chr(0) + chr(0x2a)
+        if sdata[:4] in (littleendian, bigendian) :
+            if self.debug :  
+                sys.stderr.write("%s is a TIFF file\n" % str(self.filename))
             return 1
         else :    
             return 0
@@ -199,20 +211,24 @@ class PDLAnalyzer :
         except IOError :    
             lastblock = ""
         self.infile.seek(0)
-        if self.isPostScript(firstblock, lastblock) :
-            return postscript.PostScriptParser
-        elif self.isPCLXL(firstblock, lastblock) :    
-            return pclxl.PCLXLParser
-        elif self.isPDF(firstblock, lastblock) :    
-            return pdf.PDFParser
-        elif self.isPCL(firstblock, lastblock) :    
-            return pcl345.PCL345Parser
-        elif self.isESCP2(firstblock, lastblock) :    
-            return escp2.ESCP2Parser
-        elif self.isDVI(firstblock, lastblock) :    
-            return dvi.DVIParser
+        if not firstblock :
+            sys.stderr.write("ERROR: input file %s is empty !\n" % str(self.filename))
         else :    
-            raise pdlparser.PDLParserError, "Analysis of first data block failed."
+            if self.isPostScript(firstblock, lastblock) :
+                return postscript.PostScriptParser
+            elif self.isPCLXL(firstblock, lastblock) :    
+                return pclxl.PCLXLParser
+            elif self.isPDF(firstblock, lastblock) :    
+                return pdf.PDFParser
+            elif self.isPCL(firstblock, lastblock) :    
+                return pcl345.PCL345Parser
+            elif self.isESCP2(firstblock, lastblock) :    
+                return escp2.ESCP2Parser
+            elif self.isDVI(firstblock, lastblock) :    
+                return dvi.DVIParser
+            elif self.isTIFF(firstblock, lastblock) :
+                return tiff.TIFFParser
+        raise pdlparser.PDLParserError, "Analysis of first data block failed."
             
 def main() :    
     """Entry point for PDL Analyzer."""
