@@ -25,8 +25,20 @@ import sys
 
 from pdlanalyzer import pdlparser
 
-class ESCP2Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser) :
     """A parser for ESC/P2 documents."""
+    def isValid(self) :        
+        """Returns 1 if data is ESC/P2, else 0."""
+        if self.firstblock.startswith("\033@") or \
+           self.firstblock.startswith("\033*") or \
+           self.firstblock.startswith("\n\033@") or \
+           self.firstblock.startswith("\0\0\0\033\1@EJL") : # ESC/P Raster ??? Seen on Stylus Photo 1284
+            if self.debug :  
+                sys.stderr.write("DEBUG: Input file is in the ESC/P2 format.\n")
+            return 1
+        else :    
+            return 0
+            
     def getJobSize(self) :    
         """Counts pages in an ESC/P2 document."""
         # with Gimpprint, at least, for each page there
@@ -75,7 +87,7 @@ def test() :
             infile = open(arg, "rb")
             mustclose = 1
         try :
-            parser = ESCP2Parser(infile, debug=1)
+            parser = Parser(infile, debug=1)
             totalsize += parser.getJobSize()
         except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)

@@ -28,8 +28,19 @@ from struct import unpack
 
 from pdlanalyzer import pdlparser
 
-class TIFFParser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser) :
     """A parser for TIFF documents."""
+    def isValid(self) :        
+        """Returns 1 if data is TIFF, else 0."""
+        littleendian = (chr(0x49)*2) + chr(0x2a) + chr(0)
+        bigendian = (chr(0x4d)*2) + chr(0) + chr(0x2a)
+        if self.firstblock[:4] in (littleendian, bigendian) :
+            if self.debug :  
+                sys.stderr.write("DEBUG: Input file is in the TIFF format.\n")
+            return 1
+        else :    
+            return 0
+    
     def getJobSize(self) :
         """Counts pages in a TIFF document.
         
@@ -76,7 +87,7 @@ def test() :
             infile = open(arg, "rb")
             mustclose = 1
         try :
-            parser = TIFFParser(infile, debug=1)
+            parser = Parser(infile, debug=1)
             totalsize += parser.getJobSize()
         except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)

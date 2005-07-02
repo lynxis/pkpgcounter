@@ -28,8 +28,20 @@ from struct import unpack
 
 from pdlanalyzer import pdlparser
 
-class DVIParser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser) :
     """A parser for DVI documents."""
+    def isValid(self) :        
+        """Returns 1 if data is DVI, else 0."""
+        try :
+            if (ord(self.firstblock[0]) == 0xf7) and (ord(self.lastblock[-1]) == 0xdf) :
+                if self.debug :  
+                    sys.stderr.write("DEBUG: Input file is in the DVI format.\n")
+                return 1
+            else :    
+                return 0
+        except IndexError :          
+            return 0
+            
     def getJobSize(self) :
         """Counts pages in a DVI document.
         
@@ -73,7 +85,7 @@ def test() :
             infile = open(arg, "rb")
             mustclose = 1
         try :
-            parser = DVIParser(infile, debug=1)
+            parser = Parser(infile, debug=1)
             totalsize += parser.getJobSize()
         except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)

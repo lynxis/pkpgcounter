@@ -24,10 +24,6 @@ import tempfile
 
 from pdlanalyzer import version, pdlparser, postscript, pdf, pcl345, pclxl, escp2, dvi, tiff
 
-KILOBYTE = 1024    
-MEGABYTE = 1024 * KILOBYTE    
-LASTBLOCKSIZE = int(KILOBYTE / 4)
-
 class PDLAnalyzer :    
     """Class for PDL autodetection."""
     def __init__(self, filename, debug=0) :
@@ -39,25 +35,6 @@ class PDLAnalyzer :
         """
         self.debug = debug
         self.filename = filename
-        try :
-            import psyco 
-        except ImportError :    
-            sys.stderr.write("pkpgcounter : you should install psyco if possible, this would greatly speedup parsing.\n")
-            pass # Psyco is not installed
-        else :    
-            # Psyco is installed, tell it to compile
-            # the CPU intensive methods : PCL and PCLXL
-            # parsing will greatly benefit from this, 
-            # for PostScript and PDF the difference is
-            # barely noticeable since they are already
-            # almost optimal, and much more speedy anyway.
-            psyco.bind(postscript.PostScriptParser.getJobSize)
-            psyco.bind(pdf.PDFParser.getJobSize)
-            psyco.bind(escp2.ESCP2Parser.getJobSize)
-            psyco.bind(pcl345.PCL345Parser.getJobSize)
-            psyco.bind(pclxl.PCLXLParser.getJobSize)
-            psyco.bind(dvi.DVIParser.getJobSize)
-            psyco.bind(tiff.TIFFParser.getJobSize)
         
     def getJobSize(self) :    
         """Returns the job's size."""
@@ -66,10 +43,10 @@ class PDLAnalyzer :
             pdlhandler = self.detectPDLHandler()
         except pdlparser.PDLParserError, msg :    
             self.closeFile()
-            raise pdlparser.PDLParserError, "ERROR : Unknown file format for %s (%s)" % (self.filename, msg)
+            raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
         else :
             try :
-                size = pdlhandler(self.infile, self.debug).getJobSize()
+                size = pdlhandler.getJobSize()
             finally :    
                 self.closeFile()
             return size
@@ -92,7 +69,7 @@ class PDLAnalyzer :
         # Use a temporary file, always seekable contrary to standard input.
         self.infile = tempfile.TemporaryFile(mode="w+b")
         while 1 :
-            data = infile.read(MEGABYTE) 
+            data = infile.read(pdlparser.MEGABYTE) 
             if not data :
                 break
             self.infile.write(data)
@@ -113,121 +90,35 @@ class PDLAnalyzer :
             except :    
                 pass    # probably stdin, which is not seekable
         
-    def isPostScript(self, sdata, edata) :    
-        """Returns 1 if data is PostScript, else 0."""
-        if sdata.startswith("%!") or \
-           sdata.startswith("\004%!") or \
-           sdata.startswith("\033%-12345X%!PS") or \
-           ((sdata[:128].find("\033%-12345X") != -1) and \
-             ((sdata.find("LANGUAGE=POSTSCRIPT") != -1) or \
-              (sdata.find("LANGUAGE = POSTSCRIPT") != -1) or \
-              (sdata.find("LANGUAGE = Postscript") != -1))) or \
-              (sdata.find("%!PS-Adobe") != -1) :
-            if self.debug :  
-                sys.stderr.write("%s is a PostScript file\n" % str(self.filename))
-            return 1
-        else :    
-            return 0
-        
-    def isPDF(self, sdata, edata) :    
-        """Returns 1 if data is PDF, else 0."""
-        if sdata.startswith("%PDF-") or \
-           sdata.startswith("\033%-12345X%PDF-") or \
-           ((sdata[:128].find("\033%-12345X") != -1) and (sdata.upper().find("LANGUAGE=PDF") != -1)) or \
-           (sdata.find("%PDF-") != -1) :
-            if self.debug :  
-                sys.stderr.write("%s is a PDF file\n" % str(self.filename))
-            return 1
-        else :    
-            return 0
-        
-    def isPCL(self, sdata, edata) :    
-        """Returns 1 if data is PCL, else 0."""
-        if sdata.startswith("\033E\033") or \
-           (sdata.startswith("\033*rbC") and (not edata[-3:] == "\f\033@")) or \
-           sdata.startswith("\033%8\033") or \
-           (sdata.find("\033%-12345X") != -1) :
-            if self.debug :  
-                sys.stderr.write("%s is a PCL3/4/5 file\n" % str(self.filename))
-            return 1
-        else :    
-            return 0
-        
-    def isPCLXL(self, sdata, edata) :    
-        """Returns 1 if data is PCLXL aka PCL6, else 0."""
-        if ((sdata[:128].find("\033%-12345X") != -1) and \
-             (sdata.find(" HP-PCL XL;") != -1) and \
-             ((sdata.find("LANGUAGE=PCLXL") != -1) or \
-              (sdata.find("LANGUAGE = PCLXL") != -1))) :
-            if self.debug :  
-                sys.stderr.write("%s is a PCLXL (aka PCL6) file\n" % str(self.filename))
-            return 1
-        else :    
-            return 0
-            
-    def isESCP2(self, sdata, edata) :        
-        """Returns 1 if data is ESC/P2, else 0."""
-        if sdata.startswith("\033@") or \
-           sdata.startswith("\033*") or \
-           sdata.startswith("\n\033@") or \
-           sdata.startswith("\0\0\0\033\1@EJL") : # ESC/P Raster ??? Seen on Stylus Photo 1284
-            if self.debug :  
-                sys.stderr.write("%s is an ESC/P2 file\n" % str(self.filename))
-            return 1
-        else :    
-            return 0
-            
-    def isDVI(self, sdata, edata) :        
-        """Returns 1 if data is DVI, else 0."""
-        if (ord(sdata[0]) == 0xf7) and (ord(edata[-1]) == 0xdf) :
-            if self.debug :  
-                sys.stderr.write("%s is a DVI file\n" % str(self.filename))
-            return 1
-        else :    
-            return 0
-            
-    def isTIFF(self, sdata, edata) :        
-        """Returns 1 if data is TIFF, else 0."""
-        littleendian = (chr(0x49)*2) + chr(0x2a) + chr(0)
-        bigendian = (chr(0x4d)*2) + chr(0) + chr(0x2a)
-        if sdata[:4] in (littleendian, bigendian) :
-            if self.debug :  
-                sys.stderr.write("%s is a TIFF file\n" % str(self.filename))
-            return 1
-        else :    
-            return 0
-    
     def detectPDLHandler(self) :    
         """Tries to autodetect the document format.
         
            Returns the correct PDL handler class or None if format is unknown
         """   
-        # Try to detect file type by reading first block of datas    
+        # Try to detect file type by reading first and last blocks of datas    
+        # Each parser can read them automatically, but here we do this only once.
         self.infile.seek(0)
-        firstblock = self.infile.read(16 * KILOBYTE)
+        firstblock = self.infile.read(pdlparser.FIRSTBLOCKSIZE)
         try :
-            self.infile.seek(-LASTBLOCKSIZE, 2)
-            lastblock = self.infile.read(LASTBLOCKSIZE)
+            self.infile.seek(-pdlparser.LASTBLOCKSIZE, 2)
+            lastblock = self.infile.read(pdlparser.LASTBLOCKSIZE)
         except IOError :    
             lastblock = ""
         self.infile.seek(0)
         if not firstblock :
-            sys.stderr.write("ERROR: input file %s is empty !\n" % str(self.filename))
+            raise pdlparser.PDLParserError, "input file %s is empty !" % str(self.filename)
         else :    
-            if self.isPostScript(firstblock, lastblock) :
-                return postscript.PostScriptParser
-            elif self.isPCLXL(firstblock, lastblock) :    
-                return pclxl.PCLXLParser
-            elif self.isPDF(firstblock, lastblock) :    
-                return pdf.PDFParser
-            elif self.isPCL(firstblock, lastblock) :    
-                return pcl345.PCL345Parser
-            elif self.isESCP2(firstblock, lastblock) :    
-                return escp2.ESCP2Parser
-            elif self.isDVI(firstblock, lastblock) :    
-                return dvi.DVIParser
-            elif self.isTIFF(firstblock, lastblock) :
-                return tiff.TIFFParser
+            for module in (postscript, \
+                           pclxl, \
+                           pdf, \
+                           pcl345, \
+                           escp2, \
+                           dvi, \
+                           tiff) :
+                try :               
+                    return getattr(module, "Parser")(self.infile, self.debug, firstblock, lastblock)
+                except pdlparser.PDLParserError :
+                    pass # try next parser
         raise pdlparser.PDLParserError, "Analysis of first data block failed."
             
 def main() :    

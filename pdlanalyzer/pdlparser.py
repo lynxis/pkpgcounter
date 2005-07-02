@@ -20,6 +20,12 @@
 #
 
 import sys
+import psyco
+
+KILOBYTE = 1024    
+MEGABYTE = 1024 * KILOBYTE    
+FIRSTBLOCKSIZE = 16 * KILOBYTE
+LASTBLOCKSIZE = int(KILOBYTE / 4)
 
 class PDLParserError(Exception):
     """An exception for PDLParser related stuff."""
@@ -32,11 +38,41 @@ class PDLParserError(Exception):
         
 class PDLParser :
     """Generic PDL parser."""
-    def __init__(self, infile, debug=0) :
+    def __init__(self, infile, debug=0, firstblock=None, lastblock=None) :
         """Initialize the generic parser."""
-        self.debug = debug
         self.infile = infile
-                
-    def getJobSize(self) :            
-        """Counts pages in the document."""
+        self.debug = debug
+        if firstblock is None :
+            self.infile.seek(0)
+            firstblock = self.infile.read(FIRSTBLOCKSIZE)
+            try :
+                self.infile.seek(-LASTBLOCKSIZE, 2)
+                lastblock = self.infile.read(LASTBLOCKSIZE)
+            except IOError :    
+                lastblock = ""
+            self.infile.seek(0)
+        self.firstblock = firstblock
+        self.lastblock = lastblock
+        if not self.isValid() :
+            raise PDLParserError, "Invalid file format !"
+        try :
+            import psyco 
+        except ImportError :    
+            sys.stderr.write("WARN: you should install psyco if possible, this would greatly speedup parsing.\n")
+            pass # Psyco is not installed
+        else :    
+            # Psyco is installed, tell it to compile
+            # the CPU intensive methods : PCL and PCLXL
+            # parsing will greatly benefit from this, 
+            # for PostScript and PDF the difference is
+            # barely noticeable since they are already
+            # almost optimal, and much more speedy anyway.
+            psyco.bind(self.getJobSize)
+            
+    def isValid(self) :    
+        """Returns 1 if data is in the expected format, else 0."""
+        raise RuntimeError, "Not implemented !"
+        
+    def getJobSize(self) :    
+        """Counts pages in a document."""
         raise RuntimeError, "Not implemented !"

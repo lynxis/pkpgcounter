@@ -26,8 +26,24 @@ import popen2
 
 from pdlanalyzer import pdlparser
 
-class PostScriptParser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser) :
     """A parser for PostScript documents."""
+    def isValid(self) :    
+        """Returns 1 if data is PostScript, else 0."""
+        if self.firstblock.startswith("%!") or \
+           self.firstblock.startswith("\004%!") or \
+           self.firstblock.startswith("\033%-12345X%!PS") or \
+           ((self.firstblock[:128].find("\033%-12345X") != -1) and \
+             ((self.firstblock.find("LANGUAGE=POSTSCRIPT") != -1) or \
+              (self.firstblock.find("LANGUAGE = POSTSCRIPT") != -1) or \
+              (self.firstblock.find("LANGUAGE = Postscript") != -1))) or \
+              (self.firstblock.find("%!PS-Adobe") != -1) :
+            if self.debug :  
+                sys.stderr.write("DEBUG: Input file is in the PostScript format.\n")
+            return 1
+        else :    
+            return 0
+        
     def throughGhostScript(self) :
         """Get the count through GhostScript, useful for non-DSC compliant PS files."""
         if self.debug :
@@ -111,7 +127,7 @@ def test() :
             infile = open(arg, "rb")
             mustclose = 1
         try :
-            parser = PostScriptParser(infile, debug=1)
+            parser = Parser(infile, debug=1)
             totalsize += parser.getJobSize()
         except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)

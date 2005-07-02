@@ -28,7 +28,7 @@ from struct import unpack
 
 from pdlanalyzer import pdlparser
 
-class PCLXLParser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser) :
     """A parser for PCLXL (aka PCL6) documents."""
     mediasizes = { 
                     0 : "Letter",
@@ -68,6 +68,18 @@ class PCLXLParser(pdlparser.PDLParser) :
                      2 : "ReversePortrait",
                      3 : "ReverseLandscape",
                    }
+            
+    def isValid(self) :    
+        """Returns 1 if data is PCLXL aka PCL6, else 0."""
+        if ((self.firstblock[:128].find("\033%-12345X") != -1) and \
+             (self.firstblock.find(" HP-PCL XL;") != -1) and \
+             ((self.firstblock.find("LANGUAGE=PCLXL") != -1) or \
+              (self.firstblock.find("LANGUAGE = PCLXL") != -1))) :
+            if self.debug :  
+                sys.stderr.write("DEBUG: Input file is in the PCLXL (aka PCL6) format.\n")
+            return 1
+        else :    
+            return 0
             
     def beginPage(self) :
         """Indicates the beginning of a new page, and extracts media information."""
@@ -370,7 +382,7 @@ def test() :
             infile = open(arg, "rb")
             mustclose = 1
         try :
-            parser = PCLXLParser(infile, debug=1)
+            parser = Parser(infile, debug=1)
             totalsize += parser.getJobSize()
         except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)

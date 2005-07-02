@@ -26,8 +26,20 @@ import re
 
 from pdlanalyzer import pdlparser
 
-class PDFParser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser) :
     """A parser for PDF documents."""
+    def isValid(self) :    
+        """Returns 1 if data is PDF, else 0."""
+        if self.firstblock.startswith("%PDF-") or \
+           self.firstblock.startswith("\033%-12345X%PDF-") or \
+           ((self.firstblock[:128].find("\033%-12345X") != -1) and (self.firstblock.upper().find("LANGUAGE=PDF") != -1)) or \
+           (self.firstblock.find("%PDF-") != -1) :
+            if self.debug :  
+                sys.stderr.write("DEBUG: Input file is in the PDF format.\n")
+            return 1
+        else :    
+            return 0
+        
     def getJobSize(self) :    
         """Counts pages in a PDF document."""
         self.iscolor = None
@@ -55,7 +67,7 @@ def test() :
             infile = open(arg, "rb")
             mustclose = 1
         try :
-            parser = PDFParser(infile, debug=1)
+            parser = Parser(infile, debug=1)
             totalsize += parser.getJobSize()
         except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)

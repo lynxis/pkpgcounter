@@ -27,7 +27,7 @@ import mmap
 
 from pdlanalyzer import pdlparser
 
-class PCL345Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser) :
     """A parser for PCL3, PCL4, PCL5 documents."""
     mediasizes = {  # ESC&l####A
                     0 : "Default",
@@ -76,6 +76,18 @@ class PCL345Parser(pdlparser.PDLParser) :
                      3 : "Glossy",
                      4 : "Transparent",
                    }
+        
+    def isValid(self) :    
+        """Returns 1 if data is PCL, else 0."""
+        if self.firstblock.startswith("\033E\033") or \
+           (self.firstblock.startswith("\033*rbC") and (not self.lastblock[-3:] == "\f\033@")) or \
+           self.firstblock.startswith("\033%8\033") or \
+           (self.firstblock.find("\033%-12345X") != -1) :
+            if self.debug :  
+                sys.stderr.write("DEBUG: Input file is in the PCL3/4/5 format.\n")
+            return 1
+        else :    
+            return 0
         
     def setPageDict(self, pages, number, attribute, value) :
         """Initializes a page dictionnary."""
@@ -345,7 +357,7 @@ def test() :
             infile = open(arg, "rb")
             mustclose = 1
         try :
-            parser = PCL345Parser(infile, debug=1)
+            parser = Parser(infile, debug=1)
             totalsize += parser.getJobSize()
         except pdlparser.PDLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)
