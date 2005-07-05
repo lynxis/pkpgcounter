@@ -21,6 +21,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
    
+  * 1.54 :
+   
+    - Added online documentation and a manual page.
+    
   * 1.53 : 
   
     - Moved code around to improve maintainability.
