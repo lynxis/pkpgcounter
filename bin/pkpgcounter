@@ -23,12 +23,52 @@
 #
 
 import sys
-from pdlanalyzer.version import __version__
+from pdlanalyzer.version import __version__, __author__, __authoremail__, \
+                                __years__, __gplblurb__
 from pdlanalyzer import analyzer
+
+__doc__ = """pkpgcounter v%(__version__)s (c) %(__years__)s %(__author__)s
+
+pkpgcounter is a generic Page Description Language parser.
+
+pkpgcounter parses any number of input files and/or its standard input
+and outputs the number of pages needed to print these documents.
+
+pkpgcounter currently recognizes the following document formats :
+
+    * PostScript (both DSC compliant and binary)
+    * PDF   
+    * PCLXL (aka PCL6)
+    * PCL3/4/5 (mostly)
+    * DVI
+    * TIFF
+    * ESC/P2
+
+command line usage :
+
+  pkpgcounter [options] [files]
+
+options :
+
+  -v | --version       Prints pkpgcounter's version number then exits.
+  -h | --help          Prints this message then exits.
+  
+  -d | --debug         Activate debug mode. 
+  
+examples :                              
+
+  $ pkpgcounter file1.ps file2.escp2 file3.pclxl <file4.pcl345
+  
+  Will launch pkpgcounter and will output the total number of pages
+  needed to print all the documents specified.
+  
+%(__gplblurb__)s  
+
+Please e-mail bugs to: %(__authoremail__)s"""
 
 if __name__ == "__main__" : 
     if (len(sys.argv) >= 2) and (sys.argv[1] in ("-h", "--help")) :
-        print "usage :  pkpgcounter  file1  [ file2  ... fileN [ <anotherfile ] ]"
+        print __doc__ % globals()
     elif (len(sys.argv) >= 2) and (sys.argv[1] in ("-v", "--version")) :
         print __version__
     else :    
