@@ -134,7 +134,7 @@ def main() :
         totalsize = 0    
         debug = 0
         minindex = 1
-        if sys.argv[1] == "--debug" :
+        if sys.argv[1] in ("-d", "--debug") :
             minindex = 2
             debug = 1
         for arg in sys.argv[minindex:] :
