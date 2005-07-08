@@ -37,6 +37,10 @@ It can currently compute the number of pages in several types of files :
         
         - TIFF
         
+        - OpenOffice.org Writer
+        
+        - OpenOffice.org Impress
+        
 When launched, pkpgcounter prints on its standard output a single 
 integer representing the total number of pages in all the files 
 which filenames you've passed on the command line. 

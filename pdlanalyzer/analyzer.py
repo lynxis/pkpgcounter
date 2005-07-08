@@ -22,7 +22,9 @@
 import sys
 import tempfile
 
-from pdlanalyzer import version, pdlparser, postscript, pdf, pcl345, pclxl, escp2, dvi, tiff
+from pdlanalyzer import version, pdlparser, \
+                        postscript, pdf, pcl345, pclxl, \
+                        escp2, dvi, tiff, ooo
 
 class PDLAnalyzer :    
     """Class for PDL autodetection."""
@@ -114,7 +116,8 @@ class PDLAnalyzer :
                            pcl345, \
                            escp2, \
                            dvi, \
-                           tiff) :
+                           tiff, \
+                           ooo) :
                 try :               
                     return getattr(module, "Parser")(self.infile, self.debug, firstblock, lastblock)
                 except pdlparser.PDLParserError :
