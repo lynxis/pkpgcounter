@@ -21,6 +21,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
    
+  * 1.56 :
+  
+    - Renamed the library from pdlanalyzer into pkpgpdls to avoid problems
+      when the code will be integrated back into PyKota.
+      
   * 1.55 : 
   
     - Added support for OpenOffice.org Writer and Impress documents.

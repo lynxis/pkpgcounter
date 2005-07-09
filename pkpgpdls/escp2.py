@@ -23,7 +23,7 @@
 
 import sys
 
-from pdlanalyzer import pdlparser
+import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for ESC/P2 documents."""

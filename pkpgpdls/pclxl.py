@@ -26,7 +26,7 @@ import os
 import mmap
 from struct import unpack
 
-from pdlanalyzer import pdlparser
+import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for PCLXL (aka PCL6) documents."""

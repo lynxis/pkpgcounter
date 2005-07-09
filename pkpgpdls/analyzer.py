@@ -22,9 +22,8 @@
 import sys
 import tempfile
 
-from pdlanalyzer import version, pdlparser, \
-                        postscript, pdf, pcl345, pclxl, \
-                        escp2, dvi, tiff, ooo
+import version, pdlparser, postscript, pdf, pcl345, pclxl, \
+       escp2, dvi, tiff, ooo
 
 class PDLAnalyzer :    
     """Class for PDL autodetection."""

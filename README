@@ -72,7 +72,7 @@ Installation :
         $ python setup.py install
         
       This will usually install the pkpgcounter into /usr/bin and  
-      the library into /usr/lib/python2.?/site-packages/pdlanalyzer/
+      the library into /usr/lib/python2.?/site-packages/pkpgpdls/
         
   2 - Use pkpgcounter :
   

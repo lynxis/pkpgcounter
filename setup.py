@@ -33,8 +33,8 @@ except ImportError, msg :
     sys.stderr.write("You need the DistUtils Python module.\nunder Debian, you may have to install the python-dev package.\nOf course, YMMV.\n")
     sys.exit(-1)
 
-sys.path.insert(0, "pdlanalyzer")
-from pdlanalyzer.version import __version__, __doc__
+sys.path.insert(0, "pkpgpdls")
+from pkpgpdls.version import __version__, __doc__
 
 data_files = []
 mofiles = glob.glob(os.sep.join(["po", "*", "*.mo"]))
@@ -57,6 +57,6 @@ setup(name = "pkpgcounter", version = __version__,
       author = "Jerome Alet",
       author_email = "alet@librelogiciel.com",
       url = "http://www.librelogiciel.com/software/",
-      packages = [ "pdlanalyzer" ],
+      packages = [ "pkpgpdls" ],
       scripts = [ "bin/pkpgcounter" ],
       data_files = data_files)

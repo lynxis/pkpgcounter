@@ -24,7 +24,7 @@
 import sys
 import popen2
 
-from pdlanalyzer import pdlparser
+import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for PostScript documents."""

@@ -25,7 +25,7 @@ import sys
 import os
 import zipfile
 
-from pdlanalyzer import pdlparser
+import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for OpenOffice.org documents."""

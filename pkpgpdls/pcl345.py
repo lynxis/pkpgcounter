@@ -25,7 +25,7 @@ import sys
 import os
 import mmap
 
-from pdlanalyzer import pdlparser
+import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for PCL3, PCL4, PCL5 documents."""

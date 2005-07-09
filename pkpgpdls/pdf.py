@@ -24,7 +24,7 @@
 import sys
 import re
 
-from pdlanalyzer import pdlparser
+import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for PDF documents."""
