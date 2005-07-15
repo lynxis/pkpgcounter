@@ -52,10 +52,10 @@ class Parser(pdlparser.PDLParser) :
         command = 'gs -sDEVICE=bbox -dNOPAUSE -dBATCH -dQUIET - 2>&1 | grep -c "%%HiResBoundingBox:" 2>/dev/null'
         child = popen2.Popen4(command)
         try :
-            data = self.infile.read(MEGABYTE)    
+            data = self.infile.read(pdlparser.MEGABYTE)    
             while data :
                 child.tochild.write(data)
-                data = self.infile.read(MEGABYTE)
+                data = self.infile.read(pdlparser.MEGABYTE)
             child.tochild.flush()
             child.tochild.close()    
         except (IOError, OSError), msg :    
