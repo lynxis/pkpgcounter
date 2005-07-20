@@ -57,44 +57,39 @@ class Parser(pdlparser.PDLParser) :
         # First we start with a generic PDF parser.
         lastcomment = None
         objects = {}
-        while 1 :
-            line = self.infile.readline()
-            if not line :
-                break
-            # now workaround the unavailability of "Universal New Line" 
-            # under Python <2.3.
-            line = line.strip().replace("\r\n", " ").replace("\r", " ")
-            if line.startswith("% ") :    
-                lastcomment = line[2:]
-            if line.endswith(" obj") :    
-                # New object begins here
-                (n0, n1, dummy) = line.split()
-                (major, minor) = map(int, (n0, n1))
-                obj = PDFObject(major, minor, lastcomment)
-                while 1 :
-                    line = self.infile.readline()
-                    if not line :
-                        break
-                    line = line.strip()    
-                    if line.startswith("% ") :    
+        inobject = 0
+        for fullline in self.infile.xreadlines() :
+            parts = [ l.strip() for l in fullline.splitlines() ]
+            for line in parts :
+                if line.startswith("% ") :    
+                    if inobject :
                         obj.comments.append(line)
-                    elif line.startswith("endobj") :    
-                        break
-                    else :    
-                        obj.content.append(line)
-                try :        
-                    # try to find a different version of this object
-                    oldobject = objects[major]
-                except KeyError :    
-                    # not found, so we add it
-                    objects[major] = obj
-                else :    
-                    # only overwrite older versions of this object
-                    # same minor seems to be possible, so the latest one
-                    # found in the file will be the one we keep.
-                    # if we want the first one, just use > instead of >=
-                    if minor >= oldobject.minor :
+                    else :
+                        lastcomment = line[2:]
+                elif line.endswith(" obj") :
+                    # New object begins here
+                    (n0, n1, dummy) = line.split()
+                    (major, minor) = map(int, (n0, n1))
+                    obj = PDFObject(major, minor, lastcomment)
+                    inobject = 1
+                elif line.startswith("endobj") :    
+                    try :        
+                        # try to find a different version of this object
+                        oldobject = objects[major]
+                    except KeyError :    
+                        # not found, so we add it
                         objects[major] = obj
+                    else :    
+                        # only overwrite older versions of this object
+                        # same minor seems to be possible, so the latest one
+                        # found in the file will be the one we keep.
+                        # if we want the first one, just use > instead of >=
+                        if minor >= oldobject.minor :
+                            objects[major] = obj
+                    inobject = 0        
+                else :    
+                    if inobject :
+                        obj.content.append(line)
                         
         # Now we check each PDF object we've just created.
         self.iscolor = None
@@ -120,7 +115,7 @@ def test() :
             infile = sys.stdin
             mustclose = 0
         else :    
-            infile = open(arg, "rU")
+            infile = open(arg, "rb")
             mustclose = 1
         try :
             parser = Parser(infile, debug=1)
