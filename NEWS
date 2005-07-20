@@ -21,6 +21,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
    
+  * 1.59 :
+    
+    - Major rewrite of the PDF parser to correctly handle all line endings.
+      
   * 1.58 :
   
     - Fix for PDF files which contain several versions of the same PDF object.
