@@ -20,7 +20,6 @@
 #
 
 import sys
-import psyco
 
 KILOBYTE = 1024    
 MEGABYTE = 1024 * KILOBYTE    
