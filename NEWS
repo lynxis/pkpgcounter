@@ -21,6 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
    
+  * 1.58 :
+  
+    - Fix for PDF files which contain several versions of the same PDF object.
+    
+    - Doesn't break when python-psyco is not available.
+    
   * 1.57 : 
   
     - Fixed a recently introduced bug in binary postscript handling code.  

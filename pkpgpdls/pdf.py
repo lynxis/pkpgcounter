@@ -26,6 +26,18 @@ import re
 
 import pdlparser
 
+class PDFObject :
+    """A class for PDF objects."""
+    def __init__(self, major, minor, description) :
+        """Initialize the PDF object."""
+        self.major = major
+        self.minor = minor
+        self.description = description
+        self.comments = []
+        self.content = []
+        self.parent = None
+        self.kids = []
+        
 class Parser(pdlparser.PDLParser) :
     """A parser for PDF documents."""
     def isValid(self) :    
@@ -42,16 +54,60 @@ class Parser(pdlparser.PDLParser) :
         
     def getJobSize(self) :    
         """Counts pages in a PDF document."""
+        # First we start with a generic PDF parser.
+        lastcomment = None
+        objects = {}
+        while 1 :
+            line = self.infile.readline()
+            if not line :
+                break
+            # now workaround the unavailability of "Universal New Line" 
+            # under Python <2.3.
+            line = line.strip().replace("\r\n", " ").replace("\r", " ")
+            if line.startswith("% ") :    
+                lastcomment = line[2:]
+            if line.endswith(" obj") :    
+                # New object begins here
+                (n0, n1, dummy) = line.split()
+                (major, minor) = map(int, (n0, n1))
+                obj = PDFObject(major, minor, lastcomment)
+                while 1 :
+                    line = self.infile.readline()
+                    if not line :
+                        break
+                    line = line.strip()    
+                    if line.startswith("% ") :    
+                        obj.comments.append(line)
+                    elif line.startswith("endobj") :    
+                        break
+                    else :    
+                        obj.content.append(line)
+                try :        
+                    # try to find a different version of this object
+                    oldobject = objects[major]
+                except KeyError :    
+                    # not found, so we add it
+                    objects[major] = obj
+                else :    
+                    # only overwrite older versions of this object
+                    # same minor seems to be possible, so the latest one
+                    # found in the file will be the one we keep.
+                    # if we want the first one, just use > instead of >=
+                    if minor >= oldobject.minor :
+                        objects[major] = obj
+                        
+        # Now we check each PDF object we've just created.
         self.iscolor = None
         newpageregexp = re.compile(r"(/Type) ?(/Page)[/ \t\r\n]", re.I)
         colorregexp = re.compile(r"(/ColorSpace) ?(/DeviceRGB|/DeviceCMYK)[/ \t\r\n]", re.I)
         pagecount = 0
-        for line in self.infile.xreadlines() : 
-            pagecount += len(newpageregexp.findall(line))
-            if colorregexp.match(line) :
+        for object in objects.values() :
+            content = "".join(object.content)
+            pagecount += len(newpageregexp.findall(content))
+            if colorregexp.match(content) :
                 self.iscolor = 1
                 if self.debug :
-                    sys.stderr.write("ColorSpace : %s\n" % line)
+                    sys.stderr.write("ColorSpace : %s\n" % content)
         return pagecount    
         
 def test() :        
@@ -64,7 +120,7 @@ def test() :
             infile = sys.stdin
             mustclose = 0
         else :    
-            infile = open(arg, "rb")
+            infile = open(arg, "rU")
             mustclose = 1
         try :
             parser = Parser(infile, debug=1)
