@@ -237,6 +237,29 @@ class Parser(pdlparser.PDLParser) :
         self.endianness = ">" # big endian
         return 0
     
+    def reservedForFutureUse(self) :
+        """Outputs something when a reserved byte is encountered."""
+        if self.debug :
+            sys.stderr.write("Byte at %s is out of the PCLXL Protocol Class 2.0 Specification\n" % self.pos)
+        return 0    
+        
+    def escape(self) :    
+        """Handles the ESC code."""
+        pos = endpos = self.pos
+        if self.minfile[pos : pos+8] == r"%-12345X" :
+            endpos = pos + 9
+            endmark = chr(0x0c) + chr(0x00)
+            while self.minfile[endpos] not in endmark :
+                endpos += 1
+                
+            # Store this in a per page mapping.    
+            # NB : First time will be at page 0 (i.e. **before** page 1) !
+            stuff = self.escapedStuff.setdefault(self.pagecount, [])
+            stuff.append(self.minfile[pos : endpos])
+            if self.debug :
+                sys.stderr.write("Escaped datas : [%s]\n" % repr(self.minfile[pos : endpos]))
+        return endpos - pos
+        
     def getJobSize(self) :
         """Counts pages in a PCLXL (PCL6) document.
         
@@ -272,6 +295,8 @@ class Parser(pdlparser.PDLParser) :
         # Initialize table of tags
         self.tags = [ 0 ] * 256    
         
+        self.tags[0x1b] = self.escape # The escape code
+        
         # GhostScript's sources tell us that HP printers
         # only accept little endianness, but we can handle both.
         self.tags[0x28] = self.bigEndian    # BigEndian
@@ -279,8 +304,64 @@ class Parser(pdlparser.PDLParser) :
         
         self.tags[0x43] = self.beginPage    # BeginPage
         self.tags[0x44] = self.endPage      # EndPage
+        self.tags[0x45] = self.reservedForFutureUse # reserved
+        self.tags[0x46] = self.reservedForFutureUse # reserved
+        
+        self.tags[0x4a] = self.reservedForFutureUse # reserved
+        self.tags[0x4b] = self.reservedForFutureUse # reserved
+        self.tags[0x4c] = self.reservedForFutureUse # reserved
+        self.tags[0x4d] = self.reservedForFutureUse # reserved
+        self.tags[0x4e] = self.reservedForFutureUse # reserved
+        
+        self.tags[0x56] = self.reservedForFutureUse # TODO : documentation not clear about reserved status
+        
+        self.tags[0x57] = self.reservedForFutureUse # reserved
+        self.tags[0x58] = self.reservedForFutureUse # reserved
+        self.tags[0x59] = self.reservedForFutureUse # reserved
+        self.tags[0x5a] = self.reservedForFutureUse # reserved
         
         self.tags[0x6a] = self.setColorSpace    # to detect color/b&w mode
+        
+        self.tags[0x83] = self.reservedForFutureUse # reserved
+        
+        self.tags[0x87] = self.reservedForFutureUse # reserved
+        self.tags[0x88] = self.reservedForFutureUse # reserved
+        self.tags[0x89] = self.reservedForFutureUse # reserved
+        self.tags[0x8a] = self.reservedForFutureUse # reserved
+        self.tags[0x8b] = self.reservedForFutureUse # reserved
+        self.tags[0x8c] = self.reservedForFutureUse # reserved
+        self.tags[0x8d] = self.reservedForFutureUse # reserved
+        self.tags[0x8e] = self.reservedForFutureUse # reserved
+        self.tags[0x8f] = self.reservedForFutureUse # reserved
+        self.tags[0x90] = self.reservedForFutureUse # reserved
+        
+        self.tags[0x92] = self.reservedForFutureUse # reserved
+        
+        self.tags[0x94] = self.reservedForFutureUse # reserved
+        
+        self.tags[0x9a] = self.reservedForFutureUse # reserved
+        self.tags[0x9c] = self.reservedForFutureUse # reserved
+        
+        self.tags[0xa4] = self.reservedForFutureUse # reserved
+        self.tags[0xa5] = self.reservedForFutureUse # reserved
+        self.tags[0xa6] = self.reservedForFutureUse # reserved
+        self.tags[0xa7] = self.reservedForFutureUse # reserved
+        
+        self.tags[0xaa] = self.reservedForFutureUse # reserved
+        self.tags[0xab] = self.reservedForFutureUse # reserved
+        self.tags[0xac] = self.reservedForFutureUse # reserved
+        self.tags[0xad] = self.reservedForFutureUse # reserved
+        self.tags[0xae] = self.reservedForFutureUse # reserved
+        self.tags[0xaf] = self.reservedForFutureUse # reserved
+        
+        self.tags[0xb7] = self.reservedForFutureUse # reserved
+        
+        self.tags[0xba] = self.reservedForFutureUse # reserved
+        self.tags[0xbb] = self.reservedForFutureUse # reserved
+        self.tags[0xbc] = self.reservedForFutureUse # reserved
+        self.tags[0xbd] = self.reservedForFutureUse # reserved
+        self.tags[0xbe] = self.reservedForFutureUse # reserved
+        self.tags[0xbf] = self.reservedForFutureUse # reserved
         
         self.tags[0xc0] = 1 # ubyte
         self.tags[0xc1] = 2 # uint16
@@ -289,6 +370,9 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0xc4] = 4 # sint32
         self.tags[0xc5] = 4 # real32
         
+        self.tags[0xc6] = self.reservedForFutureUse # reserved
+        self.tags[0xc7] = self.reservedForFutureUse # reserved
+        
         self.tags[0xc8] = self.array_8  # ubyte_array
         self.tags[0xc9] = self.array_16 # uint16_array
         self.tags[0xca] = self.array_32 # uint32_array
@@ -296,12 +380,25 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0xcc] = self.array_32 # sint32_array
         self.tags[0xcd] = self.array_32 # real32_array
         
+        self.tags[0xce] = self.reservedForFutureUse # reserved
+        self.tags[0xcf] = self.reservedForFutureUse # reserved
+        
         self.tags[0xd0] = 2 # ubyte_xy
         self.tags[0xd1] = 4 # uint16_xy
         self.tags[0xd2] = 8 # uint32_xy
         self.tags[0xd3] = 4 # sint16_xy
         self.tags[0xd4] = 8 # sint32_xy
         self.tags[0xd5] = 8 # real32_xy
+        self.tags[0xd6] = self.reservedForFutureUse # reserved
+        self.tags[0xd7] = self.reservedForFutureUse # reserved
+        self.tags[0xd8] = self.reservedForFutureUse # reserved
+        self.tags[0xd9] = self.reservedForFutureUse # reserved
+        self.tags[0xda] = self.reservedForFutureUse # reserved
+        self.tags[0xdb] = self.reservedForFutureUse # reserved
+        self.tags[0xdc] = self.reservedForFutureUse # reserved
+        self.tags[0xdd] = self.reservedForFutureUse # reserved
+        self.tags[0xde] = self.reservedForFutureUse # reserved
+        self.tags[0xdf] = self.reservedForFutureUse # reserved
         
         self.tags[0xe0] = 4  # ubyte_box
         self.tags[0xe1] = 8  # uint16_box
@@ -309,12 +406,36 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0xe3] = 8  # sint16_box
         self.tags[0xe4] = 16 # sint32_box
         self.tags[0xe5] = 16 # real32_box
+        self.tags[0xe6] = self.reservedForFutureUse # reserved
+        self.tags[0xe7] = self.reservedForFutureUse # reserved
+        self.tags[0xe8] = self.reservedForFutureUse # reserved
+        self.tags[0xe9] = self.reservedForFutureUse # reserved
+        self.tags[0xea] = self.reservedForFutureUse # reserved
+        self.tags[0xeb] = self.reservedForFutureUse # reserved
+        self.tags[0xec] = self.reservedForFutureUse # reserved
+        self.tags[0xed] = self.reservedForFutureUse # reserved
+        self.tags[0xee] = self.reservedForFutureUse # reserved
+        self.tags[0xef] = self.reservedForFutureUse # reserved
+        
+        self.tags[0xf0] = self.reservedForFutureUse # reserved
+        self.tags[0xf1] = self.reservedForFutureUse # reserved
+        self.tags[0xf2] = self.reservedForFutureUse # reserved
+        self.tags[0xf3] = self.reservedForFutureUse # reserved
+        self.tags[0xf4] = self.reservedForFutureUse # reserved
+        self.tags[0xf5] = self.reservedForFutureUse # reserved
+        self.tags[0xf6] = self.reservedForFutureUse # reserved
+        self.tags[0xf7] = self.reservedForFutureUse # reserved
         
         self.tags[0xf8] = 1 # attr_ubyte
         self.tags[0xf9] = 2 # attr_uint16
         
         self.tags[0xfa] = self.embeddedData      # dataLength
         self.tags[0xfb] = self.embeddedDataSmall # dataLengthByte
+        
+        self.tags[0xfc] = self.reservedForFutureUse # reserved
+        self.tags[0xfd] = self.reservedForFutureUse # reserved
+        self.tags[0xfe] = self.reservedForFutureUse # reserved
+        self.tags[0xff] = self.reservedForFutureUse # reserved
             
         # color spaces    
         self.BWColorSpace = "".join([chr(0x00), chr(0xf8), chr(0x03)])
@@ -329,7 +450,8 @@ class Parser(pdlparser.PDLParser) :
         self.minfile = minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
         tags = self.tags
         self.pagecount = 0
-        self.pos = pos = self.infile.tell()
+        self.escapedStuff = {}
+        self.pos = pos = 0
         try :
             while 1 :
                 char = minfile[pos]
@@ -366,7 +488,6 @@ class Parser(pdlparser.PDLParser) :
                                                           page["orientation"], 
                                                           page["mediasource"], 
                                                           colormode))
-            
         return self.pagecount
         
 def test() :        
