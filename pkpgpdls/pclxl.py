@@ -44,11 +44,16 @@ class Parser(pdlparser.PDLParser) :
                     10 : "JB4",
                     11 : "JB5",
                     12 : "B5Envelope",
+                    12 : "B5",
                     14 : "JPostcard",
                     15 : "JDoublePostcard",
                     16 : "A5",
                     17 : "A6",
                     18 : "JB6",
+                    19 : "JIS8K",
+                    20 : "JIS16K",
+                    21 : "JISExec",
+                    96 : "Default",
                  }   
                  
     mediasources = {             
@@ -67,6 +72,7 @@ class Parser(pdlparser.PDLParser) :
                      1 : "Landscape",
                      2 : "ReversePortrait",
                      3 : "ReverseLandscape",
+                     4 : "Default",
                    }
             
     def isValid(self) :    
@@ -249,7 +255,8 @@ class Parser(pdlparser.PDLParser) :
         if self.minfile[pos : pos+8] == r"%-12345X" :
             endpos = pos + 9
             endmark = chr(0x0c) + chr(0x00)
-            while self.minfile[endpos] not in endmark :
+            asciilimit = chr(0x80)
+            while (self.minfile[endpos] not in endmark) and (self.minfile[endpos] < asciilimit) :
                 endpos += 1
                 
             # Store this in a per page mapping.    
@@ -270,6 +277,12 @@ class Parser(pdlparser.PDLParser) :
            HP PCL XL Feature Reference
            Protocol Class 2.0
            http://www.hpdevelopersolutions.com/downloads/64/358/xl_ref20r22.pdf 
+           
+           Protocol Class 2.1 Supplement
+           xl_ref21.pdf
+           
+           Protocol Class 3.0 Supplement
+           xl_refsup30r089.pdf
         """
         self.iscolor = None
         self.endianness = None
@@ -291,6 +304,10 @@ class Parser(pdlparser.PDLParser) :
                     raise pdlparser.PDLParserError, "Unknown endianness marker 0x%02x at start !" % endian
         if not found :
             raise pdlparser.PDLParserError, "This file doesn't seem to be PCLXL (aka PCL6)"
+            
+        # Initialize Media Sources
+        for i in range(8, 256) :
+            self.mediasources[i] = "ExternalTray%03i" % (i - 7)
             
         # Initialize table of tags
         self.tags = [ 0 ] * 256    
@@ -361,7 +378,6 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0xbc] = self.reservedForFutureUse # reserved
         self.tags[0xbd] = self.reservedForFutureUse # reserved
         self.tags[0xbe] = self.reservedForFutureUse # reserved
-        self.tags[0xbf] = self.reservedForFutureUse # reserved
         
         self.tags[0xc0] = 1 # ubyte
         self.tags[0xc1] = 2 # uint16
