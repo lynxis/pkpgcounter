@@ -92,6 +92,11 @@ Troubleshooting :
   parsed data file available to us on some website, and tell us which 
   driver was used.
   
+  If pkpgcounter complain about your system lacking the Python Psyco module,
+  please consider installing it to speedup file parsing. However, don't forget
+  that Psyco currently only runs on the 32 bits x86 platform, so no need to 
+  install it if you've got another system type.
+  
 =============================================================================
 
 Please e-mail bugs to : alet@librelogiciel.com (Jerome Alet)
