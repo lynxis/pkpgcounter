@@ -21,6 +21,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
    
+  * 1.61 :
+  
+    - Better handling of the number of copies in the PostScript parser.
+      Now the number can be different from page to page.
+    
   * 1.60 : 
   
     - Improved PCLXL parser.

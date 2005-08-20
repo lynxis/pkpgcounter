@@ -494,7 +494,7 @@ class Parser(pdlparser.PDLParser) :
             # NB : is number of copies is 0, the page won't be output
             # but the formula below is still correct : we want 
             # to decrease the total number of pages in this case.
-            page = self.pages.get(pnum, 1)
+            page = self.pages.get(pnum, self.pages.get(1, { "copies" : 1 }))
             copies = page["copies"]
             self.pagecount += (copies - 1)
             if self.debug :
