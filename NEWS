@@ -23,6 +23,8 @@ pkpgcounter News :
    
   * 1.61 :
   
+    - Improved PCL3/4/5 parser.
+    
     - Better handling of the number of copies in the PostScript parser.
       Now the number can be different from page to page.
     

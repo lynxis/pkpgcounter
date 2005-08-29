@@ -323,7 +323,9 @@ class Parser(pdlparser.PDLParser) :
 #                pagecount = endgfx
                 
             
-        if pagecount == mediasourcecount == escstart : 
+        if resets == ejects == mediasourcecount == mediasizecount == escstart == 1 :
+            pagecount = orientationcount
+        elif pagecount == mediasourcecount == escstart : 
             pass        # should be OK.
         elif (not startgfx) and (not endgfx) :
             pagecount = ejects or pagecount
