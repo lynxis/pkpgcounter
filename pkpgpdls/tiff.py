@@ -35,8 +35,7 @@ class Parser(pdlparser.PDLParser) :
         littleendian = (chr(0x49)*2) + chr(0x2a) + chr(0)
         bigendian = (chr(0x4d)*2) + chr(0) + chr(0x2a)
         if self.firstblock[:4] in (littleendian, bigendian) :
-            if self.debug :  
-                sys.stderr.write("DEBUG: Input file is in the TIFF format.\n")
+            self.logdebug("DEBUG: Input file is in the TIFF format.")
             return 1
         else :    
             return 0

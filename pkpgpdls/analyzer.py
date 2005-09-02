@@ -118,7 +118,7 @@ class PDLAnalyzer :
                            tiff, \
                            ooo) :
                 try :               
-                    return getattr(module, "Parser")(self.infile, self.debug, firstblock, lastblock)
+                    return module.Parser(self.infile, self.debug, firstblock, lastblock)
                 except pdlparser.PDLParserError :
                     pass # try next parser
         raise pdlparser.PDLParserError, "Analysis of first data block failed."

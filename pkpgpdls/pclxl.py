@@ -27,6 +27,7 @@ import mmap
 from struct import unpack
 
 import pdlparser
+import pjl
 
 class Parser(pdlparser.PDLParser) :
     """A parser for PCLXL (aka PCL6) documents."""
@@ -81,8 +82,7 @@ class Parser(pdlparser.PDLParser) :
              (self.firstblock.find(" HP-PCL XL;") != -1) and \
              ((self.firstblock.find("LANGUAGE=PCLXL") != -1) or \
               (self.firstblock.find("LANGUAGE = PCLXL") != -1))) :
-            if self.debug :  
-                sys.stderr.write("DEBUG: Input file is in the PCLXL (aka PCL6) format.\n")
+            self.logdebug("DEBUG: Input file is in the PCLXL (aka PCL6) format.")
             return 1
         else :    
             return 0
@@ -115,7 +115,7 @@ class Parser(pdlparser.PDLParser) :
                 pos = pos - 4
             elif val == 0x28 :    
                 orientation = ord(minfile[pos - 2])
-                orienationlabel = self.orientations.get(orientation, str(orientation))
+                orientationlabel = self.orientations.get(orientation, str(orientation))
                 pos = pos - 4
             elif val == 0x27 :    
                 savepos = pos
@@ -245,8 +245,7 @@ class Parser(pdlparser.PDLParser) :
     
     def reservedForFutureUse(self) :
         """Outputs something when a reserved byte is encountered."""
-        if self.debug :
-            sys.stderr.write("Byte at %s is out of the PCLXL Protocol Class 2.0 Specification\n" % self.pos)
+        self.logdebug("Byte at %s is out of the PCLXL Protocol Class 2.0 Specification" % self.pos)
         return 0    
         
     def escape(self) :    
@@ -254,7 +253,7 @@ class Parser(pdlparser.PDLParser) :
         pos = endpos = self.pos
         if self.minfile[pos : pos+8] == r"%-12345X" :
             endpos = pos + 9
-            endmark = chr(0x0c) + chr(0x00)
+            endmark = chr(0x0c) + chr(0x00) + chr(0x1b)
             asciilimit = chr(0x80)
             while (self.minfile[endpos] not in endmark) and (self.minfile[endpos] < asciilimit) :
                 endpos += 1
@@ -263,8 +262,7 @@ class Parser(pdlparser.PDLParser) :
             # NB : First time will be at page 0 (i.e. **before** page 1) !
             stuff = self.escapedStuff.setdefault(self.pagecount, [])
             stuff.append(self.minfile[pos : endpos])
-            if self.debug :
-                sys.stderr.write("Escaped datas : [%s]\n" % repr(self.minfile[pos : endpos]))
+            self.logdebug("Escaped datas : [%s]" % repr(self.minfile[pos : endpos]))
         return endpos - pos
         
     def getJobSize(self) :
@@ -488,6 +486,9 @@ class Parser(pdlparser.PDLParser) :
             colormode = "Color"
         else :    
             colormode = "Black"
+            
+        defaultpjlcopies = 1    
+        oldpjlcopies = -1
         for pnum in range(1, self.pagecount + 1) :
             # if no number of copies defined, take 1, as explained
             # in PCLXL documentation.
@@ -495,15 +496,38 @@ class Parser(pdlparser.PDLParser) :
             # but the formula below is still correct : we want 
             # to decrease the total number of pages in this case.
             page = self.pages.get(pnum, self.pages.get(1, { "copies" : 1 }))
-            copies = page["copies"]
+            pjlstuff = self.escapedStuff.get(pnum, [])
+            if pjlstuff :
+                pjlparser = pjl.PJLParser("".join(pjlstuff))
+                nbdefaultcopies = int(pjlparser.default_variables.get("COPIES", -1))
+                nbcopies = int(pjlparser.environment_variables.get("COPIES", -1))
+                nbdefaultqty = int(pjlparser.default_variables.get("QTY", -1))
+                nbqty = int(pjlparser.environment_variables.get("QTY", -1))
+                if nbdefaultcopies > -1 :
+                    defaultpjlcopies = nbdefaultcopies
+                if nbdefaultqty > -1 :
+                    defaultpjlcopies = nbdefaultqty
+                if nbcopies > -1 :
+                    oldpjlcopies = pjlcopies = nbcopies
+                elif nbqty > -1 :
+                    oldpjlcopies = pjlcopies = nbqty
+                else :
+                    if oldpjlcopies == -1 :    
+                        oldpjlcopies = defaultpjlcopies
+                    pjlcopies = oldpjlcopies    
+            else :        
+                if oldpjlcopies == -1 :
+                    pjlcopies = defaultpjlcopies
+                else :    
+                    pjlcopies = oldpjlcopies
+            copies = pjlcopies * page["copies"]
             self.pagecount += (copies - 1)
-            if self.debug :
-                sys.stderr.write("%s*%s*%s*%s*%s*%s\n" % (copies, 
-                                                          page["mediatype"], 
-                                                          page["mediasize"], 
-                                                          page["orientation"], 
-                                                          page["mediasource"], 
-                                                          colormode))
+            self.logdebug("%s*%s*%s*%s*%s*%s" % (copies, 
+                                                 page["mediatype"], 
+                                                 page["mediasize"], 
+                                                 page["orientation"], 
+                                                 page["mediasource"], 
+                                                 colormode))
         return self.pagecount
         
 def test() :        

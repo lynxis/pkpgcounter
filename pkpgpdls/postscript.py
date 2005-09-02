@@ -38,16 +38,14 @@ class Parser(pdlparser.PDLParser) :
               (self.firstblock.find("LANGUAGE = POSTSCRIPT") != -1) or \
               (self.firstblock.find("LANGUAGE = Postscript") != -1))) or \
               (self.firstblock.find("%!PS-Adobe") != -1) :
-            if self.debug :  
-                sys.stderr.write("DEBUG: Input file is in the PostScript format.\n")
+            self.logdebug("DEBUG: Input file is in the PostScript format.")
             return 1
         else :    
             return 0
         
     def throughGhostScript(self) :
         """Get the count through GhostScript, useful for non-DSC compliant PS files."""
-        if self.debug :
-            sys.stderr.write("Internal parser sucks, using GhostScript instead...\n")
+        self.logdebug("Internal parser sucks, using GhostScript instead...")
         self.infile.seek(0)
         command = 'gs -sDEVICE=bbox -dNOPAUSE -dBATCH -dQUIET - 2>&1 | grep -c "%%HiResBoundingBox:" 2>/dev/null'
         child = popen2.Popen4(command)
@@ -80,6 +78,7 @@ class Parser(pdlparser.PDLParser) :
         pagecount = 0
         pages = {}
         pages[0] = { "copies" : 1 }
+        previousline = ""
         for line in self.infile.xreadlines() : 
             if line.startswith(r"%%Page: ") :
                 pagecount += 1
@@ -129,8 +128,7 @@ class Parser(pdlparser.PDLParser) :
             page = pages.get(pnum, pages.get(1, { "copies" : 1 }))
             copies = page["copies"]
             pagecount += (copies - 1)
-            if self.debug :
-                sys.stderr.write("%s * page #%s\n" % (copies, pnum))
+            self.logdebug("%s * page #%s" % (copies, pnum))
         return pagecount
         
     def getJobSize(self) :    

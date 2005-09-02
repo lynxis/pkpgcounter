@@ -33,8 +33,7 @@ class Parser(pdlparser.PDLParser) :
            self.firstblock.startswith("\033*") or \
            self.firstblock.startswith("\n\033@") or \
            self.firstblock.startswith("\0\0\0\033\1@EJL") : # ESC/P Raster ??? Seen on Stylus Photo 1284
-            if self.debug :  
-                sys.stderr.write("DEBUG: Input file is in the ESC/P2 format.\n")
+            self.logdebug("DEBUG: Input file is in the ESC/P2 format.")
             return 1
         else :    
             return 0

@@ -68,6 +68,11 @@ class PDLParser :
             # almost optimal, and much more speedy anyway.
             psyco.bind(self.getJobSize)
             
+    def logdebug(self, message) :       
+        """Logs a debug message if needed."""
+        if self.debug :
+            sys.stderr.write("%s\n" % message)
+            
     def isValid(self) :    
         """Returns 1 if data is in the expected format, else 0."""
         raise RuntimeError, "Not implemented !"

@@ -22,7 +22,6 @@
 #
 
 import sys
-import os
 import zipfile
 
 import pdlparser
@@ -39,8 +38,7 @@ class Parser(pdlparser.PDLParser) :
             except :    
                 return 0
             else :
-                if self.debug :  
-                    sys.stderr.write("DEBUG: Input file is in the OpenOffice.org format.\n")
+                self.logdebug("DEBUG: Input file is in the OpenOffice.org format.")
                 return 1
         else :    
             return 0

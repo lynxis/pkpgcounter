@@ -46,8 +46,7 @@ class Parser(pdlparser.PDLParser) :
            self.firstblock.startswith("\033%-12345X%PDF-") or \
            ((self.firstblock[:128].find("\033%-12345X") != -1) and (self.firstblock.upper().find("LANGUAGE=PDF") != -1)) or \
            (self.firstblock.find("%PDF-") != -1) :
-            if self.debug :  
-                sys.stderr.write("DEBUG: Input file is in the PDF format.\n")
+            self.logdebug("DEBUG: Input file is in the PDF format.")
             return 1
         else :    
             return 0
@@ -98,14 +97,13 @@ class Parser(pdlparser.PDLParser) :
         newpageregexp = re.compile(r"(/Type)\s?(/Page)[/\s]", re.I)
         colorregexp = re.compile(r"(/ColorSpace) ?(/DeviceRGB|/DeviceCMYK)[/ \t\r\n]", re.I)
         pagecount = 0
-        for object in objects.values() :
-            content = "".join(object.content)
+        for obj in objects.values() :
+            content = "".join(obj.content)
             count = len(newpageregexp.findall(content))
             pagecount += count
             if colorregexp.match(content) :
                 self.iscolor = 1
-                if self.debug :
-                    sys.stderr.write("ColorSpace : %s\n" % content)
+                self.logdebug("ColorSpace : %s" % content)
         return pagecount    
         
 def test() :        
