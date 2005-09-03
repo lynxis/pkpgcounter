@@ -21,6 +21,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
    
+  * 1.63 :
+  
+    - Now handles PJL statements to extract number of copies, duplex mode
+      and paper size in the PCLXL and PCL3/4/5 parsers.
+    
   * 1.62 :
   
     - Better handling of the number of copies in the PCLXL parser.
