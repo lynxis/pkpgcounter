@@ -343,6 +343,10 @@ class Parser(pdlparser.PDLParser) :
         elif (not startgfx) and (not endgfx) :
             if ejects :
                 pagecount = ejects
+        elif (resets == 2) and (startgfx == endgfx) and (mediasourcecount == 1) :
+            pass
+        elif (resets == 1) and (startgfx == endgfx) and (mediasourcecount == 0) :
+            pass
         elif startgfx == endgfx :    
             pagecount = startgfx
         elif startgfx == (endgfx - 1) :    

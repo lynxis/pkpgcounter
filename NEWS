@@ -21,6 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
    
+  * 1.65 :
+    
+    - Improved PostScript parser.
+    
+    - Improved PCL3/4/5 parser.
+    
   * 1.64 :
     
     - Improved PCL3/4/5 parser.
