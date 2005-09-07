@@ -308,30 +308,6 @@ class Parser(pdlparser.PDLParser) :
             sys.stderr.write("mediatypecount : %s\n" % mediatypecount)
             sys.stderr.write("escstart : %s\n" % escstart)
         
-#        if not pagecount :
-#            pagecount = (pagecount or ((resets - 3) * (resets > 2)))
-#        else :    
-#            # here we add counters for other ways new pages may have
-#            # been printed and ejected by the printer
-#            pagecount += ejects + backsides
-#        
-#        # now handle number of copies for each page (may differ).
-#        # in duplex mode, number of copies may be sent only once.
-#        for pnum in range(pagecount) :
-#            # if no number of copies defined, take the preceding one else the one set before any page else 1.
-#            page = pages.get(pnum, pages.get(pnum - 1, pages.get(0, { "copies" : 1 })))
-#            pagecount += (page["copies"] - 1)
-#            
-#        # in PCL3 files, there's one Start Gfx tag per page
-#        if ispcl3 :
-#            if endgfx == int(startgfx / 2) : # special case for cdj1600
-#                pagecount = endgfx 
-#            elif startgfx :
-#                pagecount = startgfx
-#            elif endgfx :    
-#                pagecount = endgfx
-                
-            
         if resets == ejects == mediasourcecount == mediasizecount == escstart == 1 :
             pagecount = orientationcount
         elif pagecount == mediasourcecount == escstart : 
@@ -341,8 +317,7 @@ class Parser(pdlparser.PDLParser) :
         elif resets == startgfx == endgfx == (pagecount - 1) :    
             pass
         elif (not startgfx) and (not endgfx) :
-            if ejects :
-                pagecount = ejects
+            pass
         elif (resets == 2) and (startgfx == endgfx) and (mediasourcecount == 1) :
             pass
         elif (resets == 1) and (startgfx == endgfx) and (mediasourcecount == 0) :

@@ -147,7 +147,10 @@ class Parser(pdlparser.PDLParser) :
             # So set number of copies for current page.
             # From what I read in PCLXL documentation, the number
             # of copies is an unsigned 16 bits integer
-            self.pages[self.pagecount]["copies"] = unpack(self.endianness + "H", minfile[pos-5:pos3])[0]
+            try :
+                self.pages[self.pagecount]["copies"] = unpack(self.endianness + "H", minfile[pos-5:pos3])[0]
+            except KeyError :    
+                self.logdebug("It looks like this PCLXL file is corrupted.")
         return 0
         
     def setColorSpace(self) :    
@@ -460,7 +463,13 @@ class Parser(pdlparser.PDLParser) :
         self.setNumberOfCopies = "".join([chr(0xf8), chr(0x31)]) 
         
         infileno = self.infile.fileno()
-        self.pages = {}
+        self.pages = { 0 : { "copies" : 1, 
+                             "orientation" : "Default", 
+                             "mediatype" : "Plain", 
+                             "mediasize" : "Default", 
+                             "mediasource" : "Default", 
+                           } 
+                     }      
         self.minfile = minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
         tags = self.tags
         self.pagecount = 0
