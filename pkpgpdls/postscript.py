@@ -82,10 +82,10 @@ class Parser(pdlparser.PDLParser) :
         for line in self.infile.xreadlines() : 
             if line.startswith(r"%%Page: ") :
                 pagecount += 1
-                pages[pagecount] = { "copies" : 1 }
+                pages[pagecount] = { "copies" : pages[pagecount-1]["copies"] }
             elif line.startswith(r"(%%[Page: ") :
                 pagecount += 1
-                pages[pagecount] = { "copies" : 1 }
+                pages[pagecount] = { "copies" : pages[pagecount-1]["copies"] }
             elif line.startswith(r"%%Requirements: numcopies(") :    
                 try :
                     number = int(line.strip().split('(')[1].split(')')[0])
