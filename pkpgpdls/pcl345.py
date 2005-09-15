@@ -308,8 +308,15 @@ class Parser(pdlparser.PDLParser) :
             sys.stderr.write("mediatypecount : %s\n" % mediatypecount)
             sys.stderr.write("escstart : %s\n" % escstart)
         
-        if resets == ejects == mediasourcecount == mediasizecount == escstart == 1 :
-            pagecount = orientationcount
+        if pagecount and (pagecount == orientationcount) :
+            pass
+        elif resets == ejects == mediasourcecount == mediasizecount == escstart == 1 :
+            if (startgfx and endgfx) and (startgfx != endgfx) :
+                pagecount = orientationcount
+            else :     
+                pagecount += 1
+        elif (ejects == mediasourcecount == orientationcount) and (startgfx == endgfx) :     
+            pass
         elif pagecount == mediasourcecount == escstart : 
             pass        # should be OK.
         elif resets == startgfx == endgfx == mediasizecount == orientationcount == escstart == 1 :     
