@@ -78,14 +78,23 @@ class Parser(pdlparser.PDLParser) :
         pagecount = 0
         pages = {}
         pages[0] = { "copies" : 1 }
+        oldpagenum = None
         previousline = ""
         for line in self.infile.xreadlines() : 
-            if line.startswith(r"%%Page: ") :
-                pagecount += 1
-                pages[pagecount] = { "copies" : pages[pagecount-1]["copies"] }
-            elif line.startswith(r"(%%[Page: ") :
-                pagecount += 1
-                pages[pagecount] = { "copies" : pages[pagecount-1]["copies"] }
+            if line.startswith(r"%%Page: ") or line.startswith(r"(%%[Page: ") :
+                proceed = 1
+                try :
+                    newpagenum = int(line.split(']')[0].split()[1])
+                except :    
+                    pass
+                else :    
+                    if newpagenum == oldpagenum :
+                        proceed = 0
+                    else :
+                        oldpagenum = newpagenum
+                if proceed :        
+                    pagecount += 1
+                    pages[pagecount] = { "copies" : pages[pagecount-1]["copies"] }
             elif line.startswith(r"%%Requirements: numcopies(") :    
                 try :
                     number = int(line.strip().split('(')[1].split(')')[0])
