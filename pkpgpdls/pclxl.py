@@ -509,7 +509,7 @@ class Parser(pdlparser.PDLParser) :
             # but the formula below is still correct : we want 
             # to decrease the total number of pages in this case.
             page = self.pages.get(pnum, self.pages.get(1, { "copies" : 1, "mediasize" : "Default" }))
-            pjlstuff = self.escapedStuff.get(pnum, [])
+            pjlstuff = self.escapedStuff.get(pnum, self.escapedStuff.get(0, []))
             if pjlstuff :
                 pjlparser = pjl.PJLParser("".join(pjlstuff))
                 nbdefaultcopies = int(pjlparser.default_variables.get("COPIES", -1))
