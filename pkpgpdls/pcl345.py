@@ -309,40 +309,52 @@ class Parser(pdlparser.PDLParser) :
             sys.stderr.write("escstart : %s\n" % escstart)
         
         if (orientationcount == (pagecount - 1)) and (resets == 1) :
+            self.logdebug("Rule #1")
             pagecount -= 1
         elif pagecount and (pagecount == orientationcount) :
-            pass
+            self.logdebug("Rule #2")
         elif resets == ejects == mediasourcecount == mediasizecount == escstart == 1 :
-            if (startgfx and endgfx) and (startgfx != endgfx) :
+            #if ((startgfx and endgfx) and (startgfx != endgfx)) or (startgfx == endgfx == 0) :
+            if (startgfx and endgfx) or (startgfx == endgfx == 0) :
+                self.logdebug("Rule #3")
                 pagecount = orientationcount
             elif (endgfx and not startgfx) and (pagecount > orientationcount) :    
+                self.logdebug("Rule #4")
                 pagecount = orientationcount
             else :     
+                self.logdebug("Rule #5")
                 pagecount += 1
         elif (ejects == mediasourcecount == orientationcount) and (startgfx == endgfx) :     
-            pass
+            if (resets == 2) and (orientationcount == (pagecount - 1)) and (orientationcount > 1) :
+                self.logdebug("Rule #6")
+                pagecount = orientationcount
         elif pagecount == mediasourcecount == escstart : 
-            pass        # should be OK.
+            self.logdebug("Rule #7")
         elif resets == startgfx == endgfx == mediasizecount == orientationcount == escstart == 1 :     
-            pass
+            self.logdebug("Rule #8")
         elif resets == startgfx == endgfx == (pagecount - 1) :    
-            pass
+            self.logdebug("Rule #9")
         elif (not startgfx) and (not endgfx) :
-            pass
+            self.logdebug("Rule #10")
         elif (resets == 2) and (startgfx == endgfx) and (mediasourcecount == 1) :
-            pass
+            if orientationcount == (pagecount - 1) :
+                self.logdebug("Rule #11")
+                pagecount = orientationcount
         elif (resets == 1) and (startgfx == endgfx) and (mediasourcecount == 0) :
             if (startgfx > 1) and (startgfx != (pagecount - 1)) :
+                self.logdebug("Rule #12")
                 pagecount -= 1
-            else :    
-                pass
         elif startgfx == endgfx :    
+            self.logdebug("Rule #13")
             pagecount = startgfx
         elif startgfx == (endgfx - 1) :    
+            self.logdebug("Rule #14")
             pagecount = startgfx
         elif (startgfx == 1) and not endgfx :    
+            self.logdebug("Rule #15")
             pass
         else :    
+            self.logdebug("Rule #16")
             pagecount = abs(startgfx - endgfx)
             
         defaultpjlcopies = 1    

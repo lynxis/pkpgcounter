@@ -19,7 +19,7 @@
 # $Id$
 #
 
-__version__ = "1.68"
+__version__ = "1.69"
 
 __doc__ = """pkpgcounter : a generic Page Description Languages parser."""
 
