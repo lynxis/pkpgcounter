@@ -21,6 +21,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
    
+  * 1.70 :
+  
+    - Fixed some PJL escaping issue in the PCLXL and PCL3/4/5 parsers.
+    
   * 1.69 :
   
     - Improved PCL3/4/5 parser.

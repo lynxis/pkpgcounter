@@ -258,7 +258,11 @@ class Parser(pdlparser.PDLParser) :
             endpos = pos + 9
             endmark = chr(0x0c) + chr(0x00) + chr(0x1b)
             asciilimit = chr(0x80)
-            while (self.minfile[endpos] not in endmark) and (self.minfile[endpos] < asciilimit) :
+            quotes = 0
+            while (self.minfile[endpos] not in endmark) and \
+                   ((self.minfile[endpos] < asciilimit) or (quotes % 2)) :
+                if self.minfile[endpos] == '"' :
+                    quotes += 1
                 endpos += 1
                 
             # Store this in a per page mapping.    

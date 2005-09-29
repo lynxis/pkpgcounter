@@ -149,7 +149,11 @@ class Parser(pdlparser.PDLParser) :
                     starb = ampl = 0
                     if minfile[pos : pos+8] == r"%-12345X" :
                         endpos = pos + 9
-                        while (minfile[endpos] not in endmark) and (minfile[endpos] < asciilimit) :
+                        quotes = 0
+                        while (minfile[endpos] not in endmark) and \
+                              ((minfile[endpos] < asciilimit) or (quotes % 2)) :
+                            if minfile[endpos] == '"' :
+                                quotes += 1
                             endpos += 1
                         self.setPageDict(pages, pagecount, "escaped", minfile[pos : endpos])
                         pos += (endpos - pos)
