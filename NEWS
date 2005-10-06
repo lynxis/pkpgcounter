@@ -21,6 +21,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
    
+  * 1.71 :
+  
+    - Now uses ghostscript as the parser when the PS stream was created by a
+      particular MSWindows driver.
+    
+    - Only complains about Psyco missing at install time, and stays
+      quiet when running without Psyco.
+      
   * 1.70 :
   
     - Fixed some PJL escaping issue in the PCLXL and PCL3/4/5 parsers.

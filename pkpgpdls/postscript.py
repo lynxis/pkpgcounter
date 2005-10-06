@@ -81,7 +81,9 @@ class Parser(pdlparser.PDLParser) :
         oldpagenum = None
         previousline = ""
         for line in self.infile.xreadlines() : 
-            if line.startswith(r"%%Page: ") or line.startswith(r"(%%[Page: ") :
+            if line.startswith(r"%%Creator: PScript5.dll") :
+                return 0 # Let this stuff be managed by GhostScript, since nup and copies disturb us.
+            elif line.startswith(r"%%Page: ") or line.startswith(r"(%%[Page: ") :
                 proceed = 1
                 try :
                     newpagenum = int(line.split(']')[0].split()[1])
