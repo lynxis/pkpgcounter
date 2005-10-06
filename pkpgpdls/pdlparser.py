@@ -57,7 +57,6 @@ class PDLParser :
         try :
             import psyco 
         except ImportError :    
-            sys.stderr.write("WARN: If you are running on a 32 Bits x86 platform, you should install the Python Psyco module if possible, this would greatly speedup parsing. NB : Psyco doesn't work on other platforms, so don't worry if you're in this case.\n")
             pass # Psyco is not installed
         else :    
             # Psyco is installed, tell it to compile
