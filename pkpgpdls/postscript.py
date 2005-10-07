@@ -70,19 +70,20 @@ class Parser(pdlparser.PDLParser) :
             child.wait()
         except OSError, msg :    
             raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+        self.logdebug("GhostScript said : %s pages" % pagecount)    
         return pagecount * self.copies
         
     def natively(self) :
         """Count pages in a DSC compliant PostScript document."""
         self.infile.seek(0)
         pagecount = 0
-        pages = {}
-        pages[0] = { "copies" : 1 }
+        self.pages = { 0 : { "copies" : 1 } }
         oldpagenum = None
         previousline = ""
+        notrust = 0
         for line in self.infile.xreadlines() : 
-            if line.startswith(r"%%Creator: PScript5.dll") :
-                return 0 # Let this stuff be managed by GhostScript, since nup and copies disturb us.
+            if line.startswith(r"%%BeginResource: procset pdf") :
+                notrust = 1 # Let this stuff be managed by GhostScript, but we still extract number of copies
             elif line.startswith(r"%%Page: ") or line.startswith(r"(%%[Page: ") :
                 proceed = 1
                 try :
@@ -96,15 +97,15 @@ class Parser(pdlparser.PDLParser) :
                         oldpagenum = newpagenum
                 if proceed :        
                     pagecount += 1
-                    pages[pagecount] = { "copies" : pages[pagecount-1]["copies"] }
+                    self.pages[pagecount] = { "copies" : self.pages[pagecount-1]["copies"] }
             elif line.startswith(r"%%Requirements: numcopies(") :    
                 try :
                     number = int(line.strip().split('(')[1].split(')')[0])
                 except :     
                     pass
                 else :    
-                    if number > pages[pagecount]["copies"] :
-                        pages[pagecount]["copies"] = number
+                    if number > self.pages[pagecount]["copies"] :
+                        self.pages[pagecount]["copies"] = number
             elif line.startswith(r"%%BeginNonPPDFeature: NumCopies ") :
                 # handle # of copies set by some Windows printer driver
                 try :
@@ -112,8 +113,8 @@ class Parser(pdlparser.PDLParser) :
                 except :     
                     pass
                 else :    
-                    if number > pages[pagecount]["copies"] :
-                        pages[pagecount]["copies"] = number
+                    if number > self.pages[pagecount]["copies"] :
+                        self.pages[pagecount]["copies"] = number
             elif line.startswith("1 dict dup /NumCopies ") :
                 # handle # of copies set by mozilla/kprinter
                 try :
@@ -121,34 +122,39 @@ class Parser(pdlparser.PDLParser) :
                 except :     
                     pass
                 else :    
-                    if number > pages[pagecount]["copies"] :
-                        pages[pagecount]["copies"] = number
+                    if number > self.pages[pagecount]["copies"] :
+                        self.pages[pagecount]["copies"] = number
             elif line.startswith("/languagelevel where{pop languagelevel}{1}ifelse 2 ge{1 dict dup/NumCopies") :
                 try :
                     number = int(previousline.strip()[2:])
                 except :
                     pass
                 else :
-                    if number > pages[pagecount]["copies"] :
-                        pages[pagecount]["copies"] = number
+                    if number > self.pages[pagecount]["copies"] :
+                        self.pages[pagecount]["copies"] = number
             previousline = line
             
         # extract max number of copies to please the ghostscript parser, just    
         # in case we will use it later
-        self.copies = max([ v["copies"] for (k, v) in pages.items() ])
+        self.copies = max([ v["copies"] for (k, v) in self.pages.items() ])
         
         # now apply the number of copies to each page
         for pnum in range(1, pagecount + 1) :
-            page = pages.get(pnum, pages.get(1, { "copies" : 1 }))
+            page = self.pages.get(pnum, self.pages.get(1, { "copies" : 1 }))
             copies = page["copies"]
             pagecount += (copies - 1)
             self.logdebug("%s * page #%s" % (copies, pnum))
+        self.logdebug("Internal parser said : %s pages" % pagecount)
+        
+        if notrust :    
+            pagecount = 0 # Let gs do counting
         return pagecount
         
     def getJobSize(self) :    
         """Count pages in PostScript document."""
         self.copies = 1
         return self.natively() or self.throughGhostScript()
+            
         
 def test() :        
     """Test function."""
