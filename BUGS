@@ -19,7 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 =============================================================================
 
-pkpgcounter Bugs :
+pkpgcounter BUGS :
    
   - The PCL3/4/5 parser have to be rewritten as a table driven parser, which
     will be more easily extensible.
