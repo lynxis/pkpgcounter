@@ -23,8 +23,6 @@
 
 import sys
 
-import psyco
-
 from PIL import Image
 
 """ RGB to CMYK formula :
@@ -41,12 +39,8 @@ def percent_cmy(fname) :
     (r, g, b) = [ p.histogram() for p in img.split() ]
     nbpix = sum(r)
     for histo in (r, g, b) :
-        value = 0
-        for i in range(len(histo)) :
-            value += histo[i] * (255 - i)
-        result.append((100 * (value / 255.0)) / nbpix)
+        result.append((100 * (reduce(lambda x,y: x + (y[1] * (255 - y[0])), enumerate(histo), 0) / 255.0)) / nbpix)
     return tuple(result)        
 
 if __name__ == "__main__" :
-    psyco.bind(percent_cmy)
     print percent_cmy(sys.argv[1])
