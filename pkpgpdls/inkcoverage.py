@@ -33,14 +33,32 @@ from PIL import Image
         Yellow = (1 - b - Black) / (1 - Black)
 """        
 
-def percent_cmy(fname) :
+def getPercentCMY(img, nbpix) :
     result = []
-    img = Image.open(fname)
     (r, g, b) = [ p.histogram() for p in img.split() ]
-    nbpix = sum(r)
-    for histo in (r, g, b) :
-        result.append((100 * (reduce(lambda x,y: x + (y[1] * (255 - y[0])), enumerate(histo), 0) / 255.0)) / nbpix)
-    return tuple(result)        
+    for colorhisto in (r, g, b) :
+        result.append(100.0 * (reduce(lambda current, next: current + (next[1] * (255 - next[0])), enumerate(colorhisto), 0) / 255.0) / nbpix)
+    return tuple(result)
+    
+def getPercentBlack(img, nbpix) :
+    if img.mode != "L" :
+        img = img.convert("L")
+    return 100.0 * (reduce(lambda current, next: current + (next[1] * (255 - next[0])), enumerate(img.histogram()[:-1]), 0) / 255.0) / nbpix
+    
+def getPercents(fname) :
+    """Extracts the ink percentages from an image."""
+    image = Image.open(fname)
+    nbpixels = image.size[0] * image.size[1]
+    result = {}
+    try :
+        result["black"] = getPercentBlack(image, nbpixels)
+    except :     
+        sys.stderr.write("Problem when extracting BLACK !\n")
+    try :    
+        result["cmy"] = getPercentCMY(image, nbpixels)
+    except :     
+        sys.stderr.write("Problem when extracting CMY !\n")
+    return result
 
 if __name__ == "__main__" :
-    print percent_cmy(sys.argv[1])
+    print getPercents(sys.argv[1])
