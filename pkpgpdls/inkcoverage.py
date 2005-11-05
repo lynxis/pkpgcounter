@@ -25,40 +25,71 @@ import sys
 
 from PIL import Image
 
-""" RGB to CMYK formula :
-
-        Black = min(1 - r, 1 - g, 1 - b)
-        Cyan = (1 - r - Black) / (1 - Black)
-        Magenta = (1 - g - Black) / (1 - Black)
-        Yellow = (1 - b - Black) / (1 - Black)
-"""        
-
-def getPercentCMY(img, nbpix) :
-    result = []
-    (r, g, b) = [ p.histogram() for p in img.split() ]
-    for colorhisto in (r, g, b) :
-        result.append(100.0 * (reduce(lambda current, next: current + (next[1] * (255 - next[0])), enumerate(colorhisto), 0) / 255.0) / nbpix)
-    return tuple(result)
-    
+def getPercentCMYK(img, nbpix) :
+    """Extracts the percents of Cyan, Magenta, Yellow, and Black from a picture.
+     
+       PIL doesn't produce useable CMYK for our algorithm, so we use the algorithm from PrintBill.
+       Psyco speeds this function up by around 2.5 times on my computer.
+    """
+    if img.mode != "RGB" :
+        img = img.convert("RGB")
+    cyan = magenta = yellow = black = 0    
+    for (r, g, b) in img.getdata() :
+        if r == g == b :
+            black += 255 - r
+        else :    
+            cyan += 255 - r
+            magenta += 255 - g
+            yellow += 255 - b
+    return { "C" : 100.0 * (cyan / 255.0) / nbpix,
+             "M" : 100.0 * (magenta / 255.0) / nbpix,
+             "Y" : 100.0 * (yellow / 255.0) / nbpix,
+             "K" : 100.0 * (black / 255.0) / nbpix,
+           }
+        
+def getPercent(img, nbpix) :
+    """Extracts the percents per color component from a picture.
+      
+       Faster without Pysco.
+    """
+    result = {}     
+    bands = img.split()
+    for (i, bandname) in enumerate(img.getbands()) :
+        result[bandname] = 100.0 * (reduce(lambda current, next: current + (next[1] * next[0]), enumerate(bands[i].histogram()), 0) / 255.0) / nbpix
+    return result    
+        
 def getPercentBlack(img, nbpix) :
+    """Extracts the percents of Black from a picture, once converted to gray levels."""
     if img.mode != "L" :
         img = img.convert("L")
-    return 100.0 * (reduce(lambda current, next: current + (next[1] * (255 - next[0])), enumerate(img.histogram()[:-1]), 0) / 255.0) / nbpix
+    return { "L" : 100.0 - getPercent(img, nbpix)["L"] }
+    
+def getPercentRGB(img, nbpix) :
+    """Extracts the percents of Red, Green, Blue from a picture, once converted to RGB."""
+    if img.mode != "RGB" :
+        img = img.convert("RGB")
+    return getPercent(img, nbpix)    
+    
+def getPercentCMY(img, nbpix) :
+    """Extracts the percents of Cyan, Magenta, and Yellow from a picture once converted to RGB."""
+    result = getPercentRGB(img, nbpix)
+    return { "C" : 100.0 - result["R"],
+             "M" : 100.0 - result["G"],
+             "Y" : 100.0 - result["B"],
+           }
     
 def getPercents(fname) :
     """Extracts the ink percentages from an image."""
     image = Image.open(fname)
     nbpixels = image.size[0] * image.size[1]
-    result = {}
-    try :
-        result["black"] = getPercentBlack(image, nbpixels)
-    except :     
-        sys.stderr.write("Problem when extracting BLACK !\n")
-    try :    
-        result["cmy"] = getPercentCMY(image, nbpixels)
-    except :     
-        sys.stderr.write("Problem when extracting CMY !\n")
-    return result
+    black = getPercentBlack(image, nbpixels)
+    rgb = getPercentRGB(image, nbpixels)
+    cmy = getPercentCMY(image, nbpixels)
+    cmyk = getPercentCMYK(image, nbpixels)
+    print "Black : ", black
+    print "RGB : ", rgb
+    print "CMY : ", cmy
+    print "CMYK : ", cmyk
 
 if __name__ == "__main__" :
-    print getPercents(sys.argv[1])
+    getPercents(sys.argv[1])
