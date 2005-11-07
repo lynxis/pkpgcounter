@@ -92,11 +92,12 @@ def getPercents(fname) :
     try :
         while 1 :
             nbpixels = image.size[0] * image.size[1]
-            result.append({ "BLACK" : getPercentBlack(image, nbpixels), \
-                            "RGB" : getPercentRGB(image, nbpixels), \
-                            "CMY" : getPercentCMY(image, nbpixels), \
-                            "CMYK" : getPercentCMYK(image, nbpixels), \
-                          })
+            result.append((image.size, \
+                           { "BLACK" : getPercentBlack(image, nbpixels), \
+                             "RGB" : getPercentRGB(image, nbpixels), \
+                             "CMY" : getPercentCMY(image, nbpixels), \
+                             "CMYK" : getPercentCMYK(image, nbpixels), \
+                           }))
             index += 1              
             image.seek(index)
     except EOFError :        
