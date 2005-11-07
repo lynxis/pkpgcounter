@@ -22,9 +22,12 @@
 #
 
 import sys
+import os
+import tempfile
 import popen2
 
 import pdlparser
+import inkcoverage
 
 class Parser(pdlparser.PDLParser) :
     """A parser for PostScript documents."""
@@ -47,7 +50,7 @@ class Parser(pdlparser.PDLParser) :
         """Get the count through GhostScript, useful for non-DSC compliant PS files."""
         self.logdebug("Internal parser sucks, using GhostScript instead...")
         self.infile.seek(0)
-        command = 'gs -sDEVICE=bbox -dNOPAUSE -dBATCH -dQUIET - 2>&1 | grep -c "%%HiResBoundingBox:" 2>/dev/null'
+        command = 'gs -sDEVICE=bbox -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET - 2>&1 | grep -c "%%HiResBoundingBox:" 2>/dev/null'
         child = popen2.Popen4(command)
         try :
             data = self.infile.read(pdlparser.MEGABYTE)    
@@ -154,6 +157,39 @@ class Parser(pdlparser.PDLParser) :
         """Count pages in PostScript document."""
         self.copies = 1
         return self.natively() or self.throughGhostScript()
+        
+    def throughTiffMultiPage24NC(self, dpi) :
+        """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
+           Returns percents of ink coverage and number of pages.
+        """   
+        self.logdebug("Converting input datas to TIFF...")
+        self.infile.seek(0)
+        (handle, filename) = tempfile.mkstemp(".tmp", "pkpgcounter")    
+        os.close(handle)
+        command = 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%i -sOutputFile="%s" -' % (dpi, filename)
+        child = popen2.Popen4(command)
+        try :
+            data = self.infile.read(pdlparser.MEGABYTE)    
+            while data :
+                child.tochild.write(data)
+                data = self.infile.read(pdlparser.MEGABYTE)
+            child.tochild.flush()
+            child.tochild.close()    
+        except (IOError, OSError), msg :    
+            raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
+            
+        child.fromchild.close()
+        try :
+            child.wait()
+        except OSError, msg :    
+            raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
+            
+        result = inkcoverage.getPercents(filename)    
+        try :
+            os.remove(filename)
+        except :    
+            pass
+        return result    
             
         
 def test() :        
