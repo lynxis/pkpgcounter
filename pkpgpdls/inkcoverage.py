@@ -80,16 +80,29 @@ def getPercentCMY(img, nbpix) :
     
 def getPercents(fname) :
     """Extracts the ink percentages from an image."""
+    try :
+        import psyco
+    except ImportError :    
+        pass
+    else :    
+        psyco.bind(getPercentCMYK)
+    result = []
+    index = 0
     image = Image.open(fname)
-    nbpixels = image.size[0] * image.size[1]
-    black = getPercentBlack(image, nbpixels)
-    rgb = getPercentRGB(image, nbpixels)
-    cmy = getPercentCMY(image, nbpixels)
-    cmyk = getPercentCMYK(image, nbpixels)
-    print "Black : ", black
-    print "RGB : ", rgb
-    print "CMY : ", cmy
-    print "CMYK : ", cmyk
+    try :
+        while 1 :
+            nbpixels = image.size[0] * image.size[1]
+            result.append({ "BLACK" : getPercentBlack(image, nbpixels), \
+                            "RGB" : getPercentRGB(image, nbpixels), \
+                            "CMY" : getPercentCMY(image, nbpixels), \
+                            "CMYK" : getPercentCMYK(image, nbpixels), \
+                          })
+            index += 1              
+            image.seek(index)
+    except EOFError :        
+        pass
+    return result
 
 if __name__ == "__main__" :
-    getPercents(sys.argv[1])
+    # NB : length of result gives number of pages !
+    print getPercents(sys.argv[1])
