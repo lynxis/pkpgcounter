@@ -313,8 +313,11 @@ class Parser(pdlparser.PDLParser) :
             sys.stderr.write("escstart : %s\n" % escstart)
         
         if (orientationcount == (pagecount - 1)) and (resets == 1) :
-            self.logdebug("Rule #1")
-            pagecount -= 1
+            if resets == ejects == startgfx == mediasourcecount == escstart == 1 :
+                self.logdebug("Rule #19")
+            else :    
+                self.logdebug("Rule #1")
+                pagecount -= 1
         elif pagecount and (pagecount == orientationcount) :
             self.logdebug("Rule #2")
         elif resets == ejects == mediasourcecount == mediasizecount == escstart == 1 :
@@ -344,10 +347,15 @@ class Parser(pdlparser.PDLParser) :
             if orientationcount == (pagecount - 1) :
                 self.logdebug("Rule #11")
                 pagecount = orientationcount
+            elif not pagecount :    
+                self.logdebug("Rule #17")
+                pagecount = ejects
         elif (resets == 1) and (startgfx == endgfx) and (mediasourcecount == 0) :
             if (startgfx > 1) and (startgfx != (pagecount - 1)) :
                 self.logdebug("Rule #12")
                 pagecount -= 1
+            else :    
+                self.logdebug("Rule #18")
         elif startgfx == endgfx :    
             self.logdebug("Rule #13")
             pagecount = startgfx
