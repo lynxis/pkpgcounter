@@ -99,4 +99,27 @@ Troubleshooting :
   
 =============================================================================
 
+The PCL3/4/5 parser included in pkpgcounter is a Python backport of an early
+release of the PCLCount software by Eduardo Gielamo Oliveira and Rodolfo Broco
+Manin. 
+
+Although this IS NOT needed for pkpgcounter to work, you can download the
+original PCLCount software from :
+
+    http://www.fea.unicamp.br/pclcount/
+    
+Their software is distributed under either the terms of a BSD-like license,    
+or the terms of the GNU General Public License of the Free Software Foundation.
+    
+Over time both software evolved following different paths, and the accounting
+results they give may differ depending on the printer driver being used.
+We know that pkpgcounter's PCL3/4/5 parser sometimes is not accurate,
+and we are working on improving the situation. We currently don't know how 
+PCLCount would behave with the same input files.
+
+pkpgcounter's PCLXL (aka PCL6) parser doesn't originate from PCLCount, but 
+was written from scratch. 
+
+=============================================================================
+
 Please e-mail bugs to : alet@librelogiciel.com (Jerome Alet)
