@@ -135,6 +135,14 @@ class Parser(pdlparser.PDLParser) :
                 else :
                     if number > self.pages[pagecount]["copies"] :
                         self.pages[pagecount]["copies"] = number
+            elif line.startswith("/#copies ") :
+                try :
+                    number = int(line.strip().split()[1])
+                except :     
+                    pass
+                else :    
+                    if number > self.pages[pagecount]["copies"] :
+                        self.pages[pagecount]["copies"] = number
             previousline = line
             
         # extract max number of copies to please the ghostscript parser, just    
