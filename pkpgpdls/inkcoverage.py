@@ -33,8 +33,9 @@ def getPercentCMYK(img, nbpix) :
     """
     if img.mode != "RGB" :
         img = img.convert("RGB")
+    data = img.getdata()    
     cyan = magenta = yellow = black = 0    
-    for (r, g, b) in img.getdata() :
+    for (r, g, b) in data :
         if r == g == b :
             black += 255 - r
         else :    
