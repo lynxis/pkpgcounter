@@ -34,15 +34,16 @@ except ImportError, msg :
     sys.exit(-1)
     
 try :    
+    from PIL import Image
+except ImportError :    
+    sys.stderr.write("You need the Python Imaging Library (aka PIL).\nYou can grab it from http://www.pythonware.com\n")
+    sys.exit(-1)
+    
+try :    
     import psyco
 except ImportError :    
     sys.stderr.write("WARN: If you are running on a 32 Bits x86 platform, you should install the Python Psyco module if possible, this would greatly speedup parsing. NB : Psyco doesn't work on other platforms, so don't worry if you're in this case.\n")
     
-try :    
-    from PIL import Image
-except ImportError :    
-    sys.stderr.write("You need the Python Imaging Library (aka PIL).\nYou can grab it from http://www.pythonware.com\n")
-
 sys.path.insert(0, "pkpgpdls")
 from pkpgpdls.version import __version__, __doc__
 
