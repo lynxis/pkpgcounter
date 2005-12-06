@@ -175,30 +175,32 @@ class Parser(pdlparser.PDLParser) :
         (handle, filename) = tempfile.mkstemp(".tmp", "pkpgcounter")    
         os.close(handle)
         command = 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%i -sOutputFile="%s" -' % (dpi, filename)
-        child = popen2.Popen4(command)
         try :
-            data = self.infile.read(pdlparser.MEGABYTE)    
-            while data :
-                child.tochild.write(data)
-                data = self.infile.read(pdlparser.MEGABYTE)
-            child.tochild.flush()
-            child.tochild.close()    
-        except (IOError, OSError), msg :    
-            raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
-            
-        child.fromchild.close()
-        try :
-            child.wait()
-        except OSError, msg :    
-            raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
-            
-        result = inkcoverage.getPercents(filename)    
-        try :
-            os.remove(filename)
-        except :    
-            pass
+            child = popen2.Popen4(command)
+            try :
+                data = self.infile.read(pdlparser.MEGABYTE)    
+                while data :
+                    child.tochild.write(data)
+                    data = self.infile.read(pdlparser.MEGABYTE)
+                child.tochild.flush()
+                child.tochild.close()    
+            except (IOError, OSError), msg :    
+                raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
+                
+            child.fromchild.close()
+            try :
+                child.wait()
+            except OSError, msg :    
+                raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
+                
+            result = inkcoverage.getPercents(filename)    
+        finally :    
+            try :
+                os.remove(filename)
+            except :    
+                pass
+            result = None    
         return result    
-            
         
 def test() :        
     """Test function."""
