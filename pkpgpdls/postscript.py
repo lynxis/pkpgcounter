@@ -171,6 +171,7 @@ class Parser(pdlparser.PDLParser) :
            Returns percents of ink coverage and number of pages.
         """   
         self.logdebug("Converting input datas to TIFF...")
+        result = None    
         self.infile.seek(0)
         (handle, filename) = tempfile.mkstemp(".tmp", "pkpgcounter")    
         os.close(handle)
@@ -199,7 +200,6 @@ class Parser(pdlparser.PDLParser) :
                 os.remove(filename)
             except :    
                 pass
-            result = None    
         return result    
         
 def test() :        
