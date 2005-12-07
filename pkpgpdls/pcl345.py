@@ -91,7 +91,7 @@ class Parser(pdlparser.PDLParser) :
         
     def setPageDict(self, pages, number, attribute, value) :
         """Initializes a page dictionnary."""
-        dic = pages.setdefault(number, { "copies" : 1, "mediasource" : "Main", "mediasize" : "Default", "mediatype" : "Plain", "orientation" : "Portrait", "escaped" : ""})
+        dic = pages.setdefault(number, { "copies" : 1, "mediasource" : "Main", "mediasize" : "Default", "mediatype" : "Plain", "orientation" : "Portrait", "escaped" : "", "duplex": 0})
         dic[attribute] = value
         
     def getJobSize(self) :     
@@ -238,6 +238,8 @@ class Parser(pdlparser.PDLParser) :
                             elif tag == "*t" :    
                                 escstart += 1
                             elif (tag == "&a") and (size == 2) :
+                                # We are on the backside, so mark current page as duplex
+                                self.setPageDict(pages, pagecount, "duplex", 1)
                                 backsides += 1      # Back side in duplex mode
                             else :    
                                 # we just ignore the block.
@@ -377,7 +379,7 @@ class Parser(pdlparser.PDLParser) :
         oldpapersize = ""
         for pnum in range(pagecount) :
             # if no number of copies defined, take the preceding one else the one set before any page else 1.
-            page = pages.get(pnum, pages.get(pnum - 1, pages.get(0, { "copies" : 1, "mediasource" : "Main", "mediasize" : "Default", "mediatype" : "Plain", "orientation" : "Portrait", "escaped" : ""})))
+            page = pages.get(pnum, pages.get(pnum - 1, pages.get(0, { "copies" : 1, "mediasource" : "Main", "mediasize" : "Default", "mediatype" : "Plain", "orientation" : "Portrait", "escaped" : "", "duplex": 0})))
             pjlstuff = page["escaped"]
             if pjlstuff :
                 pjlparser = pjl.PJLParser(pjlstuff)
@@ -398,23 +400,23 @@ class Parser(pdlparser.PDLParser) :
                         pjlcopies = defaultpjlcopies
                     else :    
                         pjlcopies = oldpjlcopies    
-                defaultdm = pjlparser.default_variables.get("DUPLEX", "")
-                if defaultdm :
-                    if defaultdm.upper() == "ON" :
-                        defaultduplexmode = "Duplex"
-                    else :    
-                        defaultduplexmode = "Simplex"
-                envdm = pjlparser.environment_variables.get("DUPLEX", "")
-                if envdm :
-                    if envdm.upper() == "ON" :
-                        duplexmode = "Duplex"
-                    else :    
-                        duplexmode = "Simplex"
-                else :        
-                    if not oldduplexmode :
-                        duplexmode = defaultduplexmode
-                    else :    
-                        duplexmode = oldduplexmode
+                if page["duplex"] :        
+                    duplexmode = "Duplex"
+                else :    
+                    defaultdm = pjlparser.default_variables.get("DUPLEX", "")
+                    if defaultdm :
+                        if defaultdm.upper() == "ON" :
+                            defaultduplexmode = "Duplex"
+                        else :    
+                            defaultduplexmode = "Simplex"
+                    envdm = pjlparser.environment_variables.get("DUPLEX", "")
+                    if envdm :
+                        if envdm.upper() == "ON" :
+                            duplexmode = "Duplex"
+                        else :    
+                            duplexmode = "Simplex"
+                    else :        
+                        duplexmode = oldduplexmode or defaultduplexmode
                 defaultps = pjlparser.default_variables.get("PAPER", "")
                 if defaultps :
                     defaultpapersize = defaultps
@@ -431,15 +433,12 @@ class Parser(pdlparser.PDLParser) :
                     pjlcopies = defaultpjlcopies
                 else :    
                     pjlcopies = oldpjlcopies
-                if not oldduplexmode :
-                    duplexmode = defaultduplexmode
-                else :    
-                    duplexmode = oldduplexmode
+                
+                duplexmode = (page["duplex"] and "Duplex") or oldduplexmode or defaultduplexmode
                 if not oldpapersize :    
                     papersize = defaultpapersize
                 else :    
                     papersize = oldpapersize
-                duplexmode = oldduplexmode
                 papersize = oldpapersize or page["mediasize"]
             if page["mediasize"] != "Default" :
                 papersize = page["mediasize"]
