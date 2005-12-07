@@ -21,6 +21,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 1.73 :
+  
+    - Fixed duplex detection code in PCL3/4/5 parser.
+    
+    - Fixed PCLXL detection code.
+    
+    - Fixed retrieval of custom media types' names in PCLXL.
+    
+    - Added inactive code to compute ink coverage ala PrintBill.
+    
   * 1.72 :
   
     - Improved heuristic to detect when ghostscript has to be used to do
