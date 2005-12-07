@@ -264,6 +264,12 @@ class Parser(pdlparser.PDLParser) :
         self.logdebug("Byte at %s is out of the PCLXL Protocol Class 2.0 Specification" % self.pos)
         return 0    
         
+    def passThrough(self) :    
+        """Passthrough mode, as detailed in PCLXL Feature Reference Protocol Class 3.0 Supplement."""
+        # TODO : do something here to skip the block.
+        self.logdebug("PassThrough marker detected at %s" % self.pos)
+        return 0
+        
     def escape(self) :    
         """Handles the ESC code."""
         pos = endpos = self.pos
@@ -397,6 +403,8 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0xbc] = self.reservedForFutureUse # reserved
         self.tags[0xbd] = self.reservedForFutureUse # reserved
         self.tags[0xbe] = self.reservedForFutureUse # reserved
+        
+        self.tags[0xbf] = self.passThrough # From PCLXL Feature Reference Protocol Class 3.0 Supplement
         
         self.tags[0xc0] = 1 # ubyte
         self.tags[0xc1] = 2 # uint16
