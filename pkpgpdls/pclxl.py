@@ -96,6 +96,7 @@ class Parser(pdlparser.PDLParser) :
         mediasourcelabel = "Main"
         mediasizelabel = "Default"
         orientationlabel = "Portrait"
+        duplexmode = None
         
         # Now go upstream to decode media type, size, source, and orientation
         # this saves time because we don't need a complete parser !
@@ -139,6 +140,12 @@ class Parser(pdlparser.PDLParser) :
                             raise pdlparser.PDLParserError, "Error on size at %s" % pos+2
                         break
                 mediatypelabel = minfile[startpos:startpos+size]
+            elif val == 0x34 :    
+                duplexmode = "Simplex"
+                pos = pos - 2
+            elif val in (0x35, 0x36) :    
+                duplexmode = "Duplex"
+                pos = pos - 2
             # else : TODO : CUSTOM MEDIA SIZE AND UNIT ! 
             else :    
                 pos = pos - 2   # ignored
@@ -147,6 +154,7 @@ class Parser(pdlparser.PDLParser) :
                                        "mediatype" : mediatypelabel, 
                                        "mediasize" : mediasizelabel,
                                        "mediasource" : mediasourcelabel,
+                                       "duplex" : duplexmode,
                                      } 
         return 0
         
@@ -494,6 +502,7 @@ class Parser(pdlparser.PDLParser) :
                              "mediatype" : "Plain", 
                              "mediasize" : "Default", 
                              "mediasource" : "Default", 
+                             "duplex" : None,
                            } 
                      }      
         self.minfile = minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
@@ -534,7 +543,7 @@ class Parser(pdlparser.PDLParser) :
             # NB : is number of copies is 0, the page won't be output
             # but the formula below is still correct : we want 
             # to decrease the total number of pages in this case.
-            page = self.pages.get(pnum, self.pages.get(1, { "copies" : 1, "mediasize" : "Default" }))
+            page = self.pages.get(pnum, self.pages.get(1, { "copies" : 1, "mediasize" : "Default", "duplex" : None }))
             pjlstuff = self.escapedStuff.get(pnum, self.escapedStuff.get(0, []))
             if pjlstuff :
                 pjlparser = pjl.PJLParser("".join(pjlstuff))
@@ -555,23 +564,26 @@ class Parser(pdlparser.PDLParser) :
                         pjlcopies = defaultpjlcopies
                     else :    
                         pjlcopies = oldpjlcopies    
-                defaultdm = pjlparser.default_variables.get("DUPLEX", "")
-                if defaultdm :
-                    if defaultdm.upper() == "ON" :
-                        defaultduplexmode = "Duplex"
-                    else :    
-                        defaultduplexmode = "Simplex"
-                envdm = pjlparser.environment_variables.get("DUPLEX", "")
-                if envdm :
-                    if envdm.upper() == "ON" :
-                        duplexmode = "Duplex"
-                    else :    
-                        duplexmode = "Simplex"
-                else :        
-                    if not oldduplexmode :
-                        duplexmode = defaultduplexmode
-                    else :    
-                        duplexmode = oldduplexmode
+                if page["duplex"] :        
+                    duplexmode = page["duplex"]
+                else :    
+                    defaultdm = pjlparser.default_variables.get("DUPLEX", "")
+                    if defaultdm :
+                        if defaultdm.upper() == "ON" :
+                            defaultduplexmode = "Duplex"
+                        else :    
+                            defaultduplexmode = "Simplex"
+                    envdm = pjlparser.environment_variables.get("DUPLEX", "")
+                    if envdm :
+                        if envdm.upper() == "ON" :
+                            duplexmode = "Duplex"
+                        else :    
+                            duplexmode = "Simplex"
+                    else :        
+                        if not oldduplexmode :
+                            duplexmode = defaultduplexmode
+                        else :    
+                            duplexmode = oldduplexmode
                 defaultps = pjlparser.default_variables.get("PAPER", "")
                 if defaultps :
                     defaultpapersize = defaultps
