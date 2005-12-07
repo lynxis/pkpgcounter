@@ -120,12 +120,25 @@ class Parser(pdlparser.PDLParser) :
             elif val == 0x27 :    
                 savepos = pos
                 pos = pos - 1
+                startpos = size = None 
                 while pos > 0 : # safety check : don't go back to far !
                     val = ord(minfile[pos])
                     pos -= 1    
                     if val == 0xc8 :
+                        length = self.tags[ord(minfile[pos+2])] # will probably always be a byte or uint16
+                        if length == 1 :    
+                            startpos = pos + 4
+                            size = unpack("B", self.minfile[pos+3:startpos])[0]
+                        elif length == 2 :    
+                            startpos = pos + 5
+                            size = unpack(self.endianness + "H", self.minfile[pos+3:startpos])[0]
+                        elif length == 4 :    
+                            startpos = pos + 7
+                            size = unpack(self.endianness + "I", self.minfile[pos+3:startpos])[0]
+                        else :    
+                            raise pdlparser.PDLParserError, "Error on size at %s" % pos+2
                         break
-                mediatypelabel = minfile[pos:savepos] # TODO : INCORRECT, WE HAVE TO STRIP OUT THE UBYTE ARRAY'S LENGTH !!!
+                mediatypelabel = minfile[startpos:startpos+size]
             # else : TODO : CUSTOM MEDIA SIZE AND UNIT ! 
             else :    
                 pos = pos - 2   # ignored
@@ -296,9 +309,10 @@ class Parser(pdlparser.PDLParser) :
             line = self.infile.readline()
             if not line :
                 break
-            if line[1:12] == " HP-PCL XL;" :
+            pos = line.find(" HP-PCL XL;")    
+            if pos != -1 :
                 found = 1
-                endian = ord(line[0])
+                endian = ord(line[pos - 1])
                 if endian == 0x29 :
                     self.littleEndian()
                 elif endian == 0x28 :    
