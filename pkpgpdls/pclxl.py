@@ -137,7 +137,7 @@ class Parser(pdlparser.PDLParser) :
                             startpos = pos + 7
                             size = unpack(self.endianness + "I", self.minfile[pos+3:startpos])[0]
                         else :    
-                            raise pdlparser.PDLParserError, "Error on size at %s" % pos+2
+                            raise pdlparser.PDLParserError, "Error on size at %s" % (pos+2)
                         break
                 mediatypelabel = minfile[startpos:startpos+size]
             elif val == 0x34 :    
