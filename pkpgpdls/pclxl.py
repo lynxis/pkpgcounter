@@ -3,7 +3,7 @@
 #
 # pkpgcounter : a generic Page Description Language parser
 #
-# (c) 2003, 2004, 2005 Jerome Alet <alet@librelogiciel.com>
+# (c) 2003, 2004, 2005, 2006 Jerome Alet <alet@librelogiciel.com>
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -101,6 +101,12 @@ class Parser(pdlparser.PDLParser) :
         # Now go upstream to decode media type, size, source, and orientation
         # this saves time because we don't need a complete parser !
         minfile = self.minfile
+        
+        # self.logdebug("--------------")    
+        # for i in range(100) :
+        #     self.logdebug("%08i ==> 0x%02x ==> '%s'"  % (self.pos - 98 + i, ord(self.minfile[self.pos - 98 + i]), self.minfile[self.pos - 98 + i]))
+        # self.logdebug("--------------")    
+            
         pos = self.pos - 2
         while pos > 0 : # safety check : don't go back to far !
             val = ord(minfile[pos])
@@ -109,18 +115,31 @@ class Parser(pdlparser.PDLParser) :
             if val == 0x26 :    
                 mediasource = ord(minfile[pos - 2])
                 mediasourcelabel = self.mediasources.get(mediasource, str(mediasource))
-                pos = pos - 4
+                pos -= 4
             elif val == 0x25 :
-                mediasize = ord(minfile[pos - 2])
-                mediasizelabel = self.mediasizes.get(mediasize, str(mediasize))
-                pos = pos - 4
+                while (pos > 0) and (ord(minfile[pos]) != 0xc0) :
+                    # we search the preceding ubyte tag
+                    pos -= 1
+                if pos > 0 :
+                    if ord(minfile[pos-1]) == 0xc8 :
+                        # if we found an ubyte_array then the media
+                        # size is completely spelled
+                        arraylength = ord(minfile[pos+1])
+                        mediasizelabel = minfile[pos+2:pos+2+arraylength].title()
+                        pos -= 1
+                    else :    
+                        # if we just found an ubyte, then the media
+                        # size is known by its index
+                        mediasize = ord(minfile[pos+1])
+                        mediasizelabel = self.mediasizes.get(mediasize, str(mediasize))
+                    pos -= 1 
             elif val == 0x28 :    
                 orientation = ord(minfile[pos - 2])
                 orientationlabel = self.orientations.get(orientation, str(orientation))
-                pos = pos - 4
+                pos -= 4
             elif val == 0x27 :    
                 savepos = pos
-                pos = pos - 1
+                pos -= 1
                 startpos = size = None 
                 while pos > 0 : # safety check : don't go back to far !
                     val = ord(minfile[pos])
@@ -142,13 +161,13 @@ class Parser(pdlparser.PDLParser) :
                 mediatypelabel = minfile[startpos:startpos+size]
             elif val == 0x34 :    
                 duplexmode = "Simplex"
-                pos = pos - 2
+                pos -= 2
             elif val in (0x35, 0x36) :    
                 duplexmode = "Duplex"
-                pos = pos - 2
+                pos -= 2
             # else : TODO : CUSTOM MEDIA SIZE AND UNIT ! 
             else :    
-                pos = pos - 2  # ignored
+                pos -= 1  # ignored
         self.pages[self.pagecount] = { "copies" : 1, 
                                        "orientation" : orientationlabel, 
                                        "mediatype" : mediatypelabel, 
