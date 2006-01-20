@@ -21,6 +21,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 1.75 :
+  
+    - Added preliminary support for Canon ImageRunner's "LIPS" or "UFR"
+      (I don't know which) Page Description Language. 
+      
   * 1.74 :
   
     - Fixed a problem in the retrieval of named media sizes in PCLXL.
