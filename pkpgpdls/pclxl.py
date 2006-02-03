@@ -288,13 +288,13 @@ class Parser(pdlparser.PDLParser) :
     
     def reservedForFutureUse(self) :
         """Outputs something when a reserved byte is encountered."""
-        self.logdebug("Byte at %s is out of the PCLXL Protocol Class 2.0 Specification" % self.pos)
+        self.logdebug("Byte at %x is out of the PCLXL Protocol Class 2.0 Specification" % self.pos)
         return 0    
         
     def passThrough(self) :    
         """Passthrough mode, as detailed in PCLXL Feature Reference Protocol Class 3.0 Supplement."""
         # TODO : do something here to skip the block.
-        self.logdebug("PassThrough marker detected at %s" % self.pos)
+        self.logdebug("PassThrough marker detected at %x" % self.pos)
         return 0
         
     def escape(self) :    
@@ -528,21 +528,27 @@ class Parser(pdlparser.PDLParser) :
         tags = self.tags
         self.pagecount = 0
         self.escapedStuff = {}
-        self.pos = pos = 0
+        self.pos = pos = oldpos = 0
         try :
-            while 1 :
-                char = minfile[pos]
-                pos += 1
-                length = tags[ord(char)]
-                if not length :
-                    continue
-                if callable(length) :    
-                    self.pos = pos
-                    length = length()
-                    pos = self.pos
-                pos += length    
-        except IndexError : # EOF ?
-            self.minfile.close() # reached EOF
+            try :
+                while 1 :
+                    try :
+                        char = minfile[pos]
+                    except OverflowError :    
+                        pos = oldpos + 1
+                    pos += 1
+                    length = tags[ord(char)]
+                    if length :
+                        if callable(length) :    
+                            self.pos = pos
+                            length = length()
+                            pos = self.pos
+                        oldpos = pos    
+                        pos += length    
+            except IndexError : # EOF ?            
+                pass
+        finally :
+            self.minfile.close()
             
         # now handle number of copies for each page (may differ).
         if self.iscolor :
