@@ -133,6 +133,7 @@ class Parser(pdlparser.PDLParser) :
                         mediasize = ord(minfile[pos+1])
                         mediasizelabel = self.mediasizes.get(mediasize, str(mediasize))
                     pos -= 1 
+                    # self.logdebug("Media size : %s" % mediasizelabel)
             elif val == 0x28 :    
                 orientation = ord(minfile[pos - 2])
                 orientationlabel = self.orientations.get(orientation, str(orientation))
@@ -159,6 +160,7 @@ class Parser(pdlparser.PDLParser) :
                             raise pdlparser.PDLParserError, "Error on size at %s : %s" % (pos+2, length)
                         break
                 mediatypelabel = minfile[startpos:startpos+size]
+                # self.logdebug("Media type : %s" % mediatypelabel)
             elif val == 0x34 :    
                 duplexmode = "Simplex"
                 pos -= 2
@@ -298,33 +300,27 @@ class Parser(pdlparser.PDLParser) :
         return 0
         
     def x46_class3(self) :    
-        """Undocumented class 3.0"""
-        self.logdebug("Undocumented tag 0x46 at %x" % self.pos)
+        """Undocumented tag 0x46 in class 3.0 streams."""
         pos = self.pos
         minfile = self.minfile
         while pos > 0 : # safety check : don't go back to far !
             val = ord(minfile[pos])
             if (val == 0xf8) and (ord(minfile[pos+1]) in (0x95, 0x96)) :
-                self.logdebug("Found !!!!!!!!!!")
                 pos += 2
-                datatype = self.minfile[pos]
-                if ord(datatype) == 0x46 :
+                ordatatype = ord(self.minfile[pos])
+                if ordatatype == 0x46 :
                     break
-                self.logdebug("0x%02x" % ord(datatype))
                 pos += 1
-                length = self.tags[ord(datatype)]
-                self.logdebug("0x%02x" % length)
+                length = self.tags[ordatatype]
                 posl = pos + length
                 if length == 1 :    
-                    toskip = unpack("B", self.minfile[pos:posl])[0]
+                    return unpack("B", self.minfile[pos:posl])[0]
                 elif length == 2 :    
-                    toskip = unpack(self.endianness + "H", self.minfile[pos:posl])[0]
+                    return unpack(self.endianness + "H", self.minfile[pos:posl])[0]
                 elif length == 4 :    
-                    toskip = unpack(self.endianness + "I", self.minfile[pos:posl])[0]
+                    return unpack(self.endianness + "I", self.minfile[pos:posl])[0]
                 else :    
                     raise pdlparser.PDLParserError, "Error on size at %x" % self.pos
-                self.logdebug("ToSkip : %s" % toskip)    
-                return toskip 
             else :    
                 pos = pos - 1
         return 0    
@@ -436,9 +432,9 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0x8f] = self.reservedForFutureUse # reserved
         self.tags[0x90] = self.reservedForFutureUse # reserved
         
-        self.tags[0x92] = self.reservedForFutureUse # reserved
+        #self.tags[0x92] = self.reservedForFutureUse # reserved
         
-        self.tags[0x94] = self.reservedForFutureUse # reserved
+        #self.tags[0x94] = self.reservedForFutureUse # reserved
         
         self.tags[0x9a] = self.reservedForFutureUse # reserved
         self.tags[0x9c] = self.reservedForFutureUse # reserved
