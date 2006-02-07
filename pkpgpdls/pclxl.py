@@ -218,7 +218,7 @@ class Parser(pdlparser.PDLParser) :
         elif length == 4 :    
             return unpack(self.endianness + "I", self.minfile[pos:posl])[0]
         else :    
-            raise pdlparser.PDLParserError, "Error on array size at %s" % self.pos
+            raise pdlparser.PDLParserError, "Error on array size at %x" % self.pos
         
     def array_16(self) :    
         """Handles byte arrays."""
@@ -239,7 +239,7 @@ class Parser(pdlparser.PDLParser) :
         elif length == 4 :    
             return 2 * unpack(self.endianness + "I", self.minfile[pos:posl])[0]
         else :    
-            raise pdlparser.PDLParserError, "Error on array size at %s" % self.pos
+            raise pdlparser.PDLParserError, "Error on array size at %x" % self.pos
         
     def array_32(self) :    
         """Handles byte arrays."""
@@ -260,7 +260,7 @@ class Parser(pdlparser.PDLParser) :
         elif length == 4 :    
             return 4 * unpack(self.endianness + "I", self.minfile[pos:posl])[0]
         else :    
-            raise pdlparser.PDLParserError, "Error on array size at %s" % self.pos
+            raise pdlparser.PDLParserError, "Error on array size at %x" % self.pos
         
     def embeddedDataSmall(self) :
         """Handle small amounts of data."""
@@ -296,6 +296,38 @@ class Parser(pdlparser.PDLParser) :
         # TODO : do something here to skip the block.
         self.logdebug("PassThrough marker detected at %x" % self.pos)
         return 0
+        
+    def x46_class3(self) :    
+        """Undocumented class 3.0"""
+        self.logdebug("Undocumented tag 0x46 at %x" % self.pos)
+        pos = self.pos
+        minfile = self.minfile
+        while pos > 0 : # safety check : don't go back to far !
+            val = ord(minfile[pos])
+            if (val == 0xf8) and (ord(minfile[pos+1]) in (0x95, 0x96)) :
+                self.logdebug("Found !!!!!!!!!!")
+                pos += 2
+                datatype = self.minfile[pos]
+                if ord(datatype) == 0x46 :
+                    break
+                self.logdebug("0x%02x" % ord(datatype))
+                pos += 1
+                length = self.tags[ord(datatype)]
+                self.logdebug("0x%02x" % length)
+                posl = pos + length
+                if length == 1 :    
+                    toskip = unpack("B", self.minfile[pos:posl])[0]
+                elif length == 2 :    
+                    toskip = unpack(self.endianness + "H", self.minfile[pos:posl])[0]
+                elif length == 4 :    
+                    toskip = unpack(self.endianness + "I", self.minfile[pos:posl])[0]
+                else :    
+                    raise pdlparser.PDLParserError, "Error on size at %x" % self.pos
+                self.logdebug("ToSkip : %s" % toskip)    
+                return toskip 
+            else :    
+                pos = pos - 1
+        return 0    
         
     def escape(self) :    
         """Handles the ESC code."""
@@ -374,7 +406,7 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0x43] = self.beginPage    # BeginPage
         self.tags[0x44] = self.endPage      # EndPage
         self.tags[0x45] = self.reservedForFutureUse # reserved
-        self.tags[0x46] = self.reservedForFutureUse # reserved
+        self.tags[0x46] = self.x46_class3 
         
         self.tags[0x4a] = self.reservedForFutureUse # reserved
         self.tags[0x4b] = self.reservedForFutureUse # reserved
