@@ -406,7 +406,7 @@ class Parser(pdlparser.PDLParser) :
         
         self.tags[0x1b] = self.escape # The escape code
         
-        self.tags[0x21]= self.skipKyoceraPrescribe
+        self.tags[0x21]= self.skipKyoceraPrescribe # 0x21 is not normally used
         
         # GhostScript's sources tell us that HP printers
         # only accept little endianness, but we can handle both.
@@ -416,6 +416,7 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0x43] = self.beginPage    # BeginPage
         self.tags[0x44] = self.endPage      # EndPage
         self.tags[0x45] = self.reservedForFutureUse # reserved
+        
         self.tags[0x46] = self.x46_class3 
         
         self.tags[0x4a] = self.reservedForFutureUse # reserved
@@ -427,28 +428,24 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0x56] = self.reservedForFutureUse # TODO : documentation not clear about reserved status
         
         self.tags[0x57] = self.reservedForFutureUse # reserved
-        self.tags[0x58] = self.reservedForFutureUse # reserved
+        
         self.tags[0x59] = self.reservedForFutureUse # reserved
         self.tags[0x5a] = self.reservedForFutureUse # reserved
         
         self.tags[0x6a] = self.setColorSpace    # to detect color/b&w mode
         
-        self.tags[0x83] = self.reservedForFutureUse # reserved
-        
         self.tags[0x87] = self.reservedForFutureUse # reserved
         self.tags[0x88] = self.reservedForFutureUse # reserved
         self.tags[0x89] = self.reservedForFutureUse # reserved
         self.tags[0x8a] = self.reservedForFutureUse # reserved
+        
         self.tags[0x8b] = self.reservedForFutureUse # reserved
+        
         self.tags[0x8c] = self.reservedForFutureUse # reserved
         self.tags[0x8d] = self.reservedForFutureUse # reserved
         self.tags[0x8e] = self.reservedForFutureUse # reserved
         self.tags[0x8f] = self.reservedForFutureUse # reserved
         self.tags[0x90] = self.reservedForFutureUse # reserved
-        
-        # self.tags[0x92] = self.reservedForFutureUse # reserved, doesn't seem to be harmful
-        
-        # self.tags[0x94] = self.reservedForFutureUse # reserved, doesn't seem to be harmful
         
         self.tags[0x9a] = self.reservedForFutureUse # reserved
         self.tags[0x9c] = self.reservedForFutureUse # reserved
