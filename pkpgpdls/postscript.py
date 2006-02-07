@@ -84,9 +84,12 @@ class Parser(pdlparser.PDLParser) :
         oldpagenum = None
         previousline = ""
         notrust = 0
+        kpdl = 0 # Kyocera Mita
         for line in self.infile.xreadlines() : 
-            if line.startswith(r"%%BeginResource: procset pdf") :
+            if (not kpdl) and line.startswith(r"%%BeginResource: procset pdf") :
                 notrust = 1 # Let this stuff be managed by GhostScript, but we still extract number of copies
+            elif line.startswith("/KPDLBASE") :
+                kpdl = 1
             elif line.startswith(r"%%Page: ") or line.startswith(r"(%%[Page: ") :
                 proceed = 1
                 try :
