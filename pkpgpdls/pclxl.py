@@ -432,9 +432,9 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0x8f] = self.reservedForFutureUse # reserved
         self.tags[0x90] = self.reservedForFutureUse # reserved
         
-        #self.tags[0x92] = self.reservedForFutureUse # reserved
+        # self.tags[0x92] = self.reservedForFutureUse # reserved, doesn't seem to be harmful
         
-        #self.tags[0x94] = self.reservedForFutureUse # reserved
+        # self.tags[0x94] = self.reservedForFutureUse # reserved, doesn't seem to be harmful
         
         self.tags[0x9a] = self.reservedForFutureUse # reserved
         self.tags[0x9c] = self.reservedForFutureUse # reserved
