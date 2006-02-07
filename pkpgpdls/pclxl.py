@@ -322,7 +322,7 @@ class Parser(pdlparser.PDLParser) :
                 else :    
                     raise pdlparser.PDLParserError, "Error on size at %x" % self.pos
             else :    
-                pos = pos - 1
+                pos -= 1
         return 0    
         
     def escape(self) :    
@@ -346,6 +346,18 @@ class Parser(pdlparser.PDLParser) :
             self.logdebug("Escaped datas : [%s]" % repr(self.minfile[pos : endpos]))
         return endpos - pos
         
+    def skipKyoceraPrescribe(self) :    
+        """Skips Kyocera Prescribe commands."""
+        minfile = self.minfile
+        pos = self.pos - 1
+        if minfile[pos:pos+3] == "!R!" :
+            while (pos - self.pos) < 1024 :   # This is a realistic upper bound, to avoid infinite loops
+                if (minfile[pos] == ";") and (minfile[pos-4:pos] == "EXIT") :
+                    return (pos + 1 - self.pos)
+                pos += 1    
+        else :
+            return 0
+            
     def getJobSize(self) :
         """Counts pages in a PCLXL (PCL6) document.
         
@@ -393,6 +405,8 @@ class Parser(pdlparser.PDLParser) :
         self.tags = [ 0 ] * 256    
         
         self.tags[0x1b] = self.escape # The escape code
+        
+        self.tags[0x21]= self.skipKyoceraPrescribe
         
         # GhostScript's sources tell us that HP printers
         # only accept little endianness, but we can handle both.
