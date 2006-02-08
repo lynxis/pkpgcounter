@@ -328,32 +328,37 @@ class Parser(pdlparser.PDLParser) :
     def escape(self) :    
         """Handles the ESC code."""
         pos = endpos = self.pos
-        if self.minfile[pos : pos+8] == r"%-12345X" :
+        minfile = self.minfile
+        if minfile[pos : pos+8] == r"%-12345X" :
             endpos = pos + 9
             endmark = chr(0x0c) + chr(0x00) + chr(0x1b)
             asciilimit = chr(0x80)
             quotes = 0
-            while (self.minfile[endpos] not in endmark) and \
-                   ((self.minfile[endpos] < asciilimit) or (quotes % 2)) :
-                if self.minfile[endpos] == '"' :
+            while (minfile[endpos] not in endmark) and \
+                   ((minfile[endpos] < asciilimit) or (quotes % 2)) :
+                if minfile[endpos] == '"' :
                     quotes += 1
                 endpos += 1
                 
             # Store this in a per page mapping.    
             # NB : First time will be at page 0 (i.e. **before** page 1) !
             stuff = self.escapedStuff.setdefault(self.pagecount, [])
-            stuff.append(self.minfile[pos : endpos])
-            self.logdebug("Escaped datas : [%s]" % repr(self.minfile[pos : endpos]))
+            stuff.append(minfile[pos : endpos])
+            self.logdebug("Escaped datas : [%s]" % repr(minfile[pos : endpos]))
         return endpos - pos
         
     def skipKyoceraPrescribe(self) :    
         """Skips Kyocera Prescribe commands."""
-        minfile = self.minfile
         pos = self.pos - 1
+        minfile = self.minfile
         if minfile[pos:pos+3] == "!R!" :
             while (pos - self.pos) < 1024 :   # This is a realistic upper bound, to avoid infinite loops
                 if (minfile[pos] == ";") and (minfile[pos-4:pos] == "EXIT") :
-                    return (pos + 1 - self.pos)
+                    pos += 1
+                    prescribe = self.prescribeStuff.setdefault(self.pagecount, [])
+                    prescribe.append(minfile[self.pos-1:pos])
+                    self.logdebug("Prescribe commands : [%s]" % repr(minfile[self.pos-1:pos]))
+                    return (pos - self.pos)
                 pos += 1    
         else :
             return 0
@@ -566,7 +571,8 @@ class Parser(pdlparser.PDLParser) :
         self.minfile = minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
         tags = self.tags
         self.pagecount = 0
-        self.escapedStuff = {}
+        self.escapedStuff = {}   # For escaped datas, mostly PJL commands
+        self.prescribeStuff = {} # For Kyocera Prescribe commands
         self.pos = pos = oldpos = 0
         try :
             try :

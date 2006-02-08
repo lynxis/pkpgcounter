@@ -21,6 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 1.76 :
+  
+    - Improved the PCLXL parser wrt undocumented tags.
+    
+    - Preliminary support for Kyocera Prescribe commands.
+    
   * 1.75 :
   
     - Added preliminary support for Canon ImageRunner's "LIPS" or "UFR"
