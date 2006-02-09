@@ -175,79 +175,54 @@ class Parser(pdlparser.PDLParser) :
         
     def endPage(self, prevpos) :    
         """Indicates the end of a page."""
-        pos = prevpos
-        pos3 = pos - 3
+        pos3 = prevpos - 3
         minfile = self.minfile
-        if minfile[pos3:pos-1] == self.setNumberOfCopies :
+        if minfile[pos3:prevpos-1] == self.setNumberOfCopies :
             # The EndPage operator may be preceded by a PageCopies attribute
             # So set number of copies for current page.
             # From what I read in PCLXL documentation, the number
             # of copies is an unsigned 16 bits integer
             try :
-                self.pages[self.pagecount]["copies"] = unpack(self.unpackShort, minfile[pos-5:pos3])[0]
+                self.pages[self.pagecount]["copies"] = unpack(self.unpackShort, minfile[pos3-2:pos3])[0]
             except KeyError :    
                 self.logdebug("It looks like this PCLXL file is corrupted.")
         return 0
         
     def setColorSpace(self, prevpos) :    
         """Changes the color space."""
-        if self.minfile[prevpos-4:prevpos-1] == self.RGBColorSpace :
+        if self.minfile[prevpos-4:prevpos-1] == self.RGBColorSpace : # TODO : doesn't seem to handle all cases !
             self.iscolor = 1
         return 0
             
-    def array_8(self, prevpos) :    
-        """Handles byte arrays."""
+    def array_Generic(self, prevpos, size) :
+        """Handles all arrays."""
         pos = prevpos
-        datatype = self.minfile[pos]
+        datatype = ord(self.minfile[pos])
         pos += 1
-        length = self.tags[ord(datatype)]
+        length = self.tags[datatype]
         if callable(length) :
             length = length(pos)
         posl = pos + length
         if length == 1 :    
-            return 1 + length + unpack("B", self.minfile[pos:posl])[0]
+            return 1 + length + size * unpack("B", self.minfile[pos:posl])[0]
         elif length == 2 :    
-            return 1 + length + unpack(self.unpackShort, self.minfile[pos:posl])[0]
+            return 1 + length + size * unpack(self.unpackShort, self.minfile[pos:posl])[0]
         elif length == 4 :    
-            return 1 + length + unpack(self.unpackLong, self.minfile[pos:posl])[0]
+            return 1 + length + size * unpack(self.unpackLong, self.minfile[pos:posl])[0]
         else :    
             raise pdlparser.PDLParserError, "Error on array size at %x" % prevpos
+            
+    def array_8(self, prevpos) :    
+        """Handles byte arrays."""
+        return self.array_Generic(prevpos, 1)
         
     def array_16(self, prevpos) :
         """Handles byte arrays."""
-        pos = prevpos
-        datatype = self.minfile[pos]
-        pos += 1
-        length = self.tags[ord(datatype)]
-        if callable(length) :
-            length = length(pos)
-        posl = pos + length
-        if length == 1 :    
-            return 1 + length + 2 * unpack("B", self.minfile[pos:posl])[0]
-        elif length == 2 :    
-            return 1 + length + 2 * unpack(self.unpackShort, self.minfile[pos:posl])[0]
-        elif length == 4 :    
-            return 1 + length + 2 * unpack(self.unpackLong, self.minfile[pos:posl])[0]
-        else :    
-            raise pdlparser.PDLParserError, "Error on array size at %x" % prevpos
+        return self.array_Generic(prevpos, 2)
         
     def array_32(self, prevpos) :
         """Handles byte arrays."""
-        pos = prevpos
-        datatype = self.minfile[pos]
-        pos += 1
-        length = self.tags[ord(datatype)]
-        if callable(length) :
-            length = length(pos)
-        posl = pos + length
-        if length == 1 :    
-            return 1 + length + 4 * unpack("B", self.minfile[pos:posl])[0]
-        elif length == 2 :    
-            return 1 + length + 4 * unpack(self.unpackShort, self.minfile[pos:posl])[0]
-        elif length == 4 :    
-            return 1 + length + 4 * unpack(self.unpackLong, self.minfile[pos:posl])[0]
-        else :    
-            raise pdlparser.PDLParserError, "Error on array size at %x" % prevpos
+        return self.array_Generic(prevpos, 4)
         
     def embeddedDataSmall(self, prevpos) :
         """Handle small amounts of data."""
@@ -259,14 +234,12 @@ class Parser(pdlparser.PDLParser) :
         
     def littleEndian(self, prevpos) :
         """Toggles to little endianness."""
-        self.endianness = "<" # little endian
         self.unpackShort = "<H"
         self.unpackLong = "<I"
         return 0
         
     def bigEndian(self, prevpos) :
         """Toggles to big endianness."""
-        self.endianness = ">" # big endian
         self.unpackShort = ">H"
         self.unpackLong = ">I"
         return 0
@@ -284,11 +257,11 @@ class Parser(pdlparser.PDLParser) :
             val = ord(minfile[pos])
             if (val == 0xf8) and (ord(minfile[pos+1]) in (0x95, 0x96)) :
                 pos += 2
-                ordatatype = ord(self.minfile[pos])
-                if ordatatype == 0x46 :
+                datatype = ord(self.minfile[pos])
+                if datatype == 0x46 :
                     break
                 pos += 1
-                length = self.tags[ordatatype]
+                length = self.tags[datatype]
                 posl = pos + length
                 if length == 1 :    
                     return unpack("B", self.minfile[pos:posl])[0]
@@ -358,7 +331,6 @@ class Parser(pdlparser.PDLParser) :
            xl_refsup30r089.pdf
         """
         self.iscolor = None
-        self.endianness = None
         found = 0
         while not found :
             line = self.infile.readline()
