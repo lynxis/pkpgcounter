@@ -87,7 +87,7 @@ class Parser(pdlparser.PDLParser) :
         else :    
             return 0
             
-    def beginPage(self, prevpos) :
+    def beginPage(self, nextpos) :
         """Indicates the beginning of a new page, and extracts media information."""
         self.pagecount += 1
         
@@ -101,7 +101,7 @@ class Parser(pdlparser.PDLParser) :
         # Now go upstream to decode media type, size, source, and orientation
         # this saves time because we don't need a complete parser !
         minfile = self.minfile
-        pos = prevpos - 2
+        pos = nextpos - 2
         while pos > 0 : # safety check : don't go back to far !
             val = ord(minfile[pos])
             if val in (0x44, 0x48, 0x41) : # if previous endPage or openDataSource or beginSession (first page)
@@ -173,11 +173,11 @@ class Parser(pdlparser.PDLParser) :
                                      } 
         return 0
         
-    def endPage(self, prevpos) :    
+    def endPage(self, nextpos) :    
         """Indicates the end of a page."""
-        pos3 = prevpos - 3
+        pos3 = nextpos - 3
         minfile = self.minfile
-        if minfile[pos3:prevpos-1] == self.setNumberOfCopies :
+        if minfile[pos3:nextpos-1] == self.setNumberOfCopies :
             # The EndPage operator may be preceded by a PageCopies attribute
             # So set number of copies for current page.
             # From what I read in PCLXL documentation, the number
@@ -188,96 +188,92 @@ class Parser(pdlparser.PDLParser) :
                 self.logdebug("It looks like this PCLXL file is corrupted.")
         return 0
         
-    def setColorSpace(self, prevpos) :    
+    def setColorSpace(self, nextpos) :    
         """Changes the color space."""
-        if self.minfile[prevpos-4:prevpos-1] == self.RGBColorSpace : # TODO : doesn't seem to handle all cases !
+        if self.minfile[nextpos-4:nextpos-1] == self.RGBColorSpace : # TODO : doesn't seem to handle all cases !
             self.iscolor = 1
         return 0
             
-    def array_Generic(self, prevpos, size) :
+    def array_Generic(self, nextpos, size) :
         """Handles all arrays."""
-        pos = prevpos
+        pos = nextpos
         datatype = ord(self.minfile[pos])
         pos += 1
         length = self.tags[datatype]
         if callable(length) :
             length = length(pos)
-        posl = pos + length
-        if length == 1 :    
-            return 1 + length + size * unpack("B", self.minfile[pos:posl])[0]
-        elif length == 2 :    
-            return 1 + length + size * unpack(self.unpackShort, self.minfile[pos:posl])[0]
-        elif length == 4 :    
-            return 1 + length + size * unpack(self.unpackLong, self.minfile[pos:posl])[0]
-        else :    
-            raise pdlparser.PDLParserError, "Error on array size at %x" % prevpos
+        try :
+            return 1 + length + size * unpack(self.unpackType[length], self.minfile[pos:pos+length])[0]
+        except KeyError :
+            raise pdlparser.PDLParserError, "Error on array size at %x" % nextpos
             
-    def array_8(self, prevpos) :    
+    def array_8(self, nextpos) :    
         """Handles byte arrays."""
-        return self.array_Generic(prevpos, 1)
+        return self.array_Generic(nextpos, 1)
         
-    def array_16(self, prevpos) :
+    def array_16(self, nextpos) :
         """Handles byte arrays."""
-        return self.array_Generic(prevpos, 2)
+        return self.array_Generic(nextpos, 2)
         
-    def array_32(self, prevpos) :
+    def array_32(self, nextpos) :
         """Handles byte arrays."""
-        return self.array_Generic(prevpos, 4)
+        return self.array_Generic(nextpos, 4)
         
-    def embeddedDataSmall(self, prevpos) :
+    def embeddedDataSmall(self, nextpos) :
         """Handle small amounts of data."""
-        return 1 + ord(self.minfile[prevpos])
+        return 1 + ord(self.minfile[nextpos])
         
-    def embeddedData(self, prevpos) :
+    def embeddedData(self, nextpos) :
         """Handle normal amounts of data."""
-        return 4 + unpack(self.unpackLong, self.minfile[prevpos:prevpos+4])[0]
+        return 4 + unpack(self.unpackLong, self.minfile[nextpos:nextpos+4])[0]
         
-    def littleEndian(self, prevpos) :
+    def littleEndian(self, nextpos) :
         """Toggles to little endianness."""
-        self.unpackShort = "<H"
-        self.unpackLong = "<I"
+        self.unpackType = { 1 : "B", 2 : "<H", 4 : "<I" }
+        self.unpackShort = self.unpackType[2]
+        self.unpackLong = self.unpackType[4]
         return 0
         
-    def bigEndian(self, prevpos) :
+    def bigEndian(self, nextpos) :
         """Toggles to big endianness."""
-        self.unpackShort = ">H"
-        self.unpackLong = ">I"
+        self.unpackType = { 1 : "B", 2 : ">H", 4 : ">I" }
+        self.unpackShort = self.unpackType[2]
+        self.unpackLong = self.unpackType[4]
         return 0
     
-    def reservedForFutureUse(self, prevpos) :
+    def reservedForFutureUse(self, nextpos) :
         """Outputs something when a reserved byte is encountered."""
-        self.logdebug("Byte at %x is out of the PCLXL Protocol Class 2.0 Specification" % prevpos)
+        self.logdebug("Byte at %x is out of the PCLXL Protocol Class 2.0 Specification" % nextpos)
         return 0    
         
-    def x46_class3(self, prevpos) :
+    def x46_class3(self, nextpos) :
         """Undocumented tag 0x46 in class 3.0 streams."""
-        pos = prevpos
+        pos = nextpos - 3
         minfile = self.minfile
-        while pos > 0 : # safety check : don't go back to far !
-            val = ord(minfile[pos])
-            if (val == 0xf8) and (ord(minfile[pos+1]) in (0x95, 0x96)) :
-                pos += 2
-                datatype = ord(self.minfile[pos])
-                if datatype == 0x46 :
-                    break
-                pos += 1
-                length = self.tags[datatype]
-                posl = pos + length
-                if length == 1 :    
-                    return unpack("B", self.minfile[pos:posl])[0]
-                elif length == 2 :    
-                    return unpack(self.unpackShort, self.minfile[pos:posl])[0]
-                elif length == 4 :    
-                    return unpack(self.unpackLong, self.minfile[pos:posl])[0]
-                else :    
-                    raise pdlparser.PDLParserError, "Error on size at %x" % prevpos
+        val = ord(minfile[pos])
+        while val == 0xf8 :
+            funcid = ord(minfile[pos+1])
+            try :
+                offset = self.x46_functions[funcid]
+            except KeyError :    
+                self.logdebug("Unexpected subfunction 0x%02x for undocumented tag 0x46 at %x" % (funcid, nextpos))
+                break
             else :    
-                pos -= 1
+                length = self.tags[ord(self.minfile[pos-offset])]
+                if callable(length) :
+                    length = length(pos-offset+1)
+                pos -= offset    
+                if funcid == 0x92 :    
+                    try :
+                        return unpack(self.unpackType[length], self.minfile[pos+1:pos+length+1])[0]
+                    except KeyError :
+                        raise pdlparser.PDLParserError, "Error on size '%s' at %x" % (length, pos+1)
+            val = ord(minfile[pos])
         return 0    
         
-    def escape(self, prevpos) :    
+    def escape(self, nextpos) :    
         """Handles the ESC code."""
-        pos = endpos = prevpos
+        pos = endpos = nextpos
         minfile = self.minfile
         if minfile[pos : pos+8] == r"%-12345X" :
             endpos = pos + 9
@@ -297,18 +293,18 @@ class Parser(pdlparser.PDLParser) :
             self.logdebug("Escaped datas : [%s]" % repr(minfile[pos : endpos]))
         return endpos - pos
         
-    def skipKyoceraPrescribe(self, prevpos) :
+    def skipKyoceraPrescribe(self, nextpos) :
         """Skips Kyocera Prescribe commands."""
-        pos = prevpos - 1
+        pos = nextpos - 1
         minfile = self.minfile
         if minfile[pos:pos+3] == "!R!" :
-            while (pos - prevpos) < 1024 :   # This is a realistic upper bound, to avoid infinite loops
+            while (pos - nextpos) < 1024 :   # This is a realistic upper bound, to avoid infinite loops
                 if (minfile[pos] == ";") and (minfile[pos-4:pos] == "EXIT") :
                     pos += 1
                     prescribe = self.prescribeStuff.setdefault(self.pagecount, [])
-                    prescribe.append(minfile[prevpos-1:pos])
-                    self.logdebug("Prescribe commands : [%s]" % repr(minfile[prevpos-1:pos]))
-                    return (pos - prevpos)
+                    prescribe.append(minfile[nextpos-1:pos])
+                    self.logdebug("Prescribe commands : [%s]" % repr(minfile[nextpos-1:pos]))
+                    return (pos - nextpos)
                 pos += 1    
         else :
             return 0
@@ -508,6 +504,18 @@ class Parser(pdlparser.PDLParser) :
         # set number of copies
         self.setNumberOfCopies = "".join([chr(0xf8), chr(0x31)]) 
         
+        # subcodes for undocumented tag 0x46 and the negative
+        # offset to grab the value from.
+        self.x46_functions = { 0x91 : 5,
+                               0x92 : 5,
+                               0x93 : 3,
+                               0x94 : 3,
+                               0x95 : 5,
+                               0x96 : 2,
+                               0x97 : 2,
+                               0x98 : 2,
+                             }
+                             
         infileno = self.infile.fileno()
         self.pages = { 0 : { "copies" : 1, 
                              "orientation" : "Default", 

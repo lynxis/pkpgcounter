@@ -21,6 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 1.77 : 
+  
+    - Fixed some problems with the code introduced in 1.76.
+    
+    - Improved PCLXL parser's speed by almost 10%.
+    
   * 1.76 :
   
     - Improved the PCLXL parser wrt undocumented tags.
