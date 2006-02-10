@@ -259,11 +259,11 @@ class Parser(pdlparser.PDLParser) :
                 self.logdebug("Unexpected subfunction 0x%02x for undocumented tag 0x46 at %x" % (funcid, nextpos))
                 break
             else :    
-                length = self.tags[ord(self.minfile[pos-offset])]
+                pos -= offset
+                length = self.tags[ord(self.minfile[pos])]
                 if callable(length) :
-                    length = length(pos-offset+1)
-                pos -= offset    
-                if funcid == 0x92 :    
+                    length = length(pos+1)
+                if funcid == 0x92 : # we want to skip these blocks
                     try :
                         return unpack(self.unpackType[length], self.minfile[pos+1:pos+length+1])[0]
                     except KeyError :
