@@ -85,13 +85,13 @@ class Parser(pdlparser.PDLParser) :
         previousline = ""
         notrust = 0
         prescribe = 0 # Kyocera's Prescribe commands
-	acrobatmarker = 0
+        acrobatmarker = 0
         for line in self.infile.xreadlines() : 
             if (not prescribe) and line.startswith(r"%%BeginResource: procset pdf") \
-	       and not acrobatmarker :
+               and not acrobatmarker :
                 notrust = 1 # Let this stuff be managed by GhostScript, but we still extract number of copies
-	    elif line.startswith(r"%ADOPrintSettings: L3") :
-	        acrobatmarker = 1
+            elif line.startswith(r"%ADOPrintSettings: L3") :
+                acrobatmarker = 1
             elif line.startswith("!R!") :
                 prescribe = 1
             elif line.startswith(r"%%Page: ") or line.startswith(r"(%%[Page: ") :
@@ -99,13 +99,14 @@ class Parser(pdlparser.PDLParser) :
                 try :
                     newpagenum = int(line.split(']')[0].split()[1])
                 except :    
-                    pass
+                    notinteger = 1 # It seems that sometimes it's not an integer but an EPS file name
                 else :    
+                    notinteger = 0
                     if newpagenum == oldpagenum :
                         proceed = 0
                     else :
                         oldpagenum = newpagenum
-                if proceed :        
+                if proceed and not notinteger :        
                     pagecount += 1
                     self.pages[pagecount] = { "copies" : self.pages[pagecount-1]["copies"] }
             elif line.startswith(r"%%Requirements: numcopies(") :    
