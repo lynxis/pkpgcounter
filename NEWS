@@ -21,6 +21,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 1.79 :
+  
+    - Fixed a small problem in PostScript parser with dvips output.
+    
   * 1.78 :
   
     - Launches gs less often when printing is done from Acrobat
