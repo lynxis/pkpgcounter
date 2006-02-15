@@ -21,6 +21,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 1.78 :
+  
+    - Launches gs less often when printing is done from Acrobat
+      Reader.
+    
   * 1.77 : 
   
     - Fixed some problems with the code introduced in 1.76.
