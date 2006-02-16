@@ -31,11 +31,13 @@ import pdlparser
 class Parser(pdlparser.PDLParser) :
     """A parser for ZjStream documents."""
     def isValid(self) :    
-        """Returns 1 if data is PCLXL aka PCL6, else 0."""
+        """Returns 1 if data is ZjStream, else 0."""
         if self.firstblock[:4] == "ZJZJ" :
+            self.logdebug("DEBUG: Input file is in the Zenographics ZjStream (little endian) format.")
             self.littleEndian()
             return 1
         elif self.firstblock[:4] == "JZJZ" :    
+            self.logdebug("DEBUG: Input file is in the Zenographics ZjStream (big endian) format.")
             self.bigEndian()
             return 1
         else :    
@@ -57,8 +59,47 @@ class Parser(pdlparser.PDLParser) :
         
     def getJobSize(self) :
         """Computes the number of pages in a ZjStream document."""
-        sys.stderr.write("ZjStream is not supported yet, returning 0 pages.\n")
-        return 0
+        infileno = self.infile.fileno()
+        minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
+        pos = 4
+        startpagecount = endpagecount = 0
+        try :
+            try :
+                while 1 :
+                    header = minfile[pos:pos+16]
+                    if len(header) != 16 :
+                        break
+                    totalChunkSize = unpack(self.unpackLong, header[:4])[0]
+                    chunkType = unpack(self.unpackLong, header[4:8])[0]
+                    numberOfItems = unpack(self.unpackLong, header[8:12])[0]
+                    reserved = unpack(self.unpackShort, header[12:14])[0]
+                    signature = unpack(self.unpackShort, header[14:])[0]
+                    pos += totalChunkSize
+                    if chunkType == 0 :
+                        self.logdebug("startDoc")
+                    elif chunkType == 1 :    
+                        self.logdebug("endDoc")
+                    elif chunkType == 2 :    
+                        self.logdebug("startPage")
+                        startpagecount += 1
+                    elif chunkType == 3 :
+                        self.logdebug("endPage")
+                        endpagecount += 1
+                        
+                    #self.logdebug("Chunk size : %s" % totalChunkSize)
+                    #self.logdebug("Chunk type : 0x%08x" % chunkType)
+                    #self.logdebug("# items : %s" % numberOfItems)
+                    #self.logdebug("reserved : 0x%04x" % reserved)
+                    #self.logdebug("signature : 0x%04x" % signature)
+                    #self.logdebug("\n")
+            except IndexError : # EOF ?
+                pass 
+        finally :        
+            minfile.close()
+            
+        if startpagecount != endpagecount :    
+            sys.stderr.write("ERROR : Incorrect ZjStream datas.\n")
+        return max(startpagecount, endpagecount)
         
 def test() :        
     """Test function."""
