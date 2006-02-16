@@ -23,7 +23,7 @@ import sys
 import tempfile
 
 import version, pdlparser, postscript, pdf, pcl345, pclxl, \
-       escp2, dvi, tiff, ooo
+       escp2, dvi, tiff, ooo, zjstream
 
 class PDLAnalyzer :    
     """Class for PDL autodetection."""
@@ -116,6 +116,7 @@ class PDLAnalyzer :
                            escp2, \
                            dvi, \
                            tiff, \
+                           zjstream, \
                            ooo) :
                 try :               
                     return module.Parser(self.infile, self.debug, firstblock, lastblock)
