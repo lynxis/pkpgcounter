@@ -21,6 +21,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 1.81 :
+  
+    - Improved the gs+Acrobat Reader fix done in 1.78.
+    
   * 1.80 :
   
     - Added support for Zenographics ZjStream input format.

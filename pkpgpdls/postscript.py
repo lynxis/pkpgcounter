@@ -90,7 +90,7 @@ class Parser(pdlparser.PDLParser) :
             if (not prescribe) and line.startswith(r"%%BeginResource: procset pdf") \
                and not acrobatmarker :
                 notrust = 1 # Let this stuff be managed by GhostScript, but we still extract number of copies
-            elif line.startswith(r"%ADOPrintSettings: L3") :
+            elif line.startswith(r"%ADOPrintSettings: L") :
                 acrobatmarker = 1
             elif line.startswith("!R!") :
                 prescribe = 1
