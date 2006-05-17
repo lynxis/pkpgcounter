@@ -67,7 +67,7 @@ setup(name = "pkpgcounter", version = __version__,
       description = __doc__,
       author = "Jerome Alet",
       author_email = "alet@librelogiciel.com",
-      url = "http://www.librelogiciel.com/software/",
+      url = "http://www.pykota.com/software/pkpgcounter/",
       packages = [ "pkpgpdls" ],
       scripts = [ "bin/pkpgcounter" ],
       data_files = data_files)
