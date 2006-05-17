@@ -71,3 +71,4 @@ setup(name = "pkpgcounter", version = __version__,
       packages = [ "pkpgpdls" ],
       scripts = [ "bin/pkpgcounter" ],
       data_files = data_files)
+      
