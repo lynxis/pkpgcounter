@@ -21,6 +21,8 @@
 # $Id$
 #
 
+"""This modules implements a page counter for TIFF documents."""
+
 import sys
 import os
 import mmap
@@ -57,9 +59,11 @@ class Parser(pdlparser.PDLParser) :
         if minfile[:4] == littleendian :
             integerbyteorder = "<I"
             shortbyteorder = "<H"
-        else :    
+        elif minfile[:4] == bigendian :
             integerbyteorder = ">I"
             shortbyteorder = ">H"
+        else :    
+            raise pdlparser.PDLParserError, "Unknown file endianness."
         pos = 4    
         try :    
             nextifdoffset = unpack(integerbyteorder, minfile[pos : pos + 4])[0]
