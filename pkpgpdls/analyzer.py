@@ -25,16 +25,22 @@ import tempfile
 import version, pdlparser, postscript, pdf, pcl345, pclxl, \
        escp2, dvi, tiff, ooo, zjstream
 
+class NoOption :
+    """A class for use as a default parameter to PDLAnalyzer's constructor."""
+    debug = None
+    colorspace = None
+    resolution = None
+    
 class PDLAnalyzer :    
     """Class for PDL autodetection."""
-    def __init__(self, filename, debug=0) :
+    def __init__(self, filename, options=NoOption()) :
         """Initializes the PDL analyzer.
         
            filename is the name of the file or '-' for stdin.
            filename can also be a file-like object which 
            supports read() and seek().
         """
-        self.debug = debug
+        self.options = options
         self.filename = filename
         
     def getJobSize(self) :    
@@ -119,7 +125,7 @@ class PDLAnalyzer :
                            zjstream, \
                            ooo) :
                 try :               
-                    return module.Parser(self.infile, self.debug, firstblock, lastblock)
+                    return module.Parser(self.infile, self.options.debug, firstblock, lastblock)
                 except pdlparser.PDLParserError :
                     pass # try next parser
         raise pdlparser.PDLParserError, "Analysis of first data block failed."
@@ -177,7 +183,7 @@ def main() :
         try :
             for arg in arguments :
                 try :
-                    parser = PDLAnalyzer(arg, options.debug)
+                    parser = PDLAnalyzer(arg, options)
                     totalsize += parser.getJobSize()
                 except (IOError, pdlparser.PDLParserError), msg :    
                     sys.stderr.write("ERROR: %s\n" % msg)
