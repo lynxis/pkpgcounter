@@ -21,6 +21,8 @@
 # $Id$
 #
 
+"""This modules implements a page counter for ESC/P2 documents."""
+
 import sys
 
 import pdlparser

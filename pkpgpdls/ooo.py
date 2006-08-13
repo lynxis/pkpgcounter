@@ -21,6 +21,8 @@
 # $Id$
 #
 
+"""This modules implements a page counter for OpenDocument documents."""
+
 import sys
 import zipfile
 

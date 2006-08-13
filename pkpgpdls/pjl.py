@@ -21,6 +21,8 @@
 # $Id$
 #
 
+"""This modules implements a really minimalist PJL parser."""
+
 import sys
 
 class PJLParserError(Exception):

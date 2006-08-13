@@ -21,6 +21,8 @@
 # $Id$
 #
 
+"""This modules implements a page counter for PostScript documents."""
+
 import sys
 import os
 import tempfile

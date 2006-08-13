@@ -21,6 +21,8 @@
 # $Id$
 #
 
+"""This modules implements a page counter for PCLXL (aka PCL6) documents."""
+
 import sys
 import os
 import mmap

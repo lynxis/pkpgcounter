@@ -21,6 +21,8 @@
 # $Id$
 #
 
+"""This modules implements the computation of ink coverage in different colorspaces."""
+
 import sys
 
 from PIL import Image
