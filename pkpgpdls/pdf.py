@@ -21,6 +21,8 @@
 # $Id$
 #
 
+"""This modules implements a page counter for PDF documents."""
+
 import sys
 import re
 
@@ -57,7 +59,6 @@ class Parser(pdlparser.PDLParser) :
         lastcomment = None
         objects = {}
         inobject = 0
-        # objre = re.compile(r"\s*(\d+)\s+(\d+)\s+obj[<\s/]*")
         objre = re.compile(r"\s?(\d+)\s+(\d+)\s+obj[<\s/]?")
         for fullline in self.infile.xreadlines() :
             parts = [ l.strip() for l in fullline.splitlines() ]
@@ -71,7 +72,7 @@ class Parser(pdlparser.PDLParser) :
                     # New object begins here
                     result = objre.search(line)
                     if result is not None :
-                        (major, minor) = map(int, line[result.start():result.end()].split()[:2])
+                        (major, minor) = [int(num) for num in line[result.start():result.end()].split()[:2]]
                         obj = PDFObject(major, minor, lastcomment)
                         obj.content.append(line[result.end():])
                         inobject = 1
@@ -93,17 +94,13 @@ class Parser(pdlparser.PDLParser) :
                             obj.content.append(line)
                         
         # Now we check each PDF object we've just created.
-        self.iscolor = None
+        # colorregexp = re.compile(r"(/ColorSpace) ?(/DeviceRGB|/DeviceCMYK)[/ \t\r\n]", re.I)
         newpageregexp = re.compile(r"(/Type)\s?(/Page)[/\s]", re.I)
-        colorregexp = re.compile(r"(/ColorSpace) ?(/DeviceRGB|/DeviceCMYK)[/ \t\r\n]", re.I)
         pagecount = 0
         for obj in objects.values() :
             content = "".join(obj.content)
             count = len(newpageregexp.findall(content))
             pagecount += count
-            if colorregexp.match(content) :
-                self.iscolor = 1
-                self.logdebug("ColorSpace : %s" % content)
         return pagecount    
         
 def test() :        
