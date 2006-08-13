@@ -130,7 +130,7 @@ def main() :
         sys.argv.append("-")
         
     if ("-h" in sys.argv[1:]) or ("--help" in sys.argv[1:]) :
-        print "usage : pkpgcounter file1 file2 ... fileN"
+        print "usage : python analyzer.py file1 file2 ... fileN"
     elif ("-v" in sys.argv[1:]) or ("--version" in sys.argv[1:]) :
         print "%s" % version.__version__
     else :
