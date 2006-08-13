@@ -21,7 +21,6 @@
 
 import sys
 import tempfile
-import optparse
 
 import version, pdlparser, postscript, pdf, pcl345, pclxl, \
        escp2, dvi, tiff, ooo, zjstream
@@ -127,15 +126,47 @@ class PDLAnalyzer :
             
 def main() :    
     """Entry point for PDL Analyzer."""
-    parser = optparse.OptionParser(usage="python analyzer.py [options] file1 [file2 ...]")
+    import optparse
+    from copy import copy
+    
+    def check_cichoice(option, opt, value) :
+        """To add a CaseIgnore Choice option type."""
+        valower = value.lower()
+        if valower in [v.lower() for v in option.cichoices] :
+            return valower
+        else :    
+            choices = ", ".join(map(repr, option.cichoices))
+            raise optparse.OptionValueError(
+                "option %s: invalid choice: %r (choose from %s)"
+                % (opt, value, choices))
+    
+    class MyOption(optparse.Option) :
+        """New Option class, with CaseIgnore Choice type."""
+        TYPES = optparse.Option.TYPES + ("cichoice",)
+        ATTRS = optparse.Option.ATTRS + ["cichoices"]
+        TYPE_CHECKER = copy(optparse.Option.TYPE_CHECKER)
+        TYPE_CHECKER["cichoice"] = check_cichoice
+        
+    parser = optparse.OptionParser(option_class=MyOption, 
+                                   usage="python analyzer.py [options] file1 [file2 ...]")
     parser.add_option("-v", "--version", 
                             action="store_true", 
                             dest="version",
-                            help="show pkpgcounter's version number and exit.")
+                            help="Show pkpgcounter's version number and exit.")
     parser.add_option("-d", "--debug", 
                             action="store_true", 
                             dest="debug",
-                            help="activate debug mode.")
+                            help="Activate debug mode.")
+    parser.add_option("-c", "--colorspace", 
+                            dest="colorspace",
+                            type="cichoice",
+                            cichoices=["bw", "cmyk", "cmy", "all"],
+                            help="Activate the computation of ink usage, and defines the colorspace to use. Supported values are 'BW', 'CMYK', 'CMY' and 'ALL'.")
+    parser.add_option("-r", "--resolution", 
+                            type="int", 
+                            default=150, 
+                            dest="resolution",
+                            help="The resolution in DPI to use when checking ink usage. Lower resolution is faster. Default is 150.")
     (options, arguments) = parser.parse_args()
     if options.version :
         print "%s" % version.__version__
@@ -143,13 +174,17 @@ def main() :
         if (not arguments) or ((not sys.stdin.isatty()) and ("-" not in arguments)) :
             arguments.append("-")
         totalsize = 0    
-        for arg in arguments :
-            try :
-                parser = PDLAnalyzer(arg, options.debug)
-                totalsize += parser.getJobSize()
-            except (IOError, pdlparser.PDLParserError), msg :    
-                sys.stderr.write("ERROR: %s\n" % msg)
-                sys.stderr.flush()
+        try :
+            for arg in arguments :
+                try :
+                    parser = PDLAnalyzer(arg, options.debug)
+                    totalsize += parser.getJobSize()
+                except (IOError, pdlparser.PDLParserError), msg :    
+                    sys.stderr.write("ERROR: %s\n" % msg)
+                    sys.stderr.flush()
+        except KeyboardInterrupt :            
+            sys.stderr.write("WARN: Aborted at user's request.\n")
+            sys.stderr.flush()
         print "%s" % totalsize
     
 if __name__ == "__main__" :    
