@@ -21,6 +21,7 @@
 
 import sys
 import tempfile
+import optparse
 
 import version, pdlparser, postscript, pdf, pcl345, pclxl, \
        escp2, dvi, tiff, ooo, zjstream
@@ -126,25 +127,27 @@ class PDLAnalyzer :
             
 def main() :    
     """Entry point for PDL Analyzer."""
-    if (len(sys.argv) < 2) or ((not sys.stdin.isatty()) and ("-" not in sys.argv[1:])) :
-        sys.argv.append("-")
-        
-    if ("-h" in sys.argv[1:]) or ("--help" in sys.argv[1:]) :
-        print "usage : python analyzer.py file1 file2 ... fileN"
-    elif ("-v" in sys.argv[1:]) or ("--version" in sys.argv[1:]) :
+    parser = optparse.OptionParser(usage="python analyzer.py [options] file1 [file2 ...]")
+    parser.add_option("-v", "--version", 
+                            action="store_true", 
+                            dest="version",
+                            help="show pkpgcounter's version number and exit.")
+    parser.add_option("-d", "--debug", 
+                            action="store_true", 
+                            dest="debug",
+                            help="activate debug mode.")
+    (options, arguments) = parser.parse_args()
+    if options.version :
         print "%s" % version.__version__
     else :
+        if (not arguments) or ((not sys.stdin.isatty()) and ("-" not in arguments)) :
+            arguments.append("-")
         totalsize = 0    
-        debug = 0
-        minindex = 1
-        if sys.argv[1] in ("-d", "--debug") :
-            minindex = 2
-            debug = 1
-        for arg in sys.argv[minindex:] :
+        for arg in arguments :
             try :
-                parser = PDLAnalyzer(arg, debug)
+                parser = PDLAnalyzer(arg, options.debug)
                 totalsize += parser.getJobSize()
-            except pdlparser.PDLParserError, msg :    
+            except (IOError, pdlparser.PDLParserError), msg :    
                 sys.stderr.write("ERROR: %s\n" % msg)
                 sys.stderr.flush()
         print "%s" % totalsize
