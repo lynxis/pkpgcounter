@@ -356,7 +356,7 @@ class Parser(pdlparser.PDLParser) :
         
         self.tags[0x1b] = self.escape # The escape code
         
-        self.tags[0x21]= self.skipKyoceraPrescribe # 0x21 is not normally used
+        self.tags[0x21] = self.skipKyoceraPrescribe # 0x21 is not normally used
         
         # GhostScript's sources tell us that HP printers
         # only accept little endianness, but we can handle both.
