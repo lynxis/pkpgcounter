@@ -71,8 +71,6 @@ Please e-mail bugs to: %(__authoremail__)s"""
 if __name__ == "__main__" : 
     if (len(sys.argv) >= 2) and (sys.argv[1] in ("-h", "--help")) :
         print __doc__ % globals()
-    elif (len(sys.argv) >= 2) and (sys.argv[1] in ("-v", "--version")) :
-        print __version__
     else :    
         analyzer.main()
 
