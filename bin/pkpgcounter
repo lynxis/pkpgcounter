@@ -43,7 +43,7 @@ pkpgcounter currently recognizes the following document formats :
     * DVI
     * TIFF
     * ESC/P2
-    * OpenDocument (OpenOffice.org)
+    * OpenDocument (ISO/IEC DIS 26300)
     * Zenographics ZjStream
 
 command line usage :
