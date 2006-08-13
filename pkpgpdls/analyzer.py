@@ -19,21 +19,32 @@
 # $Id$
 #
 
+"""This is the main module of pkpgcounter.
+
+It defines the PDLAnalyzer class, which provides a generic way to parse
+input files, by automatically detecting the best parser to use."""
+
 import sys
 import tempfile
 
 import version, pdlparser, postscript, pdf, pcl345, pclxl, \
        escp2, dvi, tiff, ooo, zjstream
 
-class NoOption :
-    """A class for use as a default parameter to PDLAnalyzer's constructor."""
-    debug = None
-    colorspace = None
-    resolution = None
+
+class AnalyzerOption :
+    """A class for use as the options parameter to PDLAnalyzer's constructor."""
+    def __init__(self, debug=None,
+                       colorspace=None,
+                       resolution=None) :
+        """Sets initial attributes."""
+        self.debug = debug
+        self.colorspace = colorspace
+        self.resolution = resolution
+    
     
 class PDLAnalyzer :    
     """Class for PDL autodetection."""
-    def __init__(self, filename, options=NoOption()) :
+    def __init__(self, filename, options=AnalyzerOption()) :
         """Initializes the PDL analyzer.
         
            filename is the name of the file or '-' for stdin.
@@ -42,6 +53,8 @@ class PDLAnalyzer :
         """
         self.options = options
         self.filename = filename
+        self.infile = None
+        self.mustclose = None
         
     def getJobSize(self) :    
         """Returns the job's size."""
@@ -94,7 +107,7 @@ class PDLAnalyzer :
             # to read the file again.
             try :
                 self.infile.seek(0)
-            except :    
+            except IOError :    
                 pass    # probably stdin, which is not seekable
         
     def detectPDLHandler(self) :    
@@ -141,7 +154,7 @@ def main() :
         if valower in [v.lower() for v in option.cichoices] :
             return valower
         else :    
-            choices = ", ".join(map(repr, option.cichoices))
+            choices = ", ".join([repr(o) for o in option.cichoices])
             raise optparse.OptionValueError(
                 "option %s: invalid choice: %r (choose from %s)"
                 % (opt, value, choices))
