@@ -31,7 +31,7 @@ import version, pdlparser, postscript, pdf, pcl345, pclxl, \
        escp2, dvi, tiff, ooo, zjstream
 
 
-class AnalyzerOption :
+class AnalyzerOptions :
     """A class for use as the options parameter to PDLAnalyzer's constructor."""
     def __init__(self, debug=None,
                        colorspace=None,
@@ -44,7 +44,7 @@ class AnalyzerOption :
     
 class PDLAnalyzer :    
     """Class for PDL autodetection."""
-    def __init__(self, filename, options=AnalyzerOption()) :
+    def __init__(self, filename, options=AnalyzerOptions()) :
         """Initializes the PDL analyzer.
         
            filename is the name of the file or '-' for stdin.
@@ -189,6 +189,9 @@ def main() :
     (options, arguments) = parser.parse_args()
     if options.version :
         print "%s" % version.__version__
+    elif not (72 <= options.resolution <= 1200) :    
+        sys.stderr.write("ERROR: the argument to the --resolution command line switch must be between 72 and 1200.\n")
+        sys.stderr.flush()
     else :
         if (not arguments) or ((not sys.stdin.isatty()) and ("-" not in arguments)) :
             arguments.append("-")
