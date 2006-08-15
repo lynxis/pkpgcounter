@@ -208,7 +208,7 @@ class Parser(pdlparser.PDLParser) :
         finally :    
             try :
                 os.remove(filename)
-            except :    
+            except OSError :    
                 pass
         return result    
         
