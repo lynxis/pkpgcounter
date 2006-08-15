@@ -53,7 +53,7 @@ def getPercentCMYK(img, nbpix) :
 def getPercent(img, nbpix) :
     """Extracts the percents per color component from a picture.
       
-       Faster without Psyco.
+       Faster without Psyco on my own machine.
     """
     result = {}     
     bands = img.split()
