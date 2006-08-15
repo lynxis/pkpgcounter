@@ -19,6 +19,8 @@
 # $Id$
 #
 
+"""This module defines the base class for all Page Description Language parsers."""
+
 import sys
 
 KILOBYTE = 1024    
