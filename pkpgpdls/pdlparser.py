@@ -81,3 +81,9 @@ class PDLParser :
     def getJobSize(self) :    
         """Counts pages in a document."""
         raise RuntimeError, "Not implemented !"
+        
+    def convertToTiffMultiPage24NC(self, outputfile, dpi) :
+        """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
+           Writes TIFF datas to the outputfile file object.
+        """   
+        raise RuntimeError, "Not implemented !"
