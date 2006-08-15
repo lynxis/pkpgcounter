@@ -27,6 +27,17 @@ import sys
 
 from PIL import Image
 
+def getPercent(img, nbpix) :
+    """Extracts the percents per color component from a picture.
+      
+       Faster without Psyco on my own machine.
+    """
+    result = {}     
+    bands = img.split()
+    for (i, bandname) in enumerate(img.getbands()) :
+        result[bandname] = 100.0 * (reduce(lambda current, next: current + (next[1] * next[0]), enumerate(bands[i].histogram()), 0) / 255.0) / nbpix
+    return result    
+    
 def getPercentCMYK(img, nbpix) :
     """Extracts the percents of Cyan, Magenta, Yellow, and Black from a picture.
      
@@ -50,22 +61,11 @@ def getPercentCMYK(img, nbpix) :
              "K" : 100.0 * (black / 255.0) / nbpix,
            }
         
-def getPercent(img, nbpix) :
-    """Extracts the percents per color component from a picture.
-      
-       Faster without Psyco on my own machine.
-    """
-    result = {}     
-    bands = img.split()
-    for (i, bandname) in enumerate(img.getbands()) :
-        result[bandname] = 100.0 * (reduce(lambda current, next: current + (next[1] * next[0]), enumerate(bands[i].histogram()), 0) / 255.0) / nbpix
-    return result    
-        
-def getPercentBlack(img, nbpix) :
+def getPercentBW(img, nbpix) :
     """Extracts the percents of Black from a picture, once converted to gray levels."""
     if img.mode != "L" :
         img = img.convert("L")
-    return { "L" : 100.0 - getPercent(img, nbpix)["L"] }
+    return { "B" : 100.0 - getPercent(img, nbpix)["L"] }
     
 def getPercentRGB(img, nbpix) :
     """Extracts the percents of Red, Green, Blue from a picture, once converted to RGB."""
@@ -81,26 +81,28 @@ def getPercentCMY(img, nbpix) :
              "Y" : 100.0 - result["B"],
            }
     
-def getPercents(fname) :
-    """Extracts the ink percentages from an image."""
-    try :
-        import psyco
-    except ImportError :    
-        pass
-    else :    
-        psyco.bind(getPercentCMYK)
+def getInkCoverage(fname, colorspace) :
+    """Returns a list of dictionnaries containing for each page, 
+       for each color component, the percent of ink coverage on 
+       that particular page.
+    """
     result = []
+    colorspace = colorspace.upper()
+    computation = globals()["getPercent%s" % colorspace]
+    if colorspace == "CMYK" : # faster with psyco on my machine
+        try :
+            import psyco
+        except ImportError :    
+            pass
+        else :    
+            psyco.bind(computation)
+    
     index = 0
     image = Image.open(fname)
     try :
         while 1 :
             nbpixels = image.size[0] * image.size[1]
-            result.append((image.size, \
-                           { "BLACK" : getPercentBlack(image, nbpixels), \
-                             "RGB" : getPercentRGB(image, nbpixels), \
-                             "CMY" : getPercentCMY(image, nbpixels), \
-                             "CMYK" : getPercentCMYK(image, nbpixels), \
-                           }))
+            result.append({ colorspace : computation(image, nbpixels) })
             index += 1              
             image.seek(index)
     except EOFError :        
@@ -109,4 +111,4 @@ def getPercents(fname) :
 
 if __name__ == "__main__" :
     # NB : length of result gives number of pages !
-    print getPercents(sys.argv[1])
+    print getInkCoverage(sys.argv[1], "CMYK")

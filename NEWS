@@ -21,6 +21,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 1.84alpha :
+  
+    - Added initial support for the computation of ink coverage.
+      See python analyzer.py --help for details. The ame command
+      line options work for pkpgcounter, although it's not
+      documented yet.
+    
   * 1.83 :
   
     - Fixed a famously known 'brown paper bag' issue with file type autodetection. 

@@ -176,41 +176,27 @@ class Parser(pdlparser.PDLParser) :
         self.copies = 1
         return self.natively() or self.throughGhostScript()
         
-    def throughTiffMultiPage24NC(self, dpi) :
+    def convertToTiffMultiPage24NC(self, fname, dpi) :
         """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
-           Returns percents of ink coverage and number of pages.
+           Writes TIFF datas to the outputfile file object.
         """   
-        self.logdebug("Converting input datas to TIFF...")
-        result = None    
-        self.infile.seek(0)
-        (handle, filename) = tempfile.mkstemp(".tmp", "pkpgcounter")    
-        os.close(handle)
-        command = 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%i -sOutputFile="%s" -' % (dpi, filename)
+        command = 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%i -sOutputFile="%s" -' % (dpi, fname)
+        child = popen2.Popen4(command)
         try :
-            child = popen2.Popen4(command)
-            try :
-                data = self.infile.read(pdlparser.MEGABYTE)    
-                while data :
-                    child.tochild.write(data)
-                    data = self.infile.read(pdlparser.MEGABYTE)
-                child.tochild.flush()
-                child.tochild.close()    
-            except (IOError, OSError), msg :    
-                raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
-                
-            child.fromchild.close()
-            try :
-                child.wait()
-            except OSError, msg :    
-                raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
-                
-            result = inkcoverage.getPercents(filename)    
-        finally :    
-            try :
-                os.remove(filename)
-            except OSError :    
-                pass
-        return result    
+            data = self.infile.read(pdlparser.MEGABYTE)    
+            while data :
+                child.tochild.write(data)
+                data = self.infile.read(pdlparser.MEGABYTE)
+            child.tochild.flush()
+            child.tochild.close()    
+        except (IOError, OSError), msg :    
+            raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
+            
+        child.fromchild.close()
+        try :
+            child.wait()
+        except OSError, msg :    
+            raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
         
 def test() :        
     """Test function."""

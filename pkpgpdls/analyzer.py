@@ -25,11 +25,12 @@ It defines the PDLAnalyzer class, which provides a generic way to parse
 input files, by automatically detecting the best parser to use."""
 
 import sys
+import os
 import tempfile
 
 import version, pdlparser, postscript, pdf, pcl345, pclxl, \
        escp2, dvi, tiff, ooo, zjstream
-
+import inkcoverage
 
 class AnalyzerOptions :
     """A class for use as the options parameter to PDLAnalyzer's constructor."""
@@ -70,6 +71,42 @@ class PDLAnalyzer :
             finally :    
                 self.closeFile()
             return size
+            
+    def getInkCoverage(self, colorspace=None, resolution=None) :
+        """Extracts the percents of ink coverage from the input file."""
+        result = None
+        cspace = colorspace or self.options.colorspace
+        res = resolution or self.options.resolution
+        if (not cspace) or (not res) :
+            raise ValueError, "Invalid colorspace (%s) or resolution (%s)" % (cspace, res)
+        self.openFile()
+        try :
+            pdlhandler = self.detectPDLHandler()
+        except pdlparser.PDLParserError, msg :    
+            self.closeFile()
+            raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
+        else :
+            try :
+                tiffname = self.convertToTiffMultiPage24NC(pdlhandler)
+                result = inkcoverage.getInkCoverage(tiffname, cspace)
+                try :
+                    os.remove(tiffname)
+                except OSError :
+                    sys.stderr.write("Problem when trying to remove temporary file %s\n" % tiffname)
+            finally :    
+                self.closeFile()
+        return result
+        
+    def convertToTiffMultiPage24NC(self, handler) :    
+        """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
+           Returns a temporary filename which names a file containing the TIFF datas.
+           The temporary file has to be deleted by the caller.
+        """   
+        self.infile.seek(0)
+        (handle, filename) = tempfile.mkstemp(".tmp", "pkpgcounter")    
+        os.close(handle)
+        handler.convertToTiffMultiPage24NC(filename, self.options.resolution)
+        return filename
         
     def openFile(self) :    
         """Opens the job's data stream for reading."""
@@ -179,8 +216,8 @@ def main() :
     parser.add_option("-c", "--colorspace", 
                             dest="colorspace",
                             type="cichoice",
-                            cichoices=["bw", "cmyk", "cmy", "all"],
-                            help="Activate the computation of ink usage, and defines the colorspace to use. Supported values are 'BW', 'CMYK', 'CMY' and 'ALL'.")
+                            cichoices=["bw", "rgb", "cmyk", "cmy"],
+                            help="Activate the computation of ink usage, and defines the colorspace to use. Supported values are 'BW', 'RGB', 'CMYK', and 'CMY'.")
     parser.add_option("-r", "--resolution", 
                             type="int", 
                             default=150, 
@@ -200,7 +237,12 @@ def main() :
             for arg in arguments :
                 try :
                     parser = PDLAnalyzer(arg, options)
-                    totalsize += parser.getJobSize()
+                    if not options.colorspace :
+                        totalsize += parser.getJobSize()
+                    else :
+                        result = parser.getInkCoverage()
+                        totalsize += len(result)
+                        print result
                 except (IOError, pdlparser.PDLParserError), msg :    
                     sys.stderr.write("ERROR: %s\n" % msg)
                     sys.stderr.flush()
