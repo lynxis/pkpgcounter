@@ -24,6 +24,7 @@
 """This modules implements a page counter for PDF documents."""
 
 import sys
+import popen2
 import re
 
 import pdlparser
@@ -102,6 +103,28 @@ class Parser(pdlparser.PDLParser) :
             count = len(newpageregexp.findall(content))
             pagecount += count
         return pagecount    
+        
+    def convertToTiffMultiPage24NC(self, fname, dpi) :
+        """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
+           Writes TIFF datas to the outputfile file object.
+        """   
+        command = 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%i -sOutputFile="%s" -' % (dpi, fname)
+        child = popen2.Popen4(command)
+        try :
+            data = self.infile.read(pdlparser.MEGABYTE)    
+            while data :
+                child.tochild.write(data)
+                data = self.infile.read(pdlparser.MEGABYTE)
+            child.tochild.flush()
+            child.tochild.close()    
+        except (IOError, OSError), msg :    
+            raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
+            
+        child.fromchild.close()
+        try :
+            child.wait()
+        except OSError, msg :    
+            raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
         
 def test() :        
     """Test function."""
