@@ -24,7 +24,7 @@ pkpgcounter News :
   * 1.84alpha :
   
     - Added initial support for the computation of ink coverage.
-      See python analyzer.py --help for details. The ame command
+      See python analyzer.py --help for details. The same command
       line options work for pkpgcounter, although it's not
       documented yet.
     
