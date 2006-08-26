@@ -32,6 +32,7 @@ import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for TIFF documents."""
+    totiffcommand = "cat >%(fname)s"
     def isValid(self) :        
         """Returns 1 if data is TIFF, else 0."""
         littleendian = (chr(0x49)*2) + chr(0x2a) + chr(0)
@@ -76,20 +77,6 @@ class Parser(pdlparser.PDLParser) :
             pass
         minfile.close()
         return pagecount
-        
-    def convertToTiffMultiPage24NC(self, fname, dpi) :
-        """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
-           Writes TIFF datas to the outputfile file object.
-        """   
-        # TODO : There's NO conversion done, so dpi is ignored, and TIFF files
-        # TODO : that can't be opened with PIL can't be used...
-        out = open(fname, "wb")
-        while 1 :
-            data = self.infile.read(pdlparser.MEGABYTE)
-            if not data :
-                break
-            out.write(data)
-        out.close()    
         
 def test() :        
     """Test function."""
