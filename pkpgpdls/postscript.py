@@ -33,6 +33,7 @@ import inkcoverage
 
 class Parser(pdlparser.PDLParser) :
     """A parser for PostScript documents."""
+    totiffcommand = 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -'
     def isValid(self) :    
         """Returns 1 if data is PostScript, else 0."""
         if self.firstblock.startswith("%!") or \
@@ -175,28 +176,6 @@ class Parser(pdlparser.PDLParser) :
         """Count pages in PostScript document."""
         self.copies = 1
         return self.natively() or self.throughGhostScript()
-        
-    def convertToTiffMultiPage24NC(self, fname, dpi) :
-        """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
-           Writes TIFF datas to the outputfile file object.
-        """   
-        command = 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%i -sOutputFile="%s" -' % (dpi, fname)
-        child = popen2.Popen4(command)
-        try :
-            data = self.infile.read(pdlparser.MEGABYTE)    
-            while data :
-                child.tochild.write(data)
-                data = self.infile.read(pdlparser.MEGABYTE)
-            child.tochild.flush()
-            child.tochild.close()    
-        except (IOError, OSError), msg :    
-            raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
-            
-        child.fromchild.close()
-        try :
-            child.wait()
-        except OSError, msg :    
-            raise pdlparser.PDLParserError, "Problem during conversion to TIFF : %s" % msg
         
 def test() :        
     """Test function."""

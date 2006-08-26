@@ -22,6 +22,7 @@
 """This module defines the base class for all Page Description Language parsers."""
 
 import sys
+import popen2
 
 KILOBYTE = 1024    
 MEGABYTE = 1024 * KILOBYTE    
@@ -39,6 +40,7 @@ class PDLParserError(Exception):
         
 class PDLParser :
     """Generic PDL parser."""
+    totiffcommand = None        # Default command to convert to TIFF
     def __init__(self, infile, debug=0, firstblock=None, lastblock=None) :
         """Initialize the generic parser."""
         self.infile = infile
@@ -86,4 +88,24 @@ class PDLParser :
         """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
            Writes TIFF datas to the file named by fname.
         """   
-        raise RuntimeError, "Not implemented !"
+        if self.totiffcommand :
+            child = popen2.Popen4(self.totiffcommand % locals())
+            try :
+                try :
+                    data = self.infile.read(MEGABYTE)    
+                    while data :
+                        child.tochild.write(data)
+                        data = self.infile.read(MEGABYTE)
+                    child.tochild.flush()
+                    child.tochild.close()    
+                except (IOError, OSError), msg :    
+                    raise PDLParserError, "Problem during conversion to TIFF : %s" % msg
+            finally :    
+                child.fromchild.close()
+                
+            try :
+                child.wait()
+            except OSError, msg :    
+                raise PDLParserError, "Problem during conversion to TIFF : %s" % msg
+        else :        
+            raise PDLParserError, "Impossible to compute ink coverage for this file format."
