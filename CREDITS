@@ -23,7 +23,11 @@ The following people helped the pkpgcounter project :
   
   
   - Eduardo Gielamo Oliveira & Rodolfo Broco Manin : initial PCL parser.
+  
   - Valcir C. Vargas : helped on PCL3GUI support.
+  
+  - Daniel Franklin : pkpgcounter's algorithm for the computation 
+    of ink coverage comes from Daniel's PrintBill project.
 
 
 ==============================================================

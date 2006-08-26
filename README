@@ -41,16 +41,31 @@ It can currently compute the number of pages in several types of files :
         
         - Zenographics ZjStream
         
-When launched, pkpgcounter prints on its standard output a single 
-integer representing the total number of pages in all the files 
-which filenames you've passed on the command line. 
+In addition to counting pages, pkpgcounter can also compute the        
+ink coverage for the following document types :
+
+        - PostScript (both DSC compliant and binary)
+        
+        - PDF
+        
+        - TIFF
+        
+Other formats will be supported in the future for ink coverage.        
+
+IMPORTANT : To compute ink coverage, pkpgcounter relies on both
+the Python Imaging Library (PIL) and GhostScript (gs) software
+to be installed.
+
+By default, when launched pkpgcounter prints on its standard output 
+a single integer representing the total number of pages in all the 
+files which filenames you've passed on the command line. 
 
 With no argument, or with a single dash in non-option arguments,
 pkpgcounter reads datas to parse from its standard input in addition
 to other non-options arguments which are treated as filenames
 representing the files to parse.
 
-In the future other possibilities will be added.        
+See pkpgcounter --help for details.
 
 =============================================================================
 
@@ -119,6 +134,16 @@ PCLCount would behave with the same input files.
 
 pkpgcounter's PCLXL (aka PCL6) parser doesn't originate from PCLCount, but 
 was written from scratch. 
+
+=============================================================================
+
+pkpgcounter's ink coverage algorithm for the CMYK colorspace is a 
+direct Python port from the PrintBill project by Daniel Franklin. 
+PrintBill is distributed under the terms of the GNU General Public 
+License of the Free Software Foundation, just like pkpgcounter. The 
+algorithms used for the other colorspaces are a complete rewrite of 
+PrintBill's algorithms using both Python and the Python Imaging 
+Library's facilities. 
 
 =============================================================================
 
