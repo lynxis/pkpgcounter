@@ -241,9 +241,15 @@ def main() :
                     if not options.colorspace :
                         totalsize += parser.getJobSize()
                     else :
-                        result = parser.getInkCoverage()
-                        totalsize += len(result)
-                        print result
+                        (cspace, pages) = parser.getInkCoverage()
+                        totalsize += len(pages)
+                        for page in pages :
+                            for k in cspace :
+                                try :
+                                    print "%s : %f      " % (k, page[k]),
+                                except KeyError :
+                                    pass
+                            print        
                 except (IOError, pdlparser.PDLParserError), msg :    
                     sys.stderr.write("ERROR: %s\n" % msg)
                     sys.stderr.flush()

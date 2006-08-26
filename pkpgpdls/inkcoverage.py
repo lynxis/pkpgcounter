@@ -102,12 +102,12 @@ def getInkCoverage(fname, colorspace) :
     try :
         while 1 :
             nbpixels = image.size[0] * image.size[1]
-            result.append({ colorspace : computation(image, nbpixels) })
+            result.append(computation(image, nbpixels))
             index += 1              
             image.seek(index)
     except EOFError :        
         pass
-    return result
+    return (colorspace, result)
 
 if __name__ == "__main__" :
     # NB : length of result gives number of pages !
