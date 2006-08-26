@@ -59,6 +59,7 @@ class PDLAnalyzer :
         
     def getJobSize(self) :    
         """Returns the job's size."""
+        size = 0
         self.openFile()
         try :
             pdlhandler = self.detectPDLHandler()
@@ -70,7 +71,7 @@ class PDLAnalyzer :
                 size = pdlhandler.getJobSize()
             finally :    
                 self.closeFile()
-            return size
+        return size
             
     def getInkCoverage(self, colorspace=None, resolution=None) :
         """Extracts the percents of ink coverage from the input file."""
