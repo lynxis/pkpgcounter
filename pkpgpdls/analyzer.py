@@ -220,14 +220,14 @@ def main() :
                             help="Activate the computation of ink usage, and defines the colorspace to use. Supported values are 'BW', 'RGB', 'CMYK', and 'CMY'.")
     parser.add_option("-r", "--resolution", 
                             type="int", 
-                            default=150, 
+                            default=72, 
                             dest="resolution",
-                            help="The resolution in DPI to use when checking ink usage. Lower resolution is faster. Default is 150.")
+                            help="The resolution in DPI to use when checking ink usage. Lower resolution is faster but less accurate. Default is 72 dpi.")
     (options, arguments) = parser.parse_args()
     if options.version :
         print "%s" % version.__version__
     elif not (72 <= options.resolution <= 1200) :    
-        sys.stderr.write("ERROR: the argument to the --resolution command line switch must be between 72 and 1200.\n")
+        sys.stderr.write("ERROR: the argument to the --resolution command line option must be between 72 and 1200.\n")
         sys.stderr.flush()
     else :
         if (not arguments) or ((not sys.stdin.isatty()) and ("-" not in arguments)) :
