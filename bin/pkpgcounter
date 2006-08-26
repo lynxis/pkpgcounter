@@ -37,8 +37,7 @@ and outputs the number of pages needed to print these documents.
 pkpgcounter can also compute the percent of ink coverage in different
 colorspaces for several file formats.
 
-pkpgcounter currently recognizes the following document formats for
-page counting :
+pkpgcounter currently recognizes the following document formats :
 
     * PostScript (both DSC compliant and binary)
     * PDF   
@@ -50,13 +49,8 @@ page counting :
     * OpenDocument (ISO/IEC DIS 26300)
     * Zenographics ZjStream
 
-pkpgcounter currently recognizes the following document formats
-for the computation of ink coverage :
-
-    * PostScript (both DSC compliant and binary)
-    * PDF   
-    * DVI
-    * TIFF (some TIFF files don't work)
+The three latter ones, as well as some TIFF documents, are currently 
+only supported in page counting mode. 
 
 command line usage :
 

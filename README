@@ -19,9 +19,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 =============================================================================
 
-pkpgcounter is a generic Page Description Language parser.
+pkpgcounter is a generic Page Description Language parser which can either
+compute the number of pages in a document, or compute the percent of
+ink coverage needed to print each page, in different colorspaces.
 
-It can currently compute the number of pages in several types of files :
+pkpgcounter currently recognizes the following document formats :
 
         - PostScript (both DSC compliant and binary)
         
@@ -31,28 +33,18 @@ It can currently compute the number of pages in several types of files :
         
         - PCLXL (aka PCL6)
         
-        - ESC/P2
-        
         - DVI
         
         - TIFF
+        
+        - ESC/P2
         
         - OpenDocument (ISO/IEC DIS 26300)
         
         - Zenographics ZjStream
         
-In addition to counting pages, pkpgcounter can also compute the        
-ink coverage for the following document types :
-
-        - PostScript (both DSC compliant and binary)
-        
-        - PDF
-        
-        - DVI 
-        
-        - TIFF (some TIFF files don't work)
-        
-Other formats will be supported in the future for ink coverage.        
+The three latter ones, as well as some TIFF documents, are currently 
+only supported in page counting mode. 
 
 By default, when launched pkpgcounter prints on its standard output 
 a single integer representing the total number of pages in all the 
@@ -63,7 +55,7 @@ pkpgcounter reads datas to parse from its standard input in addition
 to other non-options arguments which are treated as filenames
 representing the files to parse.
 
-See pkpgcounter --help for details.
+See pkpgcounter --help for details and examples.
 
 =============================================================================
 
@@ -105,12 +97,15 @@ Installation :
 IMPORTANT : To compute ink coverage, pkpgcounter relies on third party
 software which must be installed. These third party software are :
 
-        - GhostScript.
+        - GhostScript (this one is needed for all file formats).
         
-        - The Python Imaging Library (PIL).
+        - The Python Imaging Library, aka PIL (this one is needed for all
+          file formats).
         
+        - GhostPCL (this one is needed for the PCL3/4/5 and PCLXL formats)
+          
         - The LaTeX typesetting software, in particular the dvips command
-          (this one is only needed for the DVI file format).
+          (this one is needed for the DVI file format).
         
 =============================================================================
 
