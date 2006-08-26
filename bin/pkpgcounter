@@ -89,7 +89,7 @@ examples :
   $ pkpgcounter --colorspace bw --resolution 150 file1.ps
   
   Will output the percent of black ink needed on each page of
-  the file1.ps file.
+  the file1.ps file rendered at 150 dpi.
   
 %(__gplblurb__)s  
 

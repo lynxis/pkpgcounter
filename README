@@ -54,10 +54,6 @@ ink coverage for the following document types :
         
 Other formats will be supported in the future for ink coverage.        
 
-IMPORTANT : To compute ink coverage, pkpgcounter relies on both
-the Python Imaging Library (PIL) and GhostScript (gs) software
-to be installed.
-
 By default, when launched pkpgcounter prints on its standard output 
 a single integer representing the total number of pages in all the 
 files which filenames you've passed on the command line. 
@@ -98,8 +94,24 @@ Installation :
       pkpgcounter will display the total size in pages of all the files
       passed on the command line.
       
+      $ pkpgcounter --colorspace bw --resolution 150 file1.ps
+  
+      Will output the percent of black ink needed on each page of
+      the file1.ps file rendered at 150 dpi.
+      
   3 - That's all !    
   
+  
+IMPORTANT : To compute ink coverage, pkpgcounter relies on third party
+software which must be installed. These third party software are :
+
+        - GhostScript.
+        
+        - The Python Imaging Library (PIL).
+        
+        - The LaTeX typesetting software, in particular the dvips command
+          (this one is only needed for the DVI file format).
+        
 =============================================================================
 
 Troubleshooting : 
