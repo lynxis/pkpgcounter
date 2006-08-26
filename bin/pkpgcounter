@@ -34,7 +34,11 @@ pkpgcounter is a generic Page Description Language parser.
 pkpgcounter parses any number of input files and/or its standard input
 and outputs the number of pages needed to print these documents.
 
-pkpgcounter currently recognizes the following document formats :
+pkpgcounter can also compute the percent of ink coverage in different
+colorspaces for several file formats.
+
+pkpgcounter currently recognizes the following document formats for
+page counting :
 
     * PostScript (both DSC compliant and binary)
     * PDF   
@@ -46,16 +50,33 @@ pkpgcounter currently recognizes the following document formats :
     * OpenDocument (ISO/IEC DIS 26300)
     * Zenographics ZjStream
 
+pkpgcounter currently recognizes the following document formats
+for the computation of ink coverage :
+
+    * PostScript (both DSC compliant and binary)
+    * PDF   
+    * TIFF
+
 command line usage :
 
   pkpgcounter [options] [files]
 
 options :
 
-  -v | --version       Prints pkpgcounter's version number then exits.
-  -h | --help          Prints this message then exits.
+  -v | --version        Prints pkpgcounter's version number then exits.
+  -h | --help           Prints this message then exits.
   
-  -d | --debug         Activate debug mode. 
+  -d | --debug          Activate debug mode. 
+  
+  -cCOLORSPACE, --colorspace=COLORSPACE
+                        Activate the computation of ink usage, and defines the
+                        colorspace to use. Supported values are 'BW', 'RGB',
+                        'CMYK', and 'CMY'.
+                        
+  -rRESOLUTION, --resolution=RESOLUTION
+                        The resolution in DPI to use when checking ink usage.
+                        Lower resolution is faster but less accurate. Default
+                        is 72 dpi.
   
 examples :                              
 
@@ -63,6 +84,11 @@ examples :
   
   Will launch pkpgcounter and will output the total number of pages
   needed to print all the documents specified.
+  
+  $ pkpgcounter --colorspace bw --resolution 150 file1.ps
+  
+  Will output the percent of black ink needed on each page of
+  the file1.ps file.
   
 %(__gplblurb__)s  
 
