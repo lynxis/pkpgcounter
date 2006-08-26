@@ -55,7 +55,8 @@ for the computation of ink coverage :
 
     * PostScript (both DSC compliant and binary)
     * PDF   
-    * TIFF
+    * DVI
+    * TIFF (some TIFF files don't work)
 
 command line usage :
 

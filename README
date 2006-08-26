@@ -48,7 +48,9 @@ ink coverage for the following document types :
         
         - PDF
         
-        - TIFF
+        - DVI 
+        
+        - TIFF (some TIFF files don't work)
         
 Other formats will be supported in the future for ink coverage.        
 
