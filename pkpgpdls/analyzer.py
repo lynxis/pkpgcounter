@@ -234,6 +234,7 @@ def main() :
         if (not arguments) or ((not sys.stdin.isatty()) and ("-" not in arguments)) :
             arguments.append("-")
         totalsize = 0    
+        lines = []
         try :
             for arg in arguments :
                 try :
@@ -242,21 +243,24 @@ def main() :
                         totalsize += parser.getJobSize()
                     else :
                         (cspace, pages) = parser.getInkCoverage()
-                        totalsize += len(pages)
                         for page in pages :
-                            for k in cspace :
+                            lineparts = []
+                            for k in cspace : # NB : this way we preserve the order of the planes
                                 try :
-                                    print "%s : %f      " % (k, page[k]),
+                                    lineparts.append("%s : %f%%" % (k, page[k]))
                                 except KeyError :
                                     pass
-                            print        
+                            lines.append("      ".join(lineparts))     
                 except (IOError, pdlparser.PDLParserError), msg :    
                     sys.stderr.write("ERROR: %s\n" % msg)
                     sys.stderr.flush()
         except KeyboardInterrupt :            
             sys.stderr.write("WARN: Aborted at user's request.\n")
             sys.stderr.flush()
-        print "%s" % totalsize
+        if not options.colorspace :    
+            print "%s" % totalsize
+        else :    
+            print "\n".join(lines)
     
 if __name__ == "__main__" :    
     main()
