@@ -21,6 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 1.84 :
+  
+    - Computation of ink coverage now works and is documented.
+      The supported file formats are : PS, PDF, PCLXL, PCL3/4/5,
+      DVI and TIFF.
+      
   * 1.84alpha :
   
     - Added initial support for the computation of ink coverage.
