@@ -7,6 +7,10 @@ for device in cups lj250 lj4dithp ljet2p ljet4pjl ljetplus laserjet ljet3 ljet4 
         gs -dQUIET -dBATCH -dNOPAUSE -sOutputFile="testsuite.$device" -sDEVICE="$device" master2.ps ; 
     fi ;
     done
+    
+if ! [ -f "colors.pdf" ]  ; then
+   python ./runcolors.py ; 
+fi ;
 echo 
 
 echo -n "File master.ps should be 16 pages long, result is : "
@@ -15,4 +19,12 @@ python ../pkpgpdls/analyzer.py master2.ps
 echo "Analyzing testsuite..."
 for file in testsuite.* ; do
     echo -n "$file ===> " && python ../pkpgpdls/analyzer.py "$file" ;
+done    
+echo
+
+echo "Analyzing colors..."
+for cspace in BW RGB CMY CMYK ; do
+    echo "Colorspace : $cspace" ;
+    python ../pkpgpdls/analyzer.py --colorspace $cspace colors.pdf ;
+    echo ;
 done    
