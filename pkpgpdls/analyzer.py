@@ -247,7 +247,7 @@ def main() :
                             lineparts = []
                             for k in cspace : # NB : this way we preserve the order of the planes
                                 try :
-                                    lineparts.append("%s : %f%%" % (k, page[k]))
+                                    lineparts.append("%s : %s%%" % (k, ("%f" % page[k]).rjust(10)))
                                 except KeyError :
                                     pass
                             lines.append("      ".join(lineparts))     

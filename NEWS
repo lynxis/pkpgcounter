@@ -21,6 +21,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 1.85alpha :
+  
+    - Added test document and program to generate the test document
+      to check the functionning of the ink coverage computation algorithm.
+      
   * 1.84 :
   
     - Computation of ink coverage now works and is documented.
