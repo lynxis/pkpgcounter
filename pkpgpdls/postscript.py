@@ -167,15 +167,19 @@ class Parser(pdlparser.PDLParser) :
             pagecount += (copies - 1)
             self.logdebug("%s * page #%s" % (copies, pnum))
         self.logdebug("Internal parser said : %s pages" % pagecount)
-        
-        if notrust :    
-            pagecount = 0 # Let gs do counting
-        return pagecount
+        return (pagecount, notrust)
         
     def getJobSize(self) :    
         """Count pages in PostScript document."""
         self.copies = 1
-        return self.natively() or self.throughGhostScript()
+        (nbpages, notrust) = self.natively()
+        newnbpages = nbpages
+        if notrust :
+            try :
+                newnbpages = self.throughGhostScript()
+            except pdlparser.PDLParserError, msg :
+                self.logdebug(msg)
+        return max(nbpages, newnbpages)    
         
 def test() :        
     """Test function."""
