@@ -28,6 +28,9 @@ The following people helped the pkpgcounter project :
   
   - Daniel Franklin : pkpgcounter's algorithm for the computation 
     of ink coverage comes from Daniel's PrintBill project.
+    
+  - Aurélien Croc : reverse engineered Samsung QPDL and published  
+                    a language specification.
 
 
 ==============================================================

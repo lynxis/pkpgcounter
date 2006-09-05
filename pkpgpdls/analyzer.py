@@ -29,7 +29,7 @@ import os
 import tempfile
 
 import version, pdlparser, postscript, pdf, pcl345, pclxl, \
-       escp2, dvi, tiff, ooo, zjstream
+       escp2, dvi, tiff, ooo, zjstream, qpdl
 import inkcoverage
 
 class AnalyzerOptions :
@@ -166,9 +166,11 @@ class PDLAnalyzer :
         if not firstblock :
             raise pdlparser.PDLParserError, "input file %s is empty !" % str(self.filename)
         else :    
+            # IMPORTANT : the order is important below. FIXME.
             for module in (postscript, \
                            pclxl, \
                            pdf, \
+                           qpdl, \
                            pcl345, \
                            escp2, \
                            dvi, \
