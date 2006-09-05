@@ -100,7 +100,7 @@ class Parser(pdlparser.PDLParser) :
             minfile.close()
             
         if startpagecount != endpagecount :    
-            sys.stderr.write("ERROR : Incorrect ZjStream datas.\n")
+            sys.stderr.write("ERROR: Incorrect ZjStream datas.\n")
         return max(startpagecount, endpagecount)
         
 def test() :        
