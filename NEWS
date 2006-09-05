@@ -21,6 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 1.85 :
+  
+    - Added support for Samsung QPDL (aka SPL2) file format in page
+      counting mode, thanks to the work done by Aurélien Croc on
+      reverse engineering the file format.
+      
   * 1.85alpha :
   
     - Added test document and program to generate the test document

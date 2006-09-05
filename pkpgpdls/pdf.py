@@ -44,15 +44,15 @@ class Parser(pdlparser.PDLParser) :
     """A parser for PDF documents."""
     totiffcommand = 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -'
     def isValid(self) :    
-        """Returns 1 if data is PDF, else 0."""
+        """Returns True if data is PDF, else False."""
         if self.firstblock.startswith("%PDF-") or \
            self.firstblock.startswith("\033%-12345X%PDF-") or \
            ((self.firstblock[:128].find("\033%-12345X") != -1) and (self.firstblock.upper().find("LANGUAGE=PDF") != -1)) or \
            (self.firstblock.find("%PDF-") != -1) :
             self.logdebug("DEBUG: Input file is in the PDF format.")
-            return 1
+            return True
         else :    
-            return 0
+            return False
         
     def getJobSize(self) :    
         """Counts pages in a PDF document."""

@@ -31,19 +31,19 @@ import pdlparser
 class Parser(pdlparser.PDLParser) :
     """A parser for OpenOffice.org documents."""
     def isValid(self) :        
-        """Returns 1 if data is DVI, else 0."""
+        """Returns True if data is OpenDocument, else False."""
         if self.firstblock[:2] == "PK" :
             try :
                 self.archive = zipfile.ZipFile(self.infile)
                 self.contentxml = self.archive.read("content.xml")
                 self.metaxml = self.archive.read("meta.xml")
             except :    
-                return 0
+                return False
             else :
-                self.logdebug("DEBUG: Input file is in the OpenOffice.org format.")
-                return 1
+                self.logdebug("DEBUG: Input file is in the OpenDocument (ISO/IEC DIS 26300) format.")
+                return True
         else :    
-            return 0
+            return False
             
     def getJobSize(self) :
         """Counts pages in an OpenOffice.org document.

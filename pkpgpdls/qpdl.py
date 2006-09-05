@@ -72,14 +72,14 @@ class Parser(pdlparser.PDLParser) :
                    }
             
     def isValid(self) :    
-        """Returns 1 if data is PCLXL aka PCL6, else 0."""
+        """Returns True if data is QPDL aka SPL2, else False."""
         if ((self.firstblock[:128].find("\033%-12345X") != -1) and \
              ((self.firstblock.find("LANGUAGE=QPDL") != -1) or \
               (self.firstblock.find("LANGUAGE = QPDL") != -1))) :
             self.logdebug("DEBUG: Input file is in the QPDL (aka SPL2) format.")
-            return 1
+            return True
         else :    
-            return 0
+            return False
             
     def beginPage(self, nextpos) :
         """Indicates the beginning of a new page, and extracts media information."""

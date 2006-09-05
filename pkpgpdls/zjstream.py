@@ -33,17 +33,17 @@ import pdlparser
 class Parser(pdlparser.PDLParser) :
     """A parser for ZjStream documents."""
     def isValid(self) :    
-        """Returns 1 if data is ZjStream, else 0."""
+        """Returns True if data is ZjStream, else False."""
         if self.firstblock[:4] == "ZJZJ" :
             self.logdebug("DEBUG: Input file is in the Zenographics ZjStream (little endian) format.")
             self.littleEndian()
-            return 1
+            return True
         elif self.firstblock[:4] == "JZJZ" :    
             self.logdebug("DEBUG: Input file is in the Zenographics ZjStream (big endian) format.")
             self.bigEndian()
-            return 1
+            return True
         else :    
-            return 0
+            return False
         
     def littleEndian(self) :
         """Toggles to little endianness."""

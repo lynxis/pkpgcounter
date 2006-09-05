@@ -35,7 +35,7 @@ class Parser(pdlparser.PDLParser) :
     """A parser for PostScript documents."""
     totiffcommand = 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -'
     def isValid(self) :    
-        """Returns 1 if data is PostScript, else 0."""
+        """Returns True if data is PostScript, else False."""
         if self.firstblock.startswith("%!") or \
            self.firstblock.startswith("\004%!") or \
            self.firstblock.startswith("\033%-12345X%!PS") or \
@@ -45,9 +45,9 @@ class Parser(pdlparser.PDLParser) :
               (self.firstblock.find("LANGUAGE = Postscript") != -1))) or \
               (self.firstblock.find("%!PS-Adobe") != -1) :
             self.logdebug("DEBUG: Input file is in the PostScript format.")
-            return 1
+            return True
         else :    
-            return 0
+            return False
         
     def throughGhostScript(self) :
         """Get the count through GhostScript, useful for non-DSC compliant PS files."""

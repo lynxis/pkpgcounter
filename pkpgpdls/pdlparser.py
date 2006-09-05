@@ -77,7 +77,7 @@ class PDLParser :
             sys.stderr.write("%s\n" % message)
             
     def isValid(self) :    
-        """Returns 1 if data is in the expected format, else 0."""
+        """Returns True if data is in the expected format, else False."""
         raise RuntimeError, "Not implemented !"
         
     def getJobSize(self) :    

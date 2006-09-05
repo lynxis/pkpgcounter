@@ -34,15 +34,15 @@ class Parser(pdlparser.PDLParser) :
     """A parser for DVI documents."""
     totiffcommand = 'cat >%(fname)s && dvips -q -o - %(fname)s | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -'
     def isValid(self) :        
-        """Returns 1 if data is DVI, else 0."""
+        """Returns True if data is DVI, else False."""
         try :
             if (ord(self.firstblock[0]) == 0xf7) and (ord(self.lastblock[-1]) == 0xdf) :
                 self.logdebug("DEBUG: Input file is in the DVI format.")
-                return 1
+                return True
             else :    
-                return 0
+                return False
         except IndexError :          
-            return 0
+            return False
             
     def getJobSize(self) :
         """Counts pages in a DVI document.

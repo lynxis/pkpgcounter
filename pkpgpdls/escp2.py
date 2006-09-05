@@ -30,15 +30,15 @@ import pdlparser
 class Parser(pdlparser.PDLParser) :
     """A parser for ESC/P2 documents."""
     def isValid(self) :        
-        """Returns 1 if data is ESC/P2, else 0."""
+        """Returns True if data is ESC/P2, else False."""
         if self.firstblock.startswith("\033@") or \
            self.firstblock.startswith("\033*") or \
            self.firstblock.startswith("\n\033@") or \
            self.firstblock.startswith("\0\0\0\033\1@EJL") : # ESC/P Raster ??? Seen on Stylus Photo 1284
             self.logdebug("DEBUG: Input file is in the ESC/P2 format.")
-            return 1
+            return True
         else :    
-            return 0
+            return False
             
     def getJobSize(self) :    
         """Counts pages in an ESC/P2 document."""

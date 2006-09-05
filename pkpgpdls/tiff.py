@@ -34,14 +34,14 @@ class Parser(pdlparser.PDLParser) :
     """A parser for TIFF documents."""
     totiffcommand = "cat >%(fname)s"
     def isValid(self) :        
-        """Returns 1 if data is TIFF, else 0."""
+        """Returns True if data is TIFF, else False."""
         littleendian = (chr(0x49)*2) + chr(0x2a) + chr(0)
         bigendian = (chr(0x4d)*2) + chr(0) + chr(0x2a)
         if self.firstblock[:4] in (littleendian, bigendian) :
             self.logdebug("DEBUG: Input file is in the TIFF format.")
-            return 1
+            return True
         else :    
-            return 0
+            return False
     
     def getJobSize(self) :
         """Counts pages in a TIFF document.
