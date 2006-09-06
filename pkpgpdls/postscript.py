@@ -138,6 +138,15 @@ class Parser(pdlparser.PDLParser) :
                 else :    
                     if number > self.pages[pagecount]["copies"] :
                         self.pages[pagecount]["copies"] = number
+            elif line.startswith("{ pop 1 dict dup /NumCopies ") :
+                # handle # of copies set by firefox/kprinter/cups (alternate syntax)
+                try :
+                    number = int(line.strip().split()[6])
+                except :
+                    pass
+                else :
+                    if number > self.pages[pagecount]["copies"] :
+                        self.pages[pagecount]["copies"] = number
             elif line.startswith("/languagelevel where{pop languagelevel}{1}ifelse 2 ge{1 dict dup/NumCopies") :
                 try :
                     number = int(previousline.strip()[2:])
