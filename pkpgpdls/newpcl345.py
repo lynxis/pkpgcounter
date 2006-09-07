@@ -31,6 +31,7 @@ from struct import unpack
 import pdlparser
 import pjl
 
+FORMFEED = chr(12)
 ESCAPE = chr(27)
 
 class Parser(pdlparser.PDLParser) :
@@ -309,8 +310,8 @@ class Parser(pdlparser.PDLParser) :
         self.endgfx = []
         
         tags = [ lambda : None] * 256
-        tags[0x0c] = self.endPage
-        tags[0x1b] = self.escape
+        tags[FORMFEED] = self.endPage
+        tags[ESCAPE] = self.escape
         
         self.esctags = [ lambda : None ] * 256
         self.esctags[ord('%')] = self.escPercent
