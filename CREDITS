@@ -32,6 +32,8 @@ The following people helped the pkpgcounter project :
   - Aurélien Croc : reverse engineered Samsung QPDL and published  
                     a language specification.
 
+  - Franck (?) : sent a path to improve the PostScript parser when
+                 the PS code generated several copies.
 
 ==============================================================
 
