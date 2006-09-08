@@ -103,10 +103,17 @@ class Parser(pdlparser.PDLParser) :
         dic = pages.setdefault(number, { "copies" : 1, "mediasource" : "Main", "mediasize" : "Default", "mediatype" : "Plain", "orientation" : "Portrait", "escaped" : "", "duplex": 0})
         dic[attribute] = value
         
+    def readByte(self) :    
+        """Reads a byte from the input stream."""
+        tag = ord(self.minfile[self.pos])
+        self.pos += 1
+        self.logdebug("BYTE %02x" % tag)
+        return tag
+        
     def endPage(self) :    
         """Handle the FF marker."""
+        self.logdebug("FORMFEED %i" % self.pagecount)
         self.pagecount += 1
-        self.logdebug("ENDPAGE %i" % self.pagecount)
         
     def escPercent(self) :    
         """Handles the ESC% sequence."""
@@ -116,9 +123,7 @@ class Parser(pdlparser.PDLParser) :
         
     def handleTag(self, tagtable) :    
         """Handles tags."""
-        tag = ord(self.minfile[self.pos])
-        self.pos += 1
-        tagtable[tag]()
+        tagtable[self.readByte()]()
         
     def escape(self) :    
         """Handles the ESC character."""
@@ -264,10 +269,10 @@ class Parser(pdlparser.PDLParser) :
         sign = 1
         value = None
         while 1 :
-            char = self.minfile[self.pos]
+            char = chr(self.readByte())
             if char == ESCAPE :
+                self.pos -= 1 # Adjust position
                 return (None, None)
-            self.pos += 1
             if char == '-' :
                 sign = -1
             elif not char.isdigit() :
@@ -310,8 +315,8 @@ class Parser(pdlparser.PDLParser) :
         self.endgfx = []
         
         tags = [ lambda : None] * 256
-        tags[FORMFEED] = self.endPage
-        tags[ESCAPE] = self.escape
+        tags[ord(FORMFEED)] = self.endPage
+        tags[ord(ESCAPE)] = self.escape
         
         self.esctags = [ lambda : None ] * 256
         self.esctags[ord('%')] = self.escPercent
@@ -336,9 +341,8 @@ class Parser(pdlparser.PDLParser) :
         try :
             try :
                 while 1 :
-                    tag = ord(minfile[self.pos])
-                    self.logdebug("%08x ===> %02x" % (self.pos, tag))
-                    self.pos += 1
+                    tag = self.readByte()
+                    self.logdebug("%08x ===> %02x" % (self.pos-1, tag))
                     tags[tag]()
             except IndexError : # EOF ?            
                 pass
