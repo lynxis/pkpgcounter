@@ -31,8 +31,10 @@ from struct import unpack
 import pdlparser
 import pjl
 
-FORMFEED = chr(12)
-ESCAPE = chr(27)
+NUL = chr(0x00)
+FORMFEED = chr(0x0c)
+ESCAPE = chr(0x1b)
+ASCIILIMIT = chr(0x80)
 
 class Parser(pdlparser.PDLParser) :
     """A parser for PCL3, PCL4, PCL5 documents."""
@@ -98,28 +100,67 @@ class Parser(pdlparser.PDLParser) :
         else :    
             return False
         
-    def setPageDict(self, pages, number, attribute, value) :
+    def setPageDict(self, attribute, value) :
         """Initializes a page dictionnary."""
-        dic = pages.setdefault(number, { "copies" : 1, "mediasource" : "Main", "mediasize" : "Default", "mediatype" : "Plain", "orientation" : "Portrait", "escaped" : "", "duplex": 0})
+        dic = self.pages.setdefault(self.pagecount, { "copies" : 1, "mediasource" : "Main", "mediasize" : "Default", "mediatype" : "Plain", "orientation" : "Portrait", "escaped" : "", "duplex": 0})
         dic[attribute] = value
         
     def readByte(self) :    
         """Reads a byte from the input stream."""
         tag = ord(self.minfile[self.pos])
-        #self.logdebug("%08x  ===>  %02x" % (self.pos, tag))
+        if tag == 0x0c :
+            self.logdebug("%08x ====> %02x %02x %02x %02x" %
+                 (self.pos,
+                 ord(self.minfile[self.pos-2]),
+                 ord(self.minfile[self.pos-1]),
+                 ord(self.minfile[self.pos-0]),
+                 ord(self.minfile[self.pos+1])))
         self.pos += 1
         return tag
         
     def endPage(self) :    
         """Handle the FF marker."""
-        self.logdebug("FORMFEED %i" % self.pagecount)
+        self.logdebug("FORMFEED %i at %08x" % (self.pagecount, self.pos-1))
         self.pagecount += 1
         
     def escPercent(self) :    
         """Handles the ESC% sequence."""
         if self.minfile[self.pos : self.pos+7] == r"-12345X" :
-            self.logdebug("Generic ESCAPE sequence at %08x" % self.pos)
+            #self.logdebug("Generic ESCAPE sequence at %08x" % self.pos)
             self.pos += 7
+            buffer = []
+            quotes = 0
+            char = chr(self.readByte())
+            while ((char < ASCIILIMIT) or (quotes % 2)) and (char not in (FORMFEED, ESCAPE, NUL)) :  
+                buffer.append(char)
+                if char == '"' :
+                    quotes += 1
+                char = chr(self.readByte())
+            self.setPageDict("escaped", "".join(buffer))
+            #self.logdebug("ESCAPED : %s" % "".join(buffer))
+            self.pos -= 1   # Adjust position
+        else :    
+            while 1 :
+                (value, end) = self.getInteger()
+                if end == 'B' :
+                    self.enterHPGL2()
+                    while self.minfile[self.pos] != ESCAPE :
+                        self.pos += 1
+                    self.pos -= 1    
+                    return 
+                elif end == 'A' :    
+                    self.exitHPGL2()
+                    return
+        
+    def enterHPGL2(self) :    
+        """Enters HPGL2 mode."""
+        self.logdebug("ENTERHPGL2 %08x" % self.pos)
+        self.hpgl2 = True
+        
+    def exitHPGL2(self) :    
+        """Exits HPGL2 mode."""
+        self.logdebug("EXITHPGL2 %08x" % self.pos)
+        self.hpgl2 = False
         
     def handleTag(self, tagtable) :    
         """Handles tags."""
@@ -164,22 +205,27 @@ class Parser(pdlparser.PDLParser) :
             if end in ('h', 'H') :
                 mediasource = self.mediasources.get(value, str(value))
                 self.mediasourcesvalues.append(mediasource)
-                self.logdebug("MEDIASOURCE %s" % mediasource)
+                self.setPageDict("mediasource", mediasource)
+                #self.logdebug("MEDIASOURCE %s" % mediasource)
             elif end in ('a', 'A') :
                 mediasize = self.mediasizes.get(value, str(value))
                 self.mediasizesvalues.append(mediasize)
-                self.logdebug("MEDIASIZE %s" % mediasize)
+                self.setPageDict("mediasize", mediasize)
+                #self.logdebug("MEDIASIZE %s" % mediasize)
             elif end in ('o', 'O') :
                 orientation = self.orientations.get(value, str(value))
                 self.orientationsvalues.append(orientation)
-                self.logdebug("ORIENTATION %s" % orientation)
+                self.setPageDict("orientation", orientation)
+                #self.logdebug("ORIENTATION %s" % orientation)
             elif end in ('m', 'M') :
                 mediatype = self.mediatypes.get(value, str(value))
                 self.mediatypesvalues.append(mediatype)
-                self.logdebug("MEDIATYPE %s" % mediatype)
+                self.setPageDict("mediatype", mediatype)
+                #self.logdebug("MEDIATYPE %s" % mediatype)
             elif end == 'X' :
                 self.copies.append(value)
-                self.logdebug("COPIES %i" % value)
+                self.setPageDict("copies", value)
+                #self.logdebug("COPIES %i" % value)
                 
     def escAmpa(self) :    
         """Handles the ESC&a sequence."""
@@ -188,8 +234,9 @@ class Parser(pdlparser.PDLParser) :
             if value is None :
                 return
             if end == 'G' :    
-                self.logdebug("BACKSIDES %i" % value)
+                #self.logdebug("BACKSIDES %i" % value)
                 self.backsides.append(value)
+                self.setPageDict("duplex", value)
                 
     def escAmpb(self) :    
         """Handles the ESC&b sequence."""
@@ -271,10 +318,11 @@ class Parser(pdlparser.PDLParser) :
                     return
                 elif end in ('B', 'C') :        
                     #self.logdebug("EndGFX")
-                    if not self.startgfx :
-                        self.logdebug("EndGFX found before StartGFX, ignored.")
-                    else :    
+                    if self.startgfx :
                         self.endgfx.append(1)
+                    else :    
+                        #self.logdebug("EndGFX found before StartGFX, ignored.")
+                        pass
             if end == 'A' and (0 <= value <= 3) :
                 #self.logdebug("StartGFX %i" % value)
                 self.startgfx.append(value)
@@ -302,7 +350,7 @@ class Parser(pdlparser.PDLParser) :
         value = None
         while 1 :
             char = chr(self.readByte())
-            if char in (ESCAPE, FORMFEED) :
+            if char in (NUL, ESCAPE, FORMFEED, ASCIILIMIT) :
                 self.pos -= 1 # Adjust position
                 return (None, None)
             if char == '-' :
@@ -314,6 +362,11 @@ class Parser(pdlparser.PDLParser) :
                     return (value, char)
             else :    
                 value = ((value or 0) * 10) + int(char)    
+        
+    def skipByte(self) :    
+        """Skips a byte."""
+        #self.logdebug("SKIPBYTE %08x ===> %02x" % (self.pos, ord(self.minfile[self.pos])))
+        self.pos += 1
         
     def getJobSize(self) :     
         """Count pages in a PCL5 document.
@@ -335,6 +388,7 @@ class Parser(pdlparser.PDLParser) :
         """
         infileno = self.infile.fileno()
         self.minfile = minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
+        self.pages = {}
         self.pagecount = 0
         self.resets = 0
         self.backsides = []
@@ -345,10 +399,12 @@ class Parser(pdlparser.PDLParser) :
         self.mediatypesvalues = []
         self.startgfx = []
         self.endgfx = []
+        self.hpgl2 = False
         
         tags = [ lambda : None] * 256
         tags[ord(FORMFEED)] = self.endPage
         tags[ord(ESCAPE)] = self.escape
+        tags[ord(ASCIILIMIT)] = self.skipByte
         
         self.esctags = [ lambda : None ] * 256
         self.esctags[ord('%')] = self.escPercent
