@@ -151,6 +151,8 @@ class Parser(pdlparser.PDLParser) :
                 elif end == 'A' :    
                     self.exitHPGL2()
                     return
+                elif end is None :    
+                    return
         
     def enterHPGL2(self) :    
         """Enters HPGL2 mode."""
