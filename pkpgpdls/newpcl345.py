@@ -363,6 +363,20 @@ class Parser(pdlparser.PDLParser) :
         #self.logdebug("SKIPBYTE %08x ===> %02x" % (self.pos, ord(self.minfile[self.pos])))
         self.pos += 1
         
+    def handleImageRunner(self) :    
+        """Handles Canon ImageRunner tags."""
+        tag = self.readByte()
+        if tag == ord(self.imagerunnermarker1[-1]) :
+            oldpos = self.pos-2
+            codop = self.minfile[self.pos:self.pos+2]
+            length = unpack(">H", minfile[pos+6:pos+8])[0]
+            self.pos += 18
+            if codop != self.imagerunnermarker2 :
+                self.pos += length
+            self.logdebug("IMAGERUNNERTAG SKIP %i AT %08x" % (self.pos-oldpos, self.pos))
+        else :
+            self.pos -= 1 # Adjust position
+                
     def getJobSize(self) :     
         """Count pages in a PCL5 document.
          
@@ -395,11 +409,15 @@ class Parser(pdlparser.PDLParser) :
         self.startgfx = []
         self.endgfx = []
         self.hpgl2 = False
+        self.imagerunnermarker1 = chr(0xcd) + chr(0xca) # Markers for Canon ImageRunner printers
+        self.imagerunnermarker2 = chr(0x10) + chr(0x02)
+        self.isimagerunner = (minfile[:2] == self.imagerunnermarker1)
         
         tags = [ lambda : None] * 256
         tags[ord(FORMFEED)] = self.endPage
         tags[ord(ESCAPE)] = self.escape
         tags[ord(ASCIILIMIT)] = self.skipByte
+        tags[ord(self.imagerunnermarker1[0])] = self.handleImageRunner
         
         self.esctags = [ lambda : None ] * 256
         self.esctags[ord('%')] = self.escPercent
@@ -466,8 +484,11 @@ class Parser(pdlparser.PDLParser) :
         self.logdebug("EndGfx : \t\t\t%s" % len(self.endgfx))
         self.logdebug("BackSides : \t\t\t%s" % self.backsides)
         self.logdebug("NbBackSides : \t\t\t%i" % len(self.backsides))
+        self.logdebug("IsImageRunner : \t\t\t%s" % self.isimagerunner)
         
-        if len(self.startgfx) == len(self.endgfx) == 0 :
+        if self.isimagerunner :
+            self.pagecount += 1      # ImageRunner adjustment
+        elif len(self.startgfx) == len(self.endgfx) == 0 :
             if self.resets % 2 :
                 if nborientations == self.pagecount + 1 :
                     self.logdebug("Adjusting PageCount : +1")
