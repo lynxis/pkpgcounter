@@ -108,19 +108,12 @@ class Parser(pdlparser.PDLParser) :
     def readByte(self) :    
         """Reads a byte from the input stream."""
         tag = ord(self.minfile[self.pos])
-        if tag == 0x0c :
-            self.logdebug("%08x ====> %02x %02x %02x %02x" %
-                 (self.pos,
-                 ord(self.minfile[self.pos-2]),
-                 ord(self.minfile[self.pos-1]),
-                 ord(self.minfile[self.pos-0]),
-                 ord(self.minfile[self.pos+1])))
         self.pos += 1
         return tag
         
     def endPage(self) :    
         """Handle the FF marker."""
-        self.logdebug("FORMFEED %i at %08x" % (self.pagecount, self.pos-1))
+        #self.logdebug("FORMFEED %i at %08x" % (self.pagecount, self.pos-1))
         self.pagecount += 1
         
     def escPercent(self) :    
@@ -156,12 +149,12 @@ class Parser(pdlparser.PDLParser) :
         
     def enterHPGL2(self) :    
         """Enters HPGL2 mode."""
-        self.logdebug("ENTERHPGL2 %08x" % self.pos)
+        #self.logdebug("ENTERHPGL2 %08x" % self.pos)
         self.hpgl2 = True
         
     def exitHPGL2(self) :    
         """Exits HPGL2 mode."""
-        self.logdebug("EXITHPGL2 %08x" % self.pos)
+        #self.logdebug("EXITHPGL2 %08x" % self.pos)
         self.hpgl2 = False
         
     def handleTag(self, tagtable) :    
@@ -467,12 +460,21 @@ class Parser(pdlparser.PDLParser) :
         self.logdebug("MediaSourcesDefault : \t\t%i" % nbmediasourcesdefault)
         self.logdebug("MediaSourcesNOTDefault : \t%i" % (len(self.mediasourcesvalues) - nbmediasourcesdefault))
         self.logdebug("Orientations : \t\t\t%s" % self.orientationsvalues)
-        self.logdebug("NbOrientations : \t\t\t%i" % len(self.orientationsvalues))
+        nborientations = len(self.orientationsvalues)
+        self.logdebug("NbOrientations : \t\t\t%i" % nborientations)
         self.logdebug("StartGfx : \t\t\t%s" % len(self.startgfx))
         self.logdebug("EndGfx : \t\t\t%s" % len(self.endgfx))
         self.logdebug("BackSides : \t\t\t%s" % self.backsides)
         self.logdebug("NbBackSides : \t\t\t%i" % len(self.backsides))
         
+        if len(self.startgfx) == len(self.endgfx) == 0 :
+            if self.resets % 2 :
+                if nborientations == self.pagecount + 1 :
+                    self.logdebug("Adjusting PageCount : +1")
+                    self.pagecount += 1
+                elif nborientations == self.pagecount - 1 :
+                    self.logdebug("Adjusting PageCount : -1")
+                    self.pagecount -= 1
         return self.pagecount or nbmediasourcesdefault
         
 def test() :        
