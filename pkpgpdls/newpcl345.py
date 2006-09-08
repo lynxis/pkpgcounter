@@ -496,7 +496,96 @@ class Parser(pdlparser.PDLParser) :
                 elif nborientations == self.pagecount - 1 :
                     self.logdebug("Adjusting PageCount : -1")
                     self.pagecount -= 1
-        return self.pagecount or nbmediasourcesdefault
+                    
+        self.pagecount = self.pagecount or nbmediasourcesdefault
+        
+        
+        defaultpjlcopies = 1    
+        defaultduplexmode = "Simplex"
+        defaultpapersize = ""
+        oldpjlcopies = -1
+        oldduplexmode = ""
+        oldpapersize = ""
+        for pnum in range(self.pagecount) :
+            # if no number of copies defined, take the preceding one else the one set before any page else 1.
+            page = self.pages.get(pnum, self.pages.get(pnum - 1, self.pages.get(0, { "copies" : 1, "mediasource" : "Main", "mediasize" : "Default", "mediatype" : "Plain", "orientation" : "Portrait", "escaped" : "", "duplex": 0})))
+            pjlstuff = page["escaped"]
+            if pjlstuff :
+                pjlparser = pjl.PJLParser(pjlstuff)
+                nbdefaultcopies = int(pjlparser.default_variables.get("COPIES", -1))
+                nbcopies = int(pjlparser.environment_variables.get("COPIES", -1))
+                nbdefaultqty = int(pjlparser.default_variables.get("QTY", -1))
+                nbqty = int(pjlparser.environment_variables.get("QTY", -1))
+                if nbdefaultcopies > -1 :
+                    defaultpjlcopies = nbdefaultcopies
+                if nbdefaultqty > -1 :
+                    defaultpjlcopies = nbdefaultqty
+                if nbcopies > -1 :
+                    pjlcopies = nbcopies
+                elif nbqty > -1 :
+                    pjlcopies = nbqty
+                else :
+                    if oldpjlcopies == -1 :    
+                        pjlcopies = defaultpjlcopies
+                    else :    
+                        pjlcopies = oldpjlcopies    
+                if page["duplex"] :        
+                    duplexmode = "Duplex"
+                else :    
+                    defaultdm = pjlparser.default_variables.get("DUPLEX", "")
+                    if defaultdm :
+                        if defaultdm.upper() == "ON" :
+                            defaultduplexmode = "Duplex"
+                        else :    
+                            defaultduplexmode = "Simplex"
+                    envdm = pjlparser.environment_variables.get("DUPLEX", "")
+                    if envdm :
+                        if envdm.upper() == "ON" :
+                            duplexmode = "Duplex"
+                        else :    
+                            duplexmode = "Simplex"
+                    else :        
+                        duplexmode = oldduplexmode or defaultduplexmode
+                defaultps = pjlparser.default_variables.get("PAPER", "")
+                if defaultps :
+                    defaultpapersize = defaultps
+                envps = pjlparser.environment_variables.get("PAPER", "")
+                if envps :
+                    papersize = envps
+                else :    
+                    if not oldpapersize :
+                        papersize = defaultpapersize
+                    else :    
+                        papersize = oldpapersize
+            else :        
+                if oldpjlcopies == -1 :
+                    pjlcopies = defaultpjlcopies
+                else :    
+                    pjlcopies = oldpjlcopies
+                
+                duplexmode = (page["duplex"] and "Duplex") or oldduplexmode or defaultduplexmode
+                if not oldpapersize :    
+                    papersize = defaultpapersize
+                else :    
+                    papersize = oldpapersize
+                papersize = oldpapersize or page["mediasize"]
+            if page["mediasize"] != "Default" :
+                papersize = page["mediasize"]
+            if not duplexmode :    
+                duplexmode = oldduplexmode or defaultduplexmode
+            oldpjlcopies = pjlcopies    
+            oldduplexmode = duplexmode
+            oldpapersize = papersize
+            copies = pjlcopies * page["copies"]        
+            self.pagecount += (copies - 1)
+            self.logdebug("%s*%s*%s*%s*%s*%s*BW" % (copies, \
+                                              page["mediatype"], \
+                                              papersize, \
+                                              page["orientation"], \
+                                              page["mediasource"], \
+                                              duplexmode))
+        
+        return self.pagecount
         
 def test() :        
     """Test function."""
