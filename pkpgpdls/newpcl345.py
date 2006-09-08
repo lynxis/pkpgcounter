@@ -106,8 +106,8 @@ class Parser(pdlparser.PDLParser) :
     def readByte(self) :    
         """Reads a byte from the input stream."""
         tag = ord(self.minfile[self.pos])
+        #self.logdebug("%08x  ===>  %02x" % (self.pos, tag))
         self.pos += 1
-        self.logdebug("BYTE %02x" % tag)
         return tag
         
     def endPage(self) :    
@@ -127,37 +127,36 @@ class Parser(pdlparser.PDLParser) :
         
     def escape(self) :    
         """Handles the ESC character."""
-        self.logdebug("ESCAPE")
+        #self.logdebug("ESCAPE")
         self.handleTag(self.esctags)
         
     def escAmp(self) :    
         """Handles the ESC& sequence."""
-        self.logdebug("AMP")
+        #self.logdebug("AMP")
         self.handleTag(self.escamptags)
         
     def escStar(self) :    
         """Handles the ESC* sequence."""
-        self.logdebug("STAR")
+        #self.logdebug("STAR")
         self.handleTag(self.escstartags)
         
     def escLeftPar(self) :    
         """Handles the ESC( sequence."""
-        self.logdebug("LEFTPAR")
+        #self.logdebug("LEFTPAR")
         self.handleTag(self.escleftpartags)
         
     def escRightPar(self) :    
         """Handles the ESC( sequence."""
-        self.logdebug("RIGHTPAR")
+        #self.logdebug("RIGHTPAR")
         self.handleTag(self.escrightpartags)
         
     def escE(self) :    
         """Handles the ESCE sequence."""
-        self.logdebug("RESET")
+        #self.logdebug("RESET")
         self.resets += 1
         
     def escAmpl(self) :    
         """Handles the ESC&l sequence."""
-        self.logdebug("l")
         while 1 :
             (value, end) = self.getInteger()
             if value is None :
@@ -181,96 +180,129 @@ class Parser(pdlparser.PDLParser) :
             elif end == 'X' :
                 self.copies.append(value)
                 self.logdebug("COPIES %i" % value)
-            elif end == 'L' :    
-                self.logdebug("ESC&l%iL" % value)
+                
+    def escAmpa(self) :    
+        """Handles the ESC&a sequence."""
+        while 1 :
+            (value, end) = self.getInteger()
+            if value is None :
+                return
+            if end == 'G' :    
+                self.logdebug("BACKSIDES %i" % value)
+                self.backsides.append(value)
+                
+    def escAmpb(self) :    
+        """Handles the ESC&b sequence."""
+        while 1 :
+            (value, end) = self.getInteger()
+            if value is None :
+                return
+            if end == 'W' :    
+                self.pos += value
+                #self.logdebug("SKIPTO %08x" % self.pos)
+                
+    def escAmpn(self) :    
+        """Handles the ESC&n sequence."""
+        while 1 :
+            (value, end) = self.getInteger()
+            if value is None :
+                return
+            if end == 'W' :    
+                self.pos += value
+                #self.logdebug("SKIPTO %08x" % self.pos)
+                
+    def escAmpp(self) :    
+        """Handles the ESC&p sequence."""
+        while 1 :
+            (value, end) = self.getInteger()
+            if value is None :
+                return
+            if end == 'X' :    
+                self.pos += value
+                #self.logdebug("SKIPTO %08x" % self.pos)
+                
+    def escAmpu(self) :    
+        """Handles the ESC&u sequence."""
+        while 1 :
+            (value, end) = self.getInteger()
+            if value is None :
+                return
                 
     def escStarb(self) :    
         """Handles the ESC*b sequence."""
-        self.logdebug("b")
         while 1 :
             (value, end) = self.getInteger()
-            self.logdebug("%s === %s" % (value, end))
             if (end is None) and (value is None) :
                 return
             if end in ('V', 'W', 'v', 'w') :    
                 self.pos += (value or 0)
-                self.logdebug("SKIPTO %08x" % self.pos)
+                #self.logdebug("SKIPTO %08x" % self.pos)
+                
+    def escStarcgilmv(self) :    
+        """Handles the ESC*c, ESC*g, ESC*i, ESC*l, ESC*m, ESC*v sequences."""
+        while 1 :
+            (value, end) = self.getInteger()
+            if value is None :
+                return
+            if end == 'W' :    
+                self.pos += value
+                #self.logdebug("SKIPTO %08x" % self.pos)
                 
     def escStaro(self) :    
         """Handles the ESC*o sequence."""
-        self.logdebug("o")
         while 1 :
             (value, end) = self.getInteger()
             if value is None :
                 return
-            if end == 'M' :
-                self.logdebug("ESC*o%iM" % value)
                 
     def escStarp(self) :    
         """Handles the ESC*p sequence."""
-        self.logdebug("p")
         while 1 :
             (value, end) = self.getInteger()
             if value is None :
                 return
-            if end in ('X', 'Y') :    
-                self.logdebug("ESC*p%i%s" % (value, end))
                 
     def escStarr(self) :    
         """Handles the ESC*r sequence."""
-        self.logdebug("r")
         while 1 :
             (value, end) = self.getInteger()
             if value is None :
                 if end is None :
                     return
-                elif end == 'b' :
-                    if self.minfile[self.pos] == 'C' :
-                        self.logdebug("Looks like it's PCL3.")
-                        self.ispcl3 = True
-                        self.pos += 1
-                elif end == 'C' :        
-                    self.logdebug("EndGFX")
+                elif end in ('B', 'C') :        
+                    #self.logdebug("EndGFX")
                     if not self.startgfx :
                         self.logdebug("EndGFX found before StartGFX, ignored.")
                     else :    
                         self.endgfx.append(1)
             if end == 'A' and (0 <= value <= 3) :
-                self.logdebug("StartGFX %i" % value)
+                #self.logdebug("StartGFX %i" % value)
                 self.startgfx.append(value)
-            elif end == 'U' :    
-                self.logdebug("ESC*r%iU" % value)
-            elif end == 'S' :    
-                self.logdebug("ESC*r%iS" % value)
                 
     def escStart(self) :    
         """Handles the ESC*t sequence."""
-        self.logdebug("t")
         while 1 :
             (value, end) = self.getInteger()
             if value is None :
                 return
-            if end == 'R' :    
-                self.logdebug("ESC*t%iR" % value)
-                
-    def escAmpu(self) :    
-        """Handles the ESC&u sequence."""
-        self.logdebug("u")
-        while 1 :
-            (value, end) = self.getInteger()
-            if value is None :
-                return
-            if end == 'D' :    
-                self.logdebug("ESC&u%iD" % value)
-                
         
+    def escRightorLeftParsf(self) :    
+        """Handles the ESC(s, ESC)s, ESC(f sequences."""
+        while 1 :
+            (value, end) = self.getInteger()
+            if value is None :
+                return
+            if end == 'W' :    
+                self.pos += value
+                #self.logdebug("SKIPTO %08x" % self.pos)
+                
     def getInteger(self) :    
         """Returns an integer value and the end character."""
         sign = 1
         value = None
         while 1 :
             char = chr(self.readByte())
-            if char == ESCAPE :
+            if char in (ESCAPE, FORMFEED) :
                 self.pos -= 1 # Adjust position
                 return (None, None)
             if char == '-' :
@@ -303,9 +335,9 @@ class Parser(pdlparser.PDLParser) :
         """
         infileno = self.infile.fileno()
         self.minfile = minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
-        self.ispcl3 = False
         self.pagecount = 0
         self.resets = 0
+        self.backsides = []
         self.copies = []
         self.mediasourcesvalues = []
         self.mediasizesvalues = []
@@ -327,7 +359,11 @@ class Parser(pdlparser.PDLParser) :
         self.esctags[ord('E')] = self.escE
         
         self.escamptags = [lambda : None ] * 256
+        self.escamptags[ord('a')] = self.escAmpa
+        self.escamptags[ord('b')] = self.escAmpb
         self.escamptags[ord('l')] = self.escAmpl
+        self.escamptags[ord('n')] = self.escAmpn
+        self.escamptags[ord('p')] = self.escAmpp
         self.escamptags[ord('u')] = self.escAmpu
         
         self.escstartags = [ lambda : None ] * 256
@@ -336,396 +372,50 @@ class Parser(pdlparser.PDLParser) :
         self.escstartags[ord('p')] = self.escStarp
         self.escstartags[ord('r')] = self.escStarr
         self.escstartags[ord('t')] = self.escStart
+        self.escstartags[ord('c')] = self.escStarcgilmv
+        self.escstartags[ord('g')] = self.escStarcgilmv
+        self.escstartags[ord('i')] = self.escStarcgilmv
+        self.escstartags[ord('l')] = self.escStarcgilmv
+        self.escstartags[ord('m')] = self.escStarcgilmv
+        self.escstartags[ord('v')] = self.escStarcgilmv
+        
+        self.escleftpartags = [ lambda : None ] * 256
+        self.escleftpartags[ord('s')] = self.escRightorLeftParsf
+        self.escleftpartags[ord('f')] = self.escRightorLeftParsf
+        
+        self.escrightpartags = [ lambda : None ] * 256
+        self.escrightpartags[ord('s')] = self.escRightorLeftParsf
         
         self.pos = 0
         try :
             try :
                 while 1 :
-                    tag = self.readByte()
-                    self.logdebug("%08x ===> %02x" % (self.pos-1, tag))
-                    tags[tag]()
+                    tags[self.readByte()]()
             except IndexError : # EOF ?            
                 pass
         finally :
             self.minfile.close()
         
-            self.logdebug("Pagecount : \t\t%i" % self.pagecount)
-            self.logdebug("Resets : \t\t%i" % self.resets)
-            self.logdebug("Copies : \t\t%s" % self.copies)
-            self.logdebug("MediaTypes : \t\t%s" % self.mediatypesvalues)
-            self.logdebug("MediaSizes : \t\t%s" % self.mediasizesvalues)
-            self.logdebug("MediaSources : \t\t%s" % self.mediasourcesvalues)
-            self.logdebug("Orientations : \t\t%s" % self.orientationsvalues)
-            self.logdebug("StartGfx : \t\t%s" % len(self.startgfx))
-            self.logdebug("EndGfx : \t\t%s" % len(self.endgfx))
+        self.logdebug("Pagecount : \t\t\t%i" % self.pagecount)
+        self.logdebug("Resets : \t\t\t%i" % self.resets)
+        self.logdebug("Copies : \t\t\t%s" % self.copies)
+        self.logdebug("NbCopiesMarks : \t\t%i" % len(self.copies))
+        self.logdebug("MediaTypes : \t\t\t%s" % self.mediatypesvalues)
+        self.logdebug("NbMediaTypes : \t\t\t%i" % len(self.mediatypesvalues))
+        self.logdebug("MediaSizes : \t\t\t%s" % self.mediasizesvalues)
+        self.logdebug("NbMediaSizes : \t\t\t%i" % len(self.mediasizesvalues))
+        self.logdebug("MediaSources : \t\t\t%s" % self.mediasourcesvalues)
+        nbmediasourcesdefault = len([m for m in self.mediasourcesvalues if m == 'Default'])
+        self.logdebug("MediaSourcesDefault : \t\t%i" % nbmediasourcesdefault)
+        self.logdebug("MediaSourcesNOTDefault : \t%i" % (len(self.mediasourcesvalues) - nbmediasourcesdefault))
+        self.logdebug("Orientations : \t\t\t%s" % self.orientationsvalues)
+        self.logdebug("NbOrientations : \t\t\t%i" % len(self.orientationsvalues))
+        self.logdebug("StartGfx : \t\t\t%s" % len(self.startgfx))
+        self.logdebug("EndGfx : \t\t\t%s" % len(self.endgfx))
+        self.logdebug("BackSides : \t\t\t%s" % self.backsides)
+        self.logdebug("NbBackSides : \t\t\t%i" % len(self.backsides))
         
-        return self.pagecount
-        
-        
-        
-        """
-        tagsends = { "&n" : "W", 
-                     "&b" : "W", 
-                     "*i" : "W", 
-                     "*l" : "W", 
-                     "*m" : "W", 
-                     "*v" : "W", 
-                     "*c" : "W", 
-                     "(f" : "W", 
-                     "(s" : "W", 
-                     ")s" : "W", 
-                     "&p" : "X", 
-                     # "&l" : "XHAOM",  # treated specially
-                     "&a" : "G", # TODO : 0 means next side, 1 front side, 2 back side
-                     "*g" : "W",
-                     "*r" : "sbABC",
-                     "*t" : "R",
-                     # "*b" : "VW", # treated specially because it occurs very often
-                   }  
-        irmarker = chr(0xcd) + chr(0xca) # Marker for Canon ImageRunner printers
-        irmarker2 = chr(0x10) + chr(0x02)
-        wasirmarker = 0
-        hasirmarker = (minfile[:2] == (irmarker))
-        pagecount = resets = ejects = backsides = startgfx = endgfx = 0
-        starb = ampl = ispcl3 = escstart = 0
-        mediasourcecount = mediasizecount = orientationcount = mediatypecount = 0
-        tag = None
-        endmark = chr(0x1b) + chr(0x0c) + chr(0x00) 
-        asciilimit = chr(0x80)
-        pages = {}
-        pos = 0
-        try :
-            try :
-                while 1 :
-                    if hasirmarker and (minfile[pos:pos+2] == irmarker) :
-                        codop = minfile[pos+2:pos+4]
-                        # self.logdebug("Marker at 0x%08x     (%s)" % (pos, wasirmarker))
-                        length = unpack(">H", minfile[pos+8:pos+10])[0]
-                        pos += 20
-                        if codop != irmarker2 :
-                            pos += length
-                        wasirmarker = 1    
-                    else :        
-                        wasirmarker = 0
-                        elif char == "\033" :    
-                            starb = ampl = 0
-                            if minfile[pos : pos+8] == r"%-12345X" :
-                                endpos = pos + 9
-                                quotes = 0
-                                while (minfile[endpos] not in endmark) and \
-                                      ((minfile[endpos] < asciilimit) or (quotes % 2)) :
-                                    if minfile[endpos] == '"' :
-                                        quotes += 1
-                                    endpos += 1
-                                self.setPageDict(pages, pagecount, "escaped", minfile[pos : endpos])
-                                pos += (endpos - pos)
-                            else :
-                                #
-                                #     <ESC>*b###y#m###v###w... -> PCL3 raster graphics
-                                #     <ESC>*b###W -> Start of a raster data row/block
-                                #     <ESC>*b###V -> Start of a raster data plane
-                                #     <ESC>*c###W -> Start of a user defined pattern
-                                #     <ESC>*i###W -> Start of a viewing illuminant block
-                                #     <ESC>*l###W -> Start of a color lookup table
-                                #     <ESC>*m###W -> Start of a download dither matrix block
-                                #     <ESC>*v###W -> Start of a configure image data block
-                                #     <ESC>*r1A -> Start Gfx 
-                                #     <ESC>(s###W -> Start of a characters description block
-                                #     <ESC>)s###W -> Start of a fonts description block
-                                #     <ESC>(f###W -> Start of a symbol set block
-                                #     <ESC>&b###W -> Start of configuration data block
-                                #     <ESC>&l###X -> Number of copies for current page
-                                #     <ESC>&n###W -> Starts an alphanumeric string ID block
-                                #     <ESC>&p###X -> Start of a non printable characters block
-                                #     <ESC>&a2G -> Back side when duplex mode as generated by rastertohp
-                                #     <ESC>*g###W -> Needed for planes in PCL3 output
-                                #     <ESC>&l###H (or only 0 ?) -> Eject if NumPlanes > 1, as generated by rastertohp. Also defines mediasource
-                                #     <ESC>&l###A -> mediasize
-                                #     <ESC>&l###O -> orientation
-                                #     <ESC>&l###M -> mediatype
-                                #     <ESC>*t###R -> gfx resolution
-                                #
-                                tagstart = minfile[pos] ; pos += 1
-                                if tagstart in "E9=YZ" : # one byte PCL tag
-                                    if tagstart == "E" :
-                                        resets += 1
-                                    continue             # skip to next tag
-                                tag = tagstart + minfile[pos] ; pos += 1
-                                if tag == "*b" : 
-                                    starb = 1
-                                    tagend = "VW"
-                                elif tag == "&l" :    
-                                    ampl = 1
-                                    tagend = "XHAOM"
-                                else :    
-                                    try :
-                                        tagend = tagsends[tag]
-                                    except KeyError :    
-                                        continue # Unsupported PCL tag
-                                # Now read the numeric argument
-                                size = 0
-                                while 1 :
-                                    char = minfile[pos] ; pos += 1
-                                    if not char.isdigit() :
-                                        break
-                                    size = (size * 10) + int(char)    
-                                if char in tagend :    
-                                    if tag == "&l" :
-                                        if char == "X" : 
-                                            self.setPageDict(pages, pagecount, "copies", size)
-                                        elif char == "H" :
-                                            self.setPageDict(pages, pagecount, "mediasource", self.mediasources.get(size, str(size)))
-                                            mediasourcecount += 1
-                                            ejects += 1 
-                                        elif char == "A" :
-                                            self.setPageDict(pages, pagecount, "mediasize", self.mediasizes.get(size, str(size)))
-                                            mediasizecount += 1
-                                        elif char == "O" :
-                                            self.setPageDict(pages, pagecount, "orientation", self.orientations.get(size, str(size)))
-                                            orientationcount += 1
-                                        elif char == "M" :
-                                            self.setPageDict(pages, pagecount, "mediatype", self.mediatypes.get(size, str(size)))
-                                            mediatypecount += 1
-                                    elif tag == "*r" :
-                                        # Special tests for PCL3
-                                        if (char == "s") and size :
-                                            while 1 :
-                                                char = minfile[pos] ; pos += 1
-                                                if char == "A" :
-                                                    break
-                                        elif (char == "b") and (minfile[pos] == "C") and not size :
-                                            ispcl3 = 1 # Certainely a PCL3 file
-                                        startgfx += (char == "A") and (minfile[pos - 2] in ("0", "1", "2", "3")) # Start Gfx
-                                        endgfx += (not size) and (char in ("C", "B")) # End Gfx
-                                    elif tag == "*t" :    
-                                        escstart += 1
-                                    elif (tag == "&a") and (size == 2) :
-                                        # We are on the backside, so mark current page as duplex
-                                        self.setPageDict(pages, pagecount, "duplex", 1)
-                                        backsides += 1      # Back side in duplex mode
-                                    else :    
-                                        # we just ignore the block.
-                                        if tag == "&n" : 
-                                            # we have to take care of the operation id byte
-                                            # which is before the string itself
-                                            size += 1
-                                        pos += size    
-                        else :                            
-                            if starb :
-                                # special handling of PCL3 in which 
-                                # *b introduces combined ESCape sequences
-                                size = 0
-                                while 1 :
-                                    char = minfile[pos] ; pos += 1
-                                    if not char.isdigit() :
-                                        break
-                                    size = (size * 10) + int(char)    
-                                if char in ("w", "v") :    
-                                    ispcl3 = 1  # certainely a PCL3 document
-                                    pos += size - 1
-                                elif char in ("y", "m") :    
-                                    ispcl3 = 1  # certainely a PCL3 document
-                                    pos -= 1    # fix position : we were ahead
-                            elif ampl :        
-                                # special handling of PCL3 in which 
-                                # &l introduces combined ESCape sequences
-                                size = 0
-                                while 1 :
-                                    char = minfile[pos] ; pos += 1
-                                    if not char.isdigit() :
-                                        break
-                                    size = (size * 10) + int(char)    
-                                if char in ("a", "o", "h", "m") :    
-                                    ispcl3 = 1  # certainely a PCL3 document
-                                    pos -= 1    # fix position : we were ahead
-                                    if char == "h" :
-                                        self.setPageDict(pages, pagecount, "mediasource", self.mediasources.get(size, str(size)))
-                                        mediasourcecount += 1
-                                    elif char == "a" :
-                                        self.setPageDict(pages, pagecount, "mediasize", self.mediasizes.get(size, str(size)))
-                                        mediasizecount += 1
-                                    elif char == "o" :
-                                        self.setPageDict(pages, pagecount, "orientation", self.orientations.get(size, str(size)))
-                                        orientationcount += 1
-                                    elif char == "m" :
-                                        self.setPageDict(pages, pagecount, "mediatype", self.mediatypes.get(size, str(size)))
-                                        mediatypecount += 1
-            except IndexError : # EOF ?
-                pass
-        finally :
-            minfile.close()
-                            
-        # if pagecount is still 0, we will use the number
-        # of resets instead of the number of form feed characters.
-        # but the number of resets is always at least 2 with a valid
-        # pcl file : one at the very start and one at the very end
-        # of the job's data. So we substract 2 from the number of
-        # resets. And since on our test data we needed to substract
-        # 1 more, we finally substract 3, and will test several
-        # PCL files with this. If resets < 2, then the file is
-        # probably not a valid PCL file, so we use 0
-        
-        if self.debug :
-            sys.stderr.write("pagecount : %s\n" % pagecount)
-            sys.stderr.write("resets : %s\n" % resets)
-            sys.stderr.write("ejects : %s\n" % ejects)
-            sys.stderr.write("backsides : %s\n" % backsides)
-            sys.stderr.write("startgfx : %s\n" % startgfx)
-            sys.stderr.write("endgfx : %s\n" % endgfx)
-            sys.stderr.write("mediasourcecount : %s\n" % mediasourcecount)
-            sys.stderr.write("mediasizecount : %s\n" % mediasizecount)
-            sys.stderr.write("orientationcount : %s\n" % orientationcount)
-            sys.stderr.write("mediatypecount : %s\n" % mediatypecount)
-            sys.stderr.write("escstart : %s\n" % escstart)
-            sys.stderr.write("hasirmarker : %s\n" % hasirmarker)
-        
-        if hasirmarker :
-            self.logdebug("Rule #20 (probably a Canon ImageRunner)")
-            pagecount += 1
-        elif (orientationcount == (pagecount - 1)) and (resets == 1) :
-            if resets == ejects == startgfx == mediasourcecount == escstart == 1 :
-                self.logdebug("Rule #19")
-            else :    
-                self.logdebug("Rule #1")
-                pagecount -= 1
-        elif pagecount and (pagecount == orientationcount) :
-            self.logdebug("Rule #2")
-        elif resets == ejects == mediasourcecount == mediasizecount == escstart == 1 :
-            #if ((startgfx and endgfx) and (startgfx != endgfx)) or (startgfx == endgfx == 0) :
-            if (startgfx and endgfx) or (startgfx == endgfx == 0) :
-                self.logdebug("Rule #3")
-                pagecount = orientationcount
-            elif (endgfx and not startgfx) and (pagecount > orientationcount) :    
-                self.logdebug("Rule #4")
-                pagecount = orientationcount
-            else :     
-                self.logdebug("Rule #5")
-                pagecount += 1
-        elif (ejects == mediasourcecount == orientationcount) and (startgfx == endgfx) :     
-            if (resets == 2) and (orientationcount == (pagecount - 1)) and (orientationcount > 1) :
-                self.logdebug("Rule #6")
-                pagecount = orientationcount
-        elif pagecount == mediasourcecount == escstart : 
-            self.logdebug("Rule #7")
-        elif resets == startgfx == endgfx == mediasizecount == orientationcount == escstart == 1 :     
-            self.logdebug("Rule #8")
-        elif resets == startgfx == endgfx == (pagecount - 1) :    
-            self.logdebug("Rule #9")
-        elif (not startgfx) and (not endgfx) :
-            self.logdebug("Rule #10")
-        elif (resets == 2) and (startgfx == endgfx) and (mediasourcecount == 1) :
-            if orientationcount == (pagecount - 1) :
-                self.logdebug("Rule #11")
-                pagecount = orientationcount
-            elif not pagecount :    
-                self.logdebug("Rule #17")
-                pagecount = ejects
-        elif (resets == 1) and (startgfx == endgfx) and (mediasourcecount == 0) :
-            if (startgfx > 1) and (startgfx != (pagecount - 1)) :
-                self.logdebug("Rule #12")
-                pagecount -= 1
-            else :    
-                self.logdebug("Rule #18")
-        elif startgfx == endgfx :    
-            self.logdebug("Rule #13")
-            pagecount = startgfx
-        elif startgfx == (endgfx - 1) :    
-            self.logdebug("Rule #14")
-            pagecount = startgfx
-        elif (startgfx == 1) and not endgfx :    
-            self.logdebug("Rule #15")
-            pass
-        else :    
-            self.logdebug("Rule #16")
-            pagecount = abs(startgfx - endgfx)
-            
-        defaultpjlcopies = 1    
-        defaultduplexmode = "Simplex"
-        defaultpapersize = ""
-        oldpjlcopies = -1
-        oldduplexmode = ""
-        oldpapersize = ""
-        for pnum in range(pagecount) :
-            # if no number of copies defined, take the preceding one else the one set before any page else 1.
-            page = pages.get(pnum, pages.get(pnum - 1, pages.get(0, { "copies" : 1, "mediasource" : "Main", "mediasize" : "Default", "mediatype" : "Plain", "orientation" : "Portrait", "escaped" : "", "duplex": 0})))
-            pjlstuff = page["escaped"]
-            if pjlstuff :
-                pjlparser = pjl.PJLParser(pjlstuff)
-                nbdefaultcopies = int(pjlparser.default_variables.get("COPIES", -1))
-                nbcopies = int(pjlparser.environment_variables.get("COPIES", -1))
-                nbdefaultqty = int(pjlparser.default_variables.get("QTY", -1))
-                nbqty = int(pjlparser.environment_variables.get("QTY", -1))
-                if nbdefaultcopies > -1 :
-                    defaultpjlcopies = nbdefaultcopies
-                if nbdefaultqty > -1 :
-                    defaultpjlcopies = nbdefaultqty
-                if nbcopies > -1 :
-                    pjlcopies = nbcopies
-                elif nbqty > -1 :
-                    pjlcopies = nbqty
-                else :
-                    if oldpjlcopies == -1 :    
-                        pjlcopies = defaultpjlcopies
-                    else :    
-                        pjlcopies = oldpjlcopies    
-                if page["duplex"] :        
-                    duplexmode = "Duplex"
-                else :    
-                    defaultdm = pjlparser.default_variables.get("DUPLEX", "")
-                    if defaultdm :
-                        if defaultdm.upper() == "ON" :
-                            defaultduplexmode = "Duplex"
-                        else :    
-                            defaultduplexmode = "Simplex"
-                    envdm = pjlparser.environment_variables.get("DUPLEX", "")
-                    if envdm :
-                        if envdm.upper() == "ON" :
-                            duplexmode = "Duplex"
-                        else :    
-                            duplexmode = "Simplex"
-                    else :        
-                        duplexmode = oldduplexmode or defaultduplexmode
-                defaultps = pjlparser.default_variables.get("PAPER", "")
-                if defaultps :
-                    defaultpapersize = defaultps
-                envps = pjlparser.environment_variables.get("PAPER", "")
-                if envps :
-                    papersize = envps
-                else :    
-                    if not oldpapersize :
-                        papersize = defaultpapersize
-                    else :    
-                        papersize = oldpapersize
-            else :        
-                if oldpjlcopies == -1 :
-                    pjlcopies = defaultpjlcopies
-                else :    
-                    pjlcopies = oldpjlcopies
-                
-                duplexmode = (page["duplex"] and "Duplex") or oldduplexmode or defaultduplexmode
-                if not oldpapersize :    
-                    papersize = defaultpapersize
-                else :    
-                    papersize = oldpapersize
-                papersize = oldpapersize or page["mediasize"]
-            if page["mediasize"] != "Default" :
-                papersize = page["mediasize"]
-            if not duplexmode :    
-                duplexmode = oldduplexmode or defaultduplexmode
-            oldpjlcopies = pjlcopies    
-            oldduplexmode = duplexmode
-            oldpapersize = papersize
-            copies = pjlcopies * page["copies"]        
-            pagecount += (copies - 1)
-            self.logdebug("%s*%s*%s*%s*%s*%s*BW" % (copies, \
-                                              page["mediatype"], \
-                                              papersize, \
-                                              page["orientation"], \
-                                              page["mediasource"], \
-                                              duplexmode))
-                
-        return pagecount
-        """
+        return self.pagecount or nbmediasourcesdefault
         
 def test() :        
     """Test function."""
