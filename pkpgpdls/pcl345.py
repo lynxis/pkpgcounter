@@ -235,26 +235,6 @@ class Parser(pdlparser.PDLParser) :
                 self.backsides.append(value)
                 self.setPageDict("duplex", value)
                 
-    def escAmpb(self) :    
-        """Handles the ESC&b sequence."""
-        while 1 :
-            (value, end) = self.getInteger()
-            if value is None :
-                return
-            if end == 'W' :    
-                self.pos += value
-                #self.logdebug("SKIPTO %08x" % self.pos)
-                
-    def escAmpn(self) :    
-        """Handles the ESC&n sequence."""
-        while 1 :
-            (value, end) = self.getInteger()
-            if value is None :
-                return
-            if end == 'W' :    
-                self.pos += value
-                #self.logdebug("SKIPTO %08x" % self.pos)
-                
     def escAmpp(self) :    
         """Handles the ESC&p sequence."""
         while 1 :
@@ -265,13 +245,6 @@ class Parser(pdlparser.PDLParser) :
                 self.pos += value
                 #self.logdebug("SKIPTO %08x" % self.pos)
                 
-    def escAmpu(self) :    
-        """Handles the ESC&u sequence."""
-        while 1 :
-            (value, end) = self.getInteger()
-            if value is None :
-                return
-                
     def escStarb(self) :    
         """Handles the ESC*b sequence."""
         while 1 :
@@ -281,30 +254,6 @@ class Parser(pdlparser.PDLParser) :
             if end in ('V', 'W', 'v', 'w') :    
                 self.pos += (value or 0)
                 #self.logdebug("SKIPTO %08x" % self.pos)
-                
-    def escStarcgilmv(self) :    
-        """Handles the ESC*c, ESC*g, ESC*i, ESC*l, ESC*m, ESC*v sequences."""
-        while 1 :
-            (value, end) = self.getInteger()
-            if value is None :
-                return
-            if end == 'W' :    
-                self.pos += value
-                #self.logdebug("SKIPTO %08x" % self.pos)
-                
-    def escStaro(self) :    
-        """Handles the ESC*o sequence."""
-        while 1 :
-            (value, end) = self.getInteger()
-            if value is None :
-                return
-                
-    def escStarp(self) :    
-        """Handles the ESC*p sequence."""
-        while 1 :
-            (value, end) = self.getInteger()
-            if value is None :
-                return
                 
     def escStarr(self) :    
         """Handles the ESC*r sequence."""
@@ -324,15 +273,15 @@ class Parser(pdlparser.PDLParser) :
                 #self.logdebug("StartGFX %i" % value)
                 self.startgfx.append(value)
                 
-    def escStart(self) :    
-        """Handles the ESC*t sequence."""
+    def escStaroptAmpu(self) :    
+        """Handles the ESC*o ESC*p ESC*t and ESC&u sequences."""
         while 1 :
             (value, end) = self.getInteger()
             if value is None :
                 return
         
-    def escRightorLeftParsf(self) :    
-        """Handles the ESC(s, ESC)s, ESC(f sequences."""
+    def escSkipSomethingW(self) :    
+        """Handles the ESC???###W sequences."""
         while 1 :
             (value, end) = self.getInteger()
             if value is None :
@@ -431,31 +380,31 @@ class Parser(pdlparser.PDLParser) :
         
         self.escamptags = [lambda : None ] * 256
         self.escamptags[ord('a')] = self.escAmpa
-        self.escamptags[ord('b')] = self.escAmpb
         self.escamptags[ord('l')] = self.escAmpl
-        self.escamptags[ord('n')] = self.escAmpn
         self.escamptags[ord('p')] = self.escAmpp
-        self.escamptags[ord('u')] = self.escAmpu
+        self.escamptags[ord('b')] = self.escSkipSomethingW
+        self.escamptags[ord('n')] = self.escSkipSomethingW
+        self.escamptags[ord('u')] = self.escStaroptAmpu
         
         self.escstartags = [ lambda : None ] * 256
         self.escstartags[ord('b')] = self.escStarb
-        self.escstartags[ord('o')] = self.escStaro
-        self.escstartags[ord('p')] = self.escStarp
         self.escstartags[ord('r')] = self.escStarr
-        self.escstartags[ord('t')] = self.escStart
-        self.escstartags[ord('c')] = self.escStarcgilmv
-        self.escstartags[ord('g')] = self.escStarcgilmv
-        self.escstartags[ord('i')] = self.escStarcgilmv
-        self.escstartags[ord('l')] = self.escStarcgilmv
-        self.escstartags[ord('m')] = self.escStarcgilmv
-        self.escstartags[ord('v')] = self.escStarcgilmv
+        self.escstartags[ord('o')] = self.escStaroptAmpu
+        self.escstartags[ord('p')] = self.escStaroptAmpu
+        self.escstartags[ord('t')] = self.escStaroptAmpu
+        self.escstartags[ord('c')] = self.escSkipSomethingW
+        self.escstartags[ord('g')] = self.escSkipSomethingW
+        self.escstartags[ord('i')] = self.escSkipSomethingW
+        self.escstartags[ord('l')] = self.escSkipSomethingW
+        self.escstartags[ord('m')] = self.escSkipSomethingW
+        self.escstartags[ord('v')] = self.escSkipSomethingW
         
         self.escleftpartags = [ lambda : None ] * 256
-        self.escleftpartags[ord('s')] = self.escRightorLeftParsf
-        self.escleftpartags[ord('f')] = self.escRightorLeftParsf
+        self.escleftpartags[ord('s')] = self.escSkipSomethingW
+        self.escleftpartags[ord('f')] = self.escSkipSomethingW
         
         self.escrightpartags = [ lambda : None ] * 256
-        self.escrightpartags[ord('s')] = self.escRightorLeftParsf
+        self.escrightpartags[ord('s')] = self.escSkipSomethingW
         
         self.pos = 0
         try :

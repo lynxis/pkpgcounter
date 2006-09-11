@@ -21,9 +21,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter BUGS :
    
-  - The PCL3/4/5 parser have to be rewritten as a table driven parser, which
-    will be more easily extensible.
-    
   - All parsers need more testing, especially those which allow the number
     of copies to be specified as part of the data streams, as well as those
     which allow N-up.

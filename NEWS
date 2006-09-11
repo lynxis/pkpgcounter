@@ -21,6 +21,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 2.00 :
+  
+    - The PCL3/4/5 parser was rewritten from scratch and is now
+      table driven.
+      
+    - Improved the PostScript parser.
+    
   * 1.85 :
   
     - Added support for Samsung QPDL (aka SPL2) file format in page
