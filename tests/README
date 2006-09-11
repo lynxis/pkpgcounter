@@ -34,3 +34,7 @@ To see if it works, simply launch :
 It should report 16 pages for each document. If it doesn't then 
 there's a bug in the generic Page Description Language analyzer. 
 Please report this to : alet@librelogiciel.com
+
+This script will also launch the test for the computation of
+ink coverage. Look at the file colors.pdf to see what the 
+results should look like.
