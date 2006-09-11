@@ -22,26 +22,29 @@
 #
 #
 
-"""This document was created with the help of the ReportLab ToolKit (tm)
-available as Free Software from http://www.reportlab.org
+"""This document was created with the help of the ReportLab
+ToolKit (tm) available as Free Software from :
 
-It contains 9 pages, including this one.
+        http://www.reportlab.org
 
-Each page after this one is entirely filled with 100% of a particular
-color, as described below :
+It contains 10 pages, including this one.
 
-Page 1 ====> This notice
-Page 2 ====> Red
-Page 3 ====> Green
-Page 4 ====> Blue
-Page 5 ====> Cyan
-Page 6 ====> Magenta
-Page 7 ====> Yellow
-Page 8 ====> Black
-Page 9 ====> White
+Each page after this one is entirely filled with 100%
+of a particular color, as described below :
 
-This document helps to ensure that the computation of ink coverage
-made by pkpgcounter works as expected.
+Page  1 ====> This notice
+Page  2 ====> Red
+Page  3 ====> Green
+Page  4 ====> Blue
+Page  5 ====> Cyan
+Page  6 ====> Magenta
+Page  7 ====> Yellow
+Page  8 ====> Black
+Page  9 ====> White
+Page 10 ====> The expected results.
+
+This document helps to ensure that the computation of
+ink coverage made by pkpgcounter works as expected.
 
 To check by yourself :
 
@@ -52,6 +55,58 @@ To check by yourself :
     done    
 
 Please report any problem to : alet@librelogiciel.com
+"""
+
+lastpage = """For each colorspace, the results for the last page will differ a bit from what is below.
+The important values are the one for pages 2 to 9 included.
+
+Colorspace : BW
+B :   2.355336%
+B :  70.196078%
+B :  41.568627%
+B :  88.627451%
+B :  30.196078%
+B :  58.823529%
+B :  11.764706%
+B : 100.000000%
+B :   0.000000%
+B :   3.500669%
+
+Colorspace : RGB
+R :  97.644664%      G :  97.644664%      B :  97.644664%
+R : 100.000000%      G :   0.000000%      B :   0.000000%
+R :   0.000000%      G : 100.000000%      B :   0.000000%
+R :   0.000000%      G :   0.000000%      B : 100.000000%
+R :   0.000000%      G : 100.000000%      B : 100.000000%
+R : 100.000000%      G :   0.000000%      B : 100.000000%
+R : 100.000000%      G : 100.000000%      B :   0.000000%
+R :   0.000000%      G :   0.000000%      B :   0.000000%
+R : 100.000000%      G : 100.000000%      B : 100.000000%
+R :  96.499331%      G :  96.499331%      B :  96.499331%
+
+Colorspace : CMY
+C :   2.355336%      M :   2.355336%      Y :   2.355336%
+C :   0.000000%      M : 100.000000%      Y : 100.000000%
+C : 100.000000%      M :   0.000000%      Y : 100.000000%
+C : 100.000000%      M : 100.000000%      Y :   0.000000%
+C : 100.000000%      M :   0.000000%      Y :   0.000000%
+C :   0.000000%      M : 100.000000%      Y :   0.000000%
+C :   0.000000%      M :   0.000000%      Y : 100.000000%
+C : 100.000000%      M : 100.000000%      Y : 100.000000%
+C :   0.000000%      M :   0.000000%      Y :   0.000000%
+C :   3.500669%      M :   3.500669%      Y :   3.500669%
+
+Colorspace : CMYK
+C :   0.000000%      M :   0.000000%      Y :   0.000000%      K :   2.355336%
+C :   0.000000%      M : 100.000000%      Y : 100.000000%      K :   0.000000%
+C : 100.000000%      M :   0.000000%      Y : 100.000000%      K :   0.000000%
+C : 100.000000%      M : 100.000000%      Y :   0.000000%      K :   0.000000%
+C : 100.000000%      M :   0.000000%      Y :   0.000000%      K :   0.000000%
+C :   0.000000%      M : 100.000000%      Y :   0.000000%      K :   0.000000%
+C :   0.000000%      M :   0.000000%      Y : 100.000000%      K :   0.000000%
+C :   0.000000%      M :   0.000000%      Y :   0.000000%      K : 100.000000%
+C :   0.000000%      M :   0.000000%      Y :   0.000000%      K :   0.000000%
+C :   0.000000%      M :   0.000000%      Y :   0.000000%      K :   3.500669%
 """
 
 import sys
@@ -71,10 +126,10 @@ if __name__ == "__main__" :
     ybase = height - 2*cm
     
     # First we output the explanations on the first page.
-    canv.setFont("Helvetica", 16)
+    canv.setFont("Courier", 14)
     for line in __doc__.split("\n") :
         canv.drawString(xbase, ybase, line)
-        ybase -= 24
+        ybase -= 18
     canv.showPage()
     
     # Then we output each page
@@ -95,4 +150,15 @@ if __name__ == "__main__" :
         canv.setFillColorCMYK(*color.cmyk())          
         canv.rect(0, 0, width, height, fill=1)
         canv.showPage()
+        
+    # Finally outputs the expected results.
+    canv.setFont("Helvetica-Bold", 16)
+    canv.drawCentredString(width/2.0, height-1.5*cm, "Expected Results :")
+    ybase = height - 3*cm
+    canv.setFont("Courier", 10)
+    for line in lastpage.split("\n") :
+        canv.drawString(xbase, ybase, line)
+        ybase -= 14
+    canv.showPage()
+        
     canv.save()        
