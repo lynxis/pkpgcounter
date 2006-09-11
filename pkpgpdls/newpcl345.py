@@ -114,7 +114,9 @@ class Parser(pdlparser.PDLParser) :
     def endPage(self) :    
         """Handle the FF marker."""
         #self.logdebug("FORMFEED %i at %08x" % (self.pagecount, self.pos-1))
-        self.pagecount += 1
+        if not self.hpgl2 :
+            # Increments page count only if we are not inside an HPGL2 block
+            self.pagecount += 1
         
     def escPercent(self) :    
         """Handles the ESC% sequence."""
