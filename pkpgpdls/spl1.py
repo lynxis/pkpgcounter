@@ -30,6 +30,7 @@ from struct import unpack
 
 import pdlparser
 import pjl
+import version
 
 ESCAPECHARS = (chr(0x1b), chr(0x24))
 
@@ -111,13 +112,12 @@ class Parser(pdlparser.PDLParser) :
                         pos += self.escape(pos+1)
                     else :    
                         if not self.isbitmap :
-                            raise pdlparser.PDLParserError, "Unfortunately this file format is incompletely recognized. Parsing aborted."
+                            raise pdlparser.PDLParserError, "Unfortunately SPL1 is incompletely recognized. Parsing aborted. Please report the problem to %s" % version.__authoremail__
                         offset = unpack(self.unpackLong, minfile[pos:pos+4])[0]
                         sequencenum = unpack(self.unpackShort, minfile[pos+4:pos+6])[0]
                         codesop = " ".join([ "%02x" % ord(v) for v in minfile[pos+6:pos+12]])
                         if codesop != "06 00 00 80 13 40" :
-                            raise pdlparser.PDLParserError, "Unfortunately this file format is incompletely recognized. Parsing aborted."
-                        self.logdebug("%08x   ==>   %04x   ==>   %s" % (pos, sequencenum, codesop))    
+                            raise pdlparser.PDLParserError, "Unfortunately SPL1 is incompletely recognized. Parsing aborted. Please report the problem to %s" % version.__authoremail__
                         if not sequencenum :
                             self.pagecount += 1
                         pos += 4 + offset

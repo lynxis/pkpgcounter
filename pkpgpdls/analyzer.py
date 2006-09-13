@@ -29,7 +29,7 @@ import os
 import tempfile
 
 import version, pdlparser, postscript, pdf, pcl345, pclxl, \
-       escp2, dvi, tiff, ooo, zjstream, qpdl
+       escp2, dvi, tiff, ooo, zjstream, qpdl, spl1
 import inkcoverage
 
 class AnalyzerOptions :
@@ -171,6 +171,7 @@ class PDLAnalyzer :
                            pclxl, \
                            pdf, \
                            qpdl, \
+                           spl1, \
                            pcl345, \
                            escp2, \
                            dvi, \
