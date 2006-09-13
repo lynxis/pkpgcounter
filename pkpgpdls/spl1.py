@@ -62,6 +62,7 @@ class Parser(pdlparser.PDLParser) :
     
     def escape(self, nextpos) :    
         """Handles the ESC code."""
+        self.isbitmap = False
         pos = endpos = nextpos
         minfile = self.minfile
         if minfile[pos : pos+8] == r"%-12345X" :
@@ -82,8 +83,11 @@ class Parser(pdlparser.PDLParser) :
         # Store this in a per page mapping.    
         # NB : First time will be at page 0 (i.e. **before** page 1) !
         stuff = self.escapedStuff.setdefault(self.pagecount, [])
-        stuff.append(minfile[pos-1 : endpos])
-        self.logdebug("Escaped datas : [%s]" % repr(minfile[pos : endpos]))
+        datas = minfile[pos-1 : endpos]
+        stuff.append(datas)
+        if datas.endswith("$PJL BITMAP START\r\n") :
+            self.isbitmap = True
+        self.logdebug("Escaped datas : [%s]" % repr(datas))
         return endpos - pos + 1
         
     def getJobSize(self) :
@@ -92,31 +96,35 @@ class Parser(pdlparser.PDLParser) :
            Algorithm by Jerome Alet.
         """
         infileno = self.infile.fileno()
-        self.minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
+        self.minfile = minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
         self.pagecount = 0
         self.escapedStuff = {}   # For escaped datas, mostly PJL commands
         self.bigEndian()
         
+        self.isbitmap = False
         pos = 0
-        tags = self.tags
         try :
             try :
                 while 1 :
-                    tag = self.minfile[pos]
+                    tag = minfile[pos]
                     if tag in ESCAPECHARS :
                         pos += self.escape(pos+1)
                     else :    
-                        offset = unpack(self.unpackLong, self.minfile[pos:pos+4])[0]
-                        sequencenum = unpack(self.unpackShort, self.minfile[pos+4:pos+6])[0]
-                        codesop = " ".join([ "%02x" % ord(v) for v in self.minfile[pos+6:pos+12]])
-                        self.logdebug("Sequence Number : %04x" % sequencenum)
-                        self.logdebug("%08x  ====>  %s" % (pos+6, codesop))
+                        if not self.isbitmap :
+                            raise pdlparser.PDLParserError, "Unfortunately this file format is incompletely recognized. Parsing aborted."
+                        offset = unpack(self.unpackLong, minfile[pos:pos+4])[0]
+                        sequencenum = unpack(self.unpackShort, minfile[pos+4:pos+6])[0]
+                        codesop = " ".join([ "%02x" % ord(v) for v in minfile[pos+6:pos+12]])
+                        if codesop != "06 00 00 80 13 40" :
+                            raise pdlparser.PDLParserError, "Unfortunately this file format is incompletely recognized. Parsing aborted."
+                        self.logdebug("%08x   ==>   %04x   ==>   %s" % (pos, sequencenum, codesop))    
+                        if not sequencenum :
+                            self.pagecount += 1
                         pos += 4 + offset
-                        self.logdebug("New position : %08x" % pos)
             except IndexError : # EOF ?            
                 pass
         finally :
-            self.minfile.close()
+            minfile.close()
         return self.pagecount
         
 def test() :        
