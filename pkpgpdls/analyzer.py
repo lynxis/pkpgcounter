@@ -168,12 +168,12 @@ class PDLAnalyzer :
                            pdf, \
                            qpdl, \
                            spl1, \
-                           pcl345, \
-                           escp2, \
                            dvi, \
                            tiff, \
                            zjstream, \
                            ooo, \
+                           pcl345, \    # TODO : this one could be confused with other ones
+                           escp2, \     # TODO : this one could be confused with other ones.
                            plain) :     # IMPORTANT : don't move this one up !
                 try :               
                     return module.Parser(self.infile, self.options.debug, firstblock, lastblock)
