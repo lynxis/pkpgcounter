@@ -29,7 +29,7 @@ import os
 import tempfile
 
 import version, pdlparser, postscript, pdf, pcl345, pclxl, \
-       escp2, dvi, tiff, ooo, zjstream, qpdl, spl1
+       escp2, dvi, tiff, ooo, zjstream, qpdl, spl1, plain
 import inkcoverage
 
 class AnalyzerOptions :
@@ -173,7 +173,8 @@ class PDLAnalyzer :
                            dvi, \
                            tiff, \
                            zjstream, \
-                           ooo) :
+                           ooo, \
+                           plain) :     # IMPORTANT : don't move this one up !
                 try :               
                     return module.Parser(self.infile, self.options.debug, firstblock, lastblock)
                 except pdlparser.PDLParserError :
