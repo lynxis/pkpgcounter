@@ -172,8 +172,8 @@ class PDLAnalyzer :
                            tiff, \
                            zjstream, \
                            ooo, \
-                           pcl345, \    # TODO : this one could be confused with other ones
-                           escp2, \     # TODO : this one could be confused with other ones.
+                           pcl345, \
+                           escp2, \
                            plain) :     # IMPORTANT : don't move this one up !
                 try :               
                     return module.Parser(self.infile, self.options.debug, firstblock, lastblock)
