@@ -62,15 +62,13 @@ class PDLAnalyzer :
         size = 0
         self.openFile()
         try :
-            pdlhandler = self.detectPDLHandler()
-        except pdlparser.PDLParserError, msg :    
-            self.closeFile()
-            raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
-        else :
             try :
+                pdlhandler = self.detectPDLHandler()
                 size = pdlhandler.getJobSize()
-            finally :    
-                self.closeFile()
+            except pdlparser.PDLParserError, msg :    
+                raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
+        finally :    
+            self.closeFile()
         return size
             
     def getInkCoverage(self, colorspace=None, resolution=None) :
@@ -82,20 +80,18 @@ class PDLAnalyzer :
             raise ValueError, "Invalid colorspace (%s) or resolution (%s)" % (cspace, res)
         self.openFile()
         try :
-            pdlhandler = self.detectPDLHandler()
-        except pdlparser.PDLParserError, msg :    
-            self.closeFile()
-            raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
-        else :
             try :
+                pdlhandler = self.detectPDLHandler()
                 tiffname = self.convertToTiffMultiPage24NC(pdlhandler)
                 result = inkcoverage.getInkCoverage(tiffname, cspace)
                 try :
                     os.remove(tiffname)
                 except OSError :
                     sys.stderr.write("Problem when trying to remove temporary file %s\n" % tiffname)
-            finally :    
-                self.closeFile()
+            except pdlparser.PDLParserError, msg :    
+                raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
+        finally :    
+            self.closeFile()
         return result
         
     def convertToTiffMultiPage24NC(self, handler) :    
