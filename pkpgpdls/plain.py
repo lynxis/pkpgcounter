@@ -34,8 +34,19 @@ import version
 class Parser(pdlparser.PDLParser) :
     """A parser for plain text documents."""
     def isValid(self) :    
-        """Returns True if data is plain text, else False."""
-        return True
+        """Returns True if data is plain text, else False.
+        
+           It's hard to detect a plain text file, so we just
+           read the first line, and if it doesn't end in CR or LF
+           we consider it's not plain text.
+        """   
+        line = self.infile.readline()
+        self.infile.seek(0)
+        if line.endswith("\n") or line.endswith("\r") :
+            self.logdebug("DEBUG: Input file seems to be in the plain text format.")
+            return True
+        else :    
+            return False
             
     def getJobSize(self) :
         """Counts pages in a plain text document."""
@@ -44,34 +55,15 @@ class Parser(pdlparser.PDLParser) :
         pagecount = 0
         linecount = 0
         for line in self.infile :
-            linecount += 1    
-            if (linecount > pagesize) \
-               or (line.find(chr(12)) != -1) :
-                pagecount += 1
-                linecount = 0
-        return pagecount + 1
+            if line.endswith("\n") or line.endswith("\r") :
+                linecount += 1    
+                if (linecount > pagesize) \
+                   or (line.find("\f") != -1) :
+                    pagecount += 1
+                    linecount = 0
+            else :        
+                raise pdlparser.PDLParserError, "Unsupported file format. Please send the file to %s" % version.__authoremail__
+        return pagecount + 1    # NB : empty files are catched in isValid()
         
-def test() :        
-    """Test function."""
-    if (len(sys.argv) < 2) or ((not sys.stdin.isatty()) and ("-" not in sys.argv[1:])) :
-        sys.argv.append("-")
-    totalsize = 0    
-    for arg in sys.argv[1:] :
-        if arg == "-" :
-            infile = sys.stdin
-            mustclose = 0
-        else :    
-            infile = open(arg, "rb")
-            mustclose = 1
-        try :
-            parser = Parser(infile, debug=1)
-            totalsize += parser.getJobSize()
-        except pdlparser.PDLParserError, msg :    
-            sys.stderr.write("ERROR: %s\n" % msg)
-            sys.stderr.flush()
-        if mustclose :    
-            infile.close()
-    print "%s" % totalsize
-    
 if __name__ == "__main__" :    
-    test()
+    pdlparser.test(Parser)
