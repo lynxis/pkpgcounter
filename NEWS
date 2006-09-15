@@ -21,6 +21,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 2.10 :
+  
+    - Added a plain text parser, with support for both page counting and
+      ink coverage.
+    
+    - Added a minimal SPL1 parser.
+    
+    - Fixed a problem in the PCLXL parser related to Kyocera printer drivers.
+    
   * 2.00 :
   
     - The PCL3/4/5 parser was rewritten from scratch and is now

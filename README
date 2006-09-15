@@ -35,6 +35,8 @@ pkpgcounter currently recognizes the following document formats :
         
         - DVI
         
+        - Plain text
+        
         - TIFF
         
         - ESC/P2
@@ -45,7 +47,9 @@ pkpgcounter currently recognizes the following document formats :
         
         - Samsung QPDL (aka SPL2)
         
-The four latter ones, as well as some TIFF documents, are currently 
+        - Samsung SPL1
+        
+The five latter ones, as well as some TIFF documents, are currently 
 only supported in page counting mode. 
 
 By default, when launched pkpgcounter prints on its standard output 

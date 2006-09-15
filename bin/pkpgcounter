@@ -44,13 +44,15 @@ pkpgcounter currently recognizes the following document formats :
     * PCLXL (aka PCL6)
     * PCL3/4/5 (mostly)
     * DVI
+    * Plain text
     * TIFF
     * ESC/P2
     * OpenDocument (ISO/IEC DIS 26300)
     * Zenographics ZjStream
     * Samsung QPDL (aka SPL2)
+    * Samsung SPL1
 
-The four latter ones, as well as some TIFF documents, are currently 
+The five latter ones, as well as some TIFF documents, are currently 
 only supported in page counting mode. 
 
 command line usage :
