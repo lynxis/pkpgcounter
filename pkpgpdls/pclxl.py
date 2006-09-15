@@ -307,8 +307,9 @@ class Parser(pdlparser.PDLParser) :
                     prescribe = self.prescribeStuff.setdefault(self.pagecount, [])
                     prescribe.append(minfile[nextpos-1:pos])
                     self.logdebug("Prescribe commands : [%s]" % repr(minfile[nextpos-1:pos]))
-                    return (pos - nextpos)
+                    break
                 pos += 1    
+            return (pos - nextpos)
         else :
             return 0
             
