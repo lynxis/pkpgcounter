@@ -215,11 +215,11 @@ class Parser(pdlparser.PDLParser) :
         return self.array_Generic(nextpos, 1)
         
     def array_16(self, nextpos) :
-        """Handles byte arrays."""
+        """Handles 16 bits arrays."""
         return self.array_Generic(nextpos, 2)
         
     def array_32(self, nextpos) :
-        """Handles byte arrays."""
+        """Handles 32 bits arrays."""
         return self.array_Generic(nextpos, 4)
         
     def embeddedDataSmall(self, nextpos) :
