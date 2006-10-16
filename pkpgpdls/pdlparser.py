@@ -89,18 +89,18 @@ class PDLParser :
            Writes TIFF datas to the file named by fname.
         """   
         if self.totiffcommand :
-            child = popen2.Popen4(self.totiffcommand % locals())
+            commandline = self.totiffcommand % locals()
+            child = popen2.Popen4(commandline)
             try :
                 try :
                     data = self.infile.read(MEGABYTE)    
                     while data :
                         child.tochild.write(data)
                         data = self.infile.read(MEGABYTE)
-                    child.tochild.flush()
-                    child.tochild.close()    
                 except (IOError, OSError), msg :    
                     raise PDLParserError, "Problem during conversion to TIFF : %s" % msg
             finally :    
+                child.tochild.close()    
                 child.fromchild.close()
                 
             try :
