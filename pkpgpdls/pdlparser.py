@@ -22,6 +22,7 @@
 """This module defines the base class for all Page Description Language parsers."""
 
 import sys
+import os
 import popen2
 
 KILOBYTE = 1024    
@@ -40,7 +41,7 @@ class PDLParserError(Exception):
         
 class PDLParser :
     """Generic PDL parser."""
-    totiffcommand = None        # Default command to convert to TIFF
+    totiffcommands = None        # Default command to convert to TIFF
     def __init__(self, infile, debug=0, firstblock=None, lastblock=None) :
         """Initialize the generic parser."""
         self.infile = infile
@@ -88,25 +89,38 @@ class PDLParser :
         """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
            Writes TIFF datas to the file named by fname.
         """   
-        if self.totiffcommand :
-            commandline = self.totiffcommand % locals()
-            child = popen2.Popen4(commandline)
-            try :
+        if self.totiffcommands :
+            for totiffcommand in self.totiffcommands :
+                self.infile.seek(0)
+                error = False
+                commandline = totiffcommand % locals()
+                child = popen2.Popen4(commandline)
                 try :
-                    data = self.infile.read(MEGABYTE)    
-                    while data :
-                        child.tochild.write(data)
-                        data = self.infile.read(MEGABYTE)
-                except (IOError, OSError), msg :    
-                    raise PDLParserError, "Problem during conversion to TIFF : %s" % msg
-            finally :    
-                child.tochild.close()    
-                child.fromchild.close()
-                
-            try :
-                child.wait()
-            except OSError, msg :    
-                raise PDLParserError, "Problem during conversion to TIFF : %s" % msg
+                    try :
+                        data = self.infile.read(MEGABYTE)    
+                        while data :
+                            child.tochild.write(data)
+                            data = self.infile.read(MEGABYTE)
+                    except (IOError, OSError) :    
+                        error = True
+                finally :    
+                    child.tochild.close()    
+                    child.fromchild.close()
+                    
+                try :
+                    child.wait()
+                except OSError :    
+                    error = True
+                    
+                if not os.path.exists(fname) :
+                    error = True
+                elif not os.stat(fname).st_size :
+                    error = True
+                else :        
+                    break       # Conversion worked fine it seems.
+                self.logdebug("Command failed : %s" % repr(commandline))
+            if error :
+                raise PDLParserError, "Problem during conversion to TIFF."
         else :        
             raise PDLParserError, "Impossible to compute ink coverage for this file format."
             

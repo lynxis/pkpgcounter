@@ -32,21 +32,9 @@ import version
 
 class Parser(pdlparser.PDLParser) :
     """A parser for plain text documents."""
-    enscript = 'enscript --quiet --portrait --no-header --columns 1 --output - | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -'
-    a2ps = 'a2ps --borders 0 --quiet --portrait --no-header --columns 1 --output - | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -'
-    def __init__(self, infile, debug=0, firstblock=None, lastblock=None) :
-        """Initialize the plain text parser."""
-        pdlparser.PDLParser.__init__(self, infile, debug, firstblock, lastblock)
-        
-        # Tries to detect is a plain text to PostScript command line tool is available
-        # and use the first one we find.
-        paths = os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin").split(os.pathsep)
-        for cmd in ("enscript", "a2ps") :
-            for path in paths :
-                if os.path.exists(os.path.join(path, cmd)) :
-                    self.totiffcommand = getattr(self, cmd)
-                    return
-        
+    totiffcommands = [ 'enscript --quiet --portrait --no-header --columns 1 --output - | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -',
+                       'a2ps --borders 0 --quiet --portrait --no-header --columns 1 --output - | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -',
+                     ]  
     def isValid(self) :    
         """Returns True if data is plain text, else False.
         
