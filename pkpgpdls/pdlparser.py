@@ -100,11 +100,13 @@ class PDLParser :
                         data = self.infile.read(MEGABYTE)    
                         while data :
                             child.tochild.write(data)
+                            child.tochild.flush()
                             data = self.infile.read(MEGABYTE)
                     except (IOError, OSError) :    
                         error = True
                 finally :    
                     child.tochild.close()    
+                    dummy = child.fromchild.read()
                     child.fromchild.close()
                     
                 try :
