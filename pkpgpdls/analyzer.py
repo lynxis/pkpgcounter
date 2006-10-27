@@ -82,30 +82,21 @@ class PDLAnalyzer :
         try :
             try :
                 pdlhandler = self.detectPDLHandler()
+                (handle, filename) = tempfile.mkstemp(".tmp", "pkpgcounter")    
+                os.close(handle)
                 try :
-                    tiffname = self.convertToTiffMultiPage24NC(pdlhandler)
-                    result = inkcoverage.getInkCoverage(tiffname, cspace)
+                    pdlhandler.convertToTiffMultiPage24NC(filename, self.options.resolution)
+                    result = inkcoverage.getInkCoverage(filename, cspace)
                 finally :    
                     try :
-                        os.remove(tiffname)
+                        os.remove(filename)
                     except OSError :
-                        sys.stderr.write("Problem when trying to remove temporary file %s\n" % tiffname)
+                        sys.stderr.write("Problem when trying to remove temporary file %s\n" % filename)
             except pdlparser.PDLParserError, msg :    
                 raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
         finally :    
             self.closeFile()
         return result
-        
-    def convertToTiffMultiPage24NC(self, handler) :    
-        """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
-           Returns a temporary filename which names a file containing the TIFF datas.
-           The temporary file has to be deleted by the caller.
-        """   
-        self.infile.seek(0)
-        (handle, filename) = tempfile.mkstemp(".tmp", "pkpgcounter")    
-        os.close(handle)
-        handler.convertToTiffMultiPage24NC(filename, self.options.resolution)
-        return filename
         
     def openFile(self) :    
         """Opens the job's data stream for reading."""
