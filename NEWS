@@ -21,6 +21,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 2.11 :
+  
+    - Improved overall robustness in ink accounting mode.
+    
   * 2.10 :
   
     - Added a plain text parser, with support for both page counting and
