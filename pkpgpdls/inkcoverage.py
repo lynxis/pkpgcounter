@@ -27,6 +27,8 @@ import sys
 
 from PIL import Image
 
+import pdlparser
+
 def getPercent(img, nbpix) :
     """Extracts the percents per color component from a picture.
       
@@ -98,16 +100,20 @@ def getInkCoverage(fname, colorspace) :
             psyco.bind(computation)
     
     index = 0
-    image = Image.open(fname)
     try :
-        while 1 :
-            nbpixels = image.size[0] * image.size[1]
-            result.append(computation(image, nbpixels))
-            index += 1              
-            image.seek(index)
-    except EOFError :        
-        pass
-    return (colorspace, result)
+        image = Image.open(fname)
+    except IOError, msg :   
+        raise pdlparser.PDLParserError, "%s (%s)" % (msg, fname)
+    else :    
+        try :
+            while 1 :
+                nbpixels = image.size[0] * image.size[1]
+                result.append(computation(image, nbpixels))
+                index += 1              
+                image.seek(index)
+        except EOFError :        
+            pass
+        return (colorspace, result)
 
 if __name__ == "__main__" :
     # NB : length of result gives number of pages !
