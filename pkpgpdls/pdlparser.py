@@ -66,10 +66,7 @@ class PDLParser :
         else :    
             # Psyco is installed, tell it to compile
             # the CPU intensive methods : PCL and PCLXL
-            # parsing will greatly benefit from this, 
-            # for PostScript and PDF the difference is
-            # barely noticeable since they are already
-            # almost optimal, and much more speedy anyway.
+            # parsing will greatly benefit from this.
             psyco.bind(self.getJobSize)
             
     def logdebug(self, message) :       
@@ -110,9 +107,15 @@ class PDLParser :
                     child.fromchild.close()
                     
                 try :
-                    child.wait()
+                    status = child.wait()
                 except OSError :    
                     error = True
+                else :    
+                    if os.WIFEXITED(status) :
+                        if os.WEXITSTATUS(status) :
+                            error = True
+                    else :        
+                        error = True
                     
                 if not os.path.exists(fname) :
                     error = True
