@@ -100,7 +100,8 @@ class Parser(pdlparser.PDLParser) :
             elif line.startswith(r"%%Page: ") or line.startswith(r"(%%[Page: ") :
                 proceed = 1
                 try :
-                    newpagenum = int(line.split(']')[0].split()[1])
+                    # treats both "%%Page: x x" and "%%Page: (x-y) z" (probably N-up mode)
+                    newpagenum = int(line.split(']')[0].split()[-1])
                 except :    
                     notinteger = 1 # It seems that sometimes it's not an integer but an EPS file name
                 else :    
