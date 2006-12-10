@@ -68,8 +68,11 @@ options :
   
   -cCOLORSPACE, --colorspace=COLORSPACE
                         Activate the computation of ink usage, and defines the
-                        colorspace to use. Supported values are 'BW', 'RGB',
-                        'CMYK', and 'CMY'.
+                        colorspace to use. Supported values are 'BW' (Black),
+                        'RGB', 'CMYK', 'CMY', and 'GC' (Grayscale vs Color).
+                        'GC' is useful if you only need to differentiate 
+                        grayscale pages from coloured pages but don't care
+                        about ink usage per se.
                         
   -rRESOLUTION, --resolution=RESOLUTION
                         The resolution in DPI to use when checking ink usage.

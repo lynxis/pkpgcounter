@@ -63,6 +63,14 @@ def getPercentCMYK(img, nbpix) :
              "K" : 100.0 * (black / 255.0) / nbpix,
            }
         
+def getPercentGC(img, nbpix) :        
+    """Determines if a page is in grayscale or colour mode."""
+    result = getPercentCMYK(img, nbpix)
+    if result["C"] == result["M"] == result["Y"] == 0.0 :
+        return { "G" : 100.0, "C" : 0.0 }
+    else :    
+        return { "G" : 0.0, "C" : 100.0 }
+    
 def getPercentBW(img, nbpix) :
     """Extracts the percents of Black from a picture, once converted to gray levels."""
     if img.mode != "L" :
@@ -91,13 +99,13 @@ def getInkCoverage(fname, colorspace) :
     result = []
     colorspace = colorspace.upper()
     computation = globals()["getPercent%s" % colorspace]
-    if colorspace == "CMYK" : # faster with psyco on my machine
+    if colorspace in ("CMYK", "GC") : # faster with psyco on my machine
         try :
             import psyco
         except ImportError :    
             pass
         else :    
-            psyco.bind(computation)
+            psyco.bind(getPercentCMYK)
     
     index = 0
     try :

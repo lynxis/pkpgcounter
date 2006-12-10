@@ -22,7 +22,7 @@
 """This modules defines some important constants used in this software."""
 
 
-__version__ = "2.12"
+__version__ = "2.13"
 
 __doc__ = """pkpgcounter : a generic Page Description Languages parser."""
 

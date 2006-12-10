@@ -210,8 +210,8 @@ def main() :
     parser.add_option("-c", "--colorspace", 
                             dest="colorspace",
                             type="cichoice",
-                            cichoices=["bw", "rgb", "cmyk", "cmy"],
-                            help="Activate the computation of ink usage, and defines the colorspace to use. Supported values are 'BW', 'RGB', 'CMYK', and 'CMY'.")
+                            cichoices=["bw", "rgb", "cmyk", "cmy", "gc"],
+                            help="Activate the computation of ink usage, and defines the colorspace to use. Supported values are 'BW', 'RGB', 'CMYK', 'CMY', and 'GC'.")
     parser.add_option("-r", "--resolution", 
                             type="int", 
                             default=72, 

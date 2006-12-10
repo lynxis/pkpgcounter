@@ -21,6 +21,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 2.13 : 
+   
+    - Nowrecognizes the GC colorspace if you only want to differentiate
+      grayscale pages from coloured pages. In this colorspace, the
+      percents are always "G : 100.0   C : 0.0" or "G : 0.0   C : 100.0"
+      respectively for a grayscale page and a coloured page.
+  
   * 2.12 :
   
     - Fixed a problem with the PostScript parser.
