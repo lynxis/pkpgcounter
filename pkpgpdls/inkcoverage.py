@@ -48,9 +48,8 @@ def getPercentCMYK(img, nbpix) :
     """
     if img.mode != "RGB" :
         img = img.convert("RGB")
-    data = img.getdata()    
     cyan = magenta = yellow = black = 0    
-    for (r, g, b) in data :
+    for (r, g, b) in img.getdata() :
         if r == g == b :
             black += 255 - r
         else :    
@@ -65,11 +64,14 @@ def getPercentCMYK(img, nbpix) :
         
 def getPercentGC(img, nbpix) :        
     """Determines if a page is in grayscale or colour mode."""
-    result = getPercentCMYK(img, nbpix)
-    if result["C"] == result["M"] == result["Y"] == 0.0 :
-        return { "G" : 100.0, "C" : 0.0 }
-    else :    
-        return { "G" : 0.0, "C" : 100.0 }
+    if img.mode != "RGB" :
+        img = img.convert("RGB")
+    gray = 0
+    for (r, g, b) in img.getdata() :
+        if not (r == g == b) :
+            # optimize : if a single pixel is no gray the whole page is colored.
+            return { "G" : 0.0, "C" : 100.0 }
+    return { "G" : 100.0, "C" : 0.0 }
     
 def getPercentBW(img, nbpix) :
     """Extracts the percents of Black from a picture, once converted to gray levels."""
