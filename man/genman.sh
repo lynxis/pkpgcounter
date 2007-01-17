@@ -2,7 +2,7 @@
 #
 # pkpgcounter : a generic Page Description Language parser.
 #
-# (c) 2003, 2004, 2005, 2006 Jerome Alet <alet@librelogiciel.com>
+# (c) 2003, 2004, 2005, 2006, 2007 Jerome Alet <alet@librelogiciel.com>
 # You're welcome to redistribute this software under the
 # terms of the GNU General Public Licence version 2.0
 # or, at your option, any higher version.

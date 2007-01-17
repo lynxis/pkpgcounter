@@ -1,7 +1,7 @@
 #
 # pkpgcounter : a generic Page Description Language parser
 #
-# (c) 2003, 2004, 2005, 2006 Jerome Alet <alet@librelogiciel.com>
+# (c) 2003, 2004, 2005, 2006, 2007 Jerome Alet <alet@librelogiciel.com>
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -28,7 +28,7 @@ __doc__ = """pkpgcounter : a generic Page Description Languages parser."""
 
 __author__ = "Jerome Alet"
 __authoremail__ = "alet@librelogiciel.com"
-__years__ = "2003, 2004, 2005, 2006"
+__years__ = "2003, 2004, 2005, 2006, 2007"
 
 __gplblurb__ = """This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
