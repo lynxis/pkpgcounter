@@ -21,6 +21,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 2.14 :
+  
+    - Fixed a problem with some PS drivers which don't output %%Page:
+      comments.
+      
   * 2.13 : 
    
     - Nowrecognizes the GC colorspace if you only want to differentiate

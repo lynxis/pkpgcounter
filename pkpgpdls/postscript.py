@@ -89,6 +89,7 @@ class Parser(pdlparser.PDLParser) :
         notrust = 0
         prescribe = 0 # Kyocera's Prescribe commands
         acrobatmarker = 0
+        pagescomment = None
         for line in self.infile.xreadlines() : 
             if (not prescribe) and line.startswith(r"%%BeginResource: procset pdf") \
                and not acrobatmarker :
@@ -97,6 +98,11 @@ class Parser(pdlparser.PDLParser) :
                 acrobatmarker = 1
             elif line.startswith("!R!") :
                 prescribe = 1
+            elif line.startswith(r"%%Pages: ") :
+                try :
+                    pagescomment = int(line.split()[1])
+                except ValueError :
+                    pass # strange, to say the least
             elif line.startswith(r"%%Page: ") or line.startswith(r"(%%[Page: ") :
                 proceed = 1
                 try :
@@ -176,6 +182,9 @@ class Parser(pdlparser.PDLParser) :
             copies = page["copies"]
             pagecount += (copies - 1)
             self.logdebug("%s * page #%s" % (copies, pnum))
+            
+        if not pagecount and pagescomment :    
+            pagecount = pagescomment
         self.logdebug("Internal parser said : %s pages" % pagecount)
         return (pagecount, notrust)
         
@@ -184,7 +193,7 @@ class Parser(pdlparser.PDLParser) :
         self.copies = 1
         (nbpages, notrust) = self.natively()
         newnbpages = nbpages
-        if notrust :
+        if notrust or not nbpages :
             try :
                 newnbpages = self.throughGhostScript()
             except pdlparser.PDLParserError, msg :
