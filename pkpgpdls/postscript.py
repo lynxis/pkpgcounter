@@ -100,7 +100,7 @@ class Parser(pdlparser.PDLParser) :
                 prescribe = 1
             elif line.startswith(r"%%Pages: ") :
                 try :
-                    pagescomment = int(line.split()[1])
+                    pagescomment = max(pagescomment or 0, int(line.split()[1]))
                 except ValueError :
                     pass # strange, to say the least
             elif line.startswith(r"%%Page: ") or line.startswith(r"(%%[Page: ") :
