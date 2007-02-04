@@ -170,6 +170,14 @@ class Parser(pdlparser.PDLParser) :
                 else :    
                     if number > self.pages[pagecount]["copies"] :
                         self.pages[pagecount]["copies"] = number
+            elif line.startswith(r"%RBINumCopies: ") :   
+                try :
+                    number = int(line.strip().split()[1])
+                except :     
+                    pass
+                else :    
+                    if number > self.pages[pagecount]["copies"] :
+                        self.pages[pagecount]["copies"] = number
             previousline = line
             
         # extract max number of copies to please the ghostscript parser, just    
@@ -177,14 +185,14 @@ class Parser(pdlparser.PDLParser) :
         self.copies = max([ v["copies"] for (k, v) in self.pages.items() ])
         
         # now apply the number of copies to each page
+        if not pagecount and pagescomment :    
+            pagecount = pagescomment
         for pnum in range(1, pagecount + 1) :
-            page = self.pages.get(pnum, self.pages.get(1, { "copies" : 1 }))
+            page = self.pages.get(pnum, self.pages.get(1, self.pages.get(0, { "copies" : 1 })))
             copies = page["copies"]
             pagecount += (copies - 1)
             self.logdebug("%s * page #%s" % (copies, pnum))
             
-        if not pagecount and pagescomment :    
-            pagecount = pagescomment
         self.logdebug("Internal parser said : %s pages" % pagecount)
         return (pagecount, notrust)
         
