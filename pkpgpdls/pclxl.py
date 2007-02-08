@@ -333,14 +333,14 @@ class Parser(pdlparser.PDLParser) :
            xl_refsup30r089.pdf
         """
         self.iscolor = None
-        found = 0
+        found = False
         while not found :
             line = self.infile.readline()
             if not line :
                 break
             pos = line.find(" HP-PCL XL;")    
             if pos != -1 :
-                found = 1
+                found = True
                 endian = ord(line[pos - 1])
                 if endian == 0x29 :
                     self.littleEndian(0)
