@@ -61,47 +61,47 @@ class Parser(pdlparser.PDLParser) :
         objects = {}
         inobject = 0
         objre = re.compile(r"\s?(\d+)\s+(\d+)\s+obj[<\s/]?")
-        for fullline in self.infile.xreadlines() :
-            parts = [ l.strip() for l in fullline.splitlines() ]
-            for line in parts :
-                if line.startswith("% ") :    
-                    if inobject :
-                        obj.comments.append(line)
-                    else :
-                        lastcomment = line[2:]
+        for line in self.infile :
+            line = line.strip()
+            if line.startswith("% ") :    
+                if inobject :
+                    obj.comments.append(line)
                 else :
-                    # New object begins here
-                    result = objre.search(line)
-                    if result is not None :
-                        (major, minor) = [int(num) for num in line[result.start():result.end()].split()[:2]]
-                        obj = PDFObject(major, minor, lastcomment)
-                        obj.content.append(line[result.end():])
-                        inobject = 1
-                    elif line.startswith("endobj") \
-                      or line.startswith(">> endobj") \
-                      or line.startswith(">>endobj") :
-                        # Handle previous object, if any
-                        if inobject :
-                            # only overwrite older versions of this object
-                            # same minor seems to be possible, so the latest one
-                            # found in the file will be the one we keep.
-                            # if we want the first one, just use > instead of >=
-                            oldobject = objects.setdefault(major, obj)
-                            if minor >= oldobject.minor :
-                                objects[major] = obj
-                            inobject = 0        
-                    else :    
-                        if inobject :
-                            obj.content.append(line)
+                    lastcomment = line[2:]
+            else :
+                # New object begins here
+                result = objre.search(line)
+                if result is not None :
+                    (major, minor) = [int(num) for num in line[result.start():result.end()].split()[:2]]
+                    obj = PDFObject(major, minor, lastcomment)
+                    obj.content.append(line[result.end():])
+                    inobject = 1
+                elif line.startswith("endobj") \
+                  or line.startswith(">> endobj") \
+                  or line.startswith(">>endobj") :
+                    # Handle previous object, if any
+                    if inobject :
+                        # only overwrite older versions of this object
+                        # same minor seems to be possible, so the latest one
+                        # found in the file will be the one we keep.
+                        # if we want the first one, just use > instead of >=
+                        oldobject = objects.setdefault(major, obj)
+                        if minor >= oldobject.minor :
+                            objects[major] = obj
+                        inobject = 0        
+                else :    
+                    if inobject :
+                        obj.content.append(line)
                         
         # Now we check each PDF object we've just created.
         # colorregexp = re.compile(r"(/ColorSpace) ?(/DeviceRGB|/DeviceCMYK)[/ \t\r\n]", re.I)
-        newpageregexp = re.compile(r"(/Type)\s?(/Page)[/\s]", re.I)
+        newpageregexp = re.compile(r"(/Type)\s?(/Page)[/>\s]", re.I)
         pagecount = 0
         for obj in objects.values() :
             content = "".join(obj.content)
             count = len(newpageregexp.findall(content))
-            pagecount += count
+            if count and (content != r"<</Type /Page>>") : # Empty pages which are not rendered ?
+                pagecount += count
         return pagecount    
         
 if __name__ == "__main__" :    

@@ -109,12 +109,12 @@ class PDLAnalyzer :
             infile = sys.stdin
         else :    
             # normal file
-            self.infile = open(self.filename, "rb")
+            self.infile = open(self.filename, "rbU")
             self.mustclose = 1
             return
             
         # Use a temporary file, always seekable contrary to standard input.
-        self.infile = tempfile.TemporaryFile(mode="w+b")
+        self.infile = tempfile.TemporaryFile(mode="w+bU")
         while 1 :
             data = infile.read(pdlparser.MEGABYTE) 
             if not data :

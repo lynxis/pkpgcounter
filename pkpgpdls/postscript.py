@@ -90,7 +90,7 @@ class Parser(pdlparser.PDLParser) :
         prescribe = 0 # Kyocera's Prescribe commands
         acrobatmarker = 0
         pagescomment = None
-        for line in self.infile.xreadlines() : 
+        for line in self.infile : 
             if (not prescribe) and line.startswith(r"%%BeginResource: procset pdf") \
                and not acrobatmarker :
                 notrust = 1 # Let this stuff be managed by GhostScript, but we still extract number of copies

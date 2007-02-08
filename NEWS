@@ -21,6 +21,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 2.15 :
+   
+    - Fixed a regexp in the PDF parser which caused some files to be
+      incorrectly accounted for.
+    
+    - Improved the detection of the number of copies in PostScript documents.
+    
   * 2.14 :
   
     - Fixed a problem with some PS drivers which don't output %%Page:

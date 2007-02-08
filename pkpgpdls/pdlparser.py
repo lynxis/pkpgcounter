@@ -139,7 +139,7 @@ def test(parserclass) :
             infile = sys.stdin
             mustclose = 0
         else :    
-            infile = open(arg, "rb")
+            infile = open(arg, "rbU")
             mustclose = 1
         try :
             parser = parserclass(infile, debug=1)
