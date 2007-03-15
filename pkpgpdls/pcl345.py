@@ -32,6 +32,7 @@ import pdlparser
 import pjl
 
 NUL = chr(0x00)
+LINEFEED = chr(0x0a)
 FORMFEED = chr(0x0c)
 ESCAPE = chr(0x1b)
 ASCIILIMIT = chr(0x80)
@@ -104,7 +105,14 @@ class Parser(pdlparser.PDLParser) :
         
     def setPageDict(self, attribute, value) :
         """Initializes a page dictionnary."""
-        dic = self.pages.setdefault(self.pagecount, { "copies" : 1, "mediasource" : "Main", "mediasize" : "Default", "mediatype" : "Plain", "orientation" : "Portrait", "escaped" : "", "duplex": 0})
+        dic = self.pages.setdefault(self.pagecount, { "linescount" : 1,
+                                                      "copies" : 1, 
+                                                      "mediasource" : "Main", 
+                                                      "mediasize" : "Default", 
+                                                      "mediatype" : "Plain", 
+                                                      "orientation" : "Portrait", 
+                                                      "escaped" : "", 
+                                                      "duplex": 0 })
         dic[attribute] = value
         
     def readByte(self) :    
@@ -225,6 +233,12 @@ class Parser(pdlparser.PDLParser) :
                 self.copies.append(value)
                 self.setPageDict("copies", value)
                 #self.logdebug("COPIES %i" % value)
+            elif end == 'F' :    
+                self.linesperpagevalues.append(value)
+                self.linesperpage = value
+                #self.logdebug("LINES PER PAGE : %i" % self.linesperpage)
+            #else :
+            #    self.logdebug("Unexpected end <%s> and value <%s>" % (end, value))
                 
     def escAmpa(self) :    
         """Handles the ESC&a sequence."""
@@ -292,6 +306,19 @@ class Parser(pdlparser.PDLParser) :
                 self.pos += value
                 #self.logdebug("SKIPTO %08x" % self.pos)
                 
+    def newLine(self) :            
+        """Handles new lines markers."""
+        if not self.hpgl2 :
+            dic = self.pages.get(self.pagecount, None)
+            if dic is None :
+                self.setPageDict("linescount", 1)                              
+                dic = self.pages.get(self.pagecount)
+            nblines = dic["linescount"]    
+            self.setPageDict("linescount", nblines + 1)                              
+            if (self.linesperpage is not None) \
+               and (dic["linescount"] > self.linesperpage) :
+                self.pagecount += 1
+        
     def getInteger(self) :    
         """Returns an integer value and the end character."""
         sign = 1
@@ -359,6 +386,8 @@ class Parser(pdlparser.PDLParser) :
         self.mediasizesvalues = []
         self.orientationsvalues = []
         self.mediatypesvalues = []
+        self.linesperpagevalues = []
+        self.linesperpage = None
         self.startgfx = []
         self.endgfx = []
         self.hpgl2 = False
@@ -367,6 +396,7 @@ class Parser(pdlparser.PDLParser) :
         self.isimagerunner = (minfile[:2] == self.imagerunnermarker1)
         
         tags = [ lambda : None] * 256
+        tags[ord(LINEFEED)] = self.newLine
         tags[ord(FORMFEED)] = self.endPage
         tags[ord(ESCAPE)] = self.escape
         tags[ord(ASCIILIMIT)] = self.skipByte
@@ -441,6 +471,8 @@ class Parser(pdlparser.PDLParser) :
         
         if self.isimagerunner :
             self.pagecount += 1      # ImageRunner adjustment
+        elif self.linesperpage is not None :    
+            self.pagecount += 1      # Adjusts for incomplete last page
         elif len(self.startgfx) == len(self.endgfx) == 0 :
             if self.resets % 2 :
                 if nborientations == self.pagecount + 1 :
