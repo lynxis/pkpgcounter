@@ -188,7 +188,9 @@ class Parser(pdlparser.PDLParser) :
             # From what I read in PCLXL documentation, the number
             # of copies is an unsigned 16 bits integer
             try :
-                self.pages[self.pagecount]["copies"] = unpack(self.unpackShort, minfile[pos3-2:pos3])[0]
+                nbcopies = unpack(self.unpackShort, minfile[pos3-2:pos3])[0]
+                self.logdebug("Number of copies : %i" % nbcopies)
+                self.pages[self.pagecount]["copies"] = nbcopies
             except KeyError :    
                 self.logdebug("It looks like this PCLXL file is corrupted.")
         return 0

@@ -23,6 +23,9 @@
 
 """This modules implements a really minimalist PJL parser."""
 
+# NOTES : QTY= is the number of collated copies for a job.
+# NOTES : COPIES= is the number of uncollated copies for each page of a job
+
 import sys
 
 class PJLParserError(Exception):
@@ -36,6 +39,9 @@ class PJLParserError(Exception):
         
 class PJLParser :
     """A parser for PJL documents.
+    
+       Information extracted for bpl11897_PJL-Reference.pdf which was
+       downloaded from Hewlett-Packard's website.
     
        Only extracts the PJL SET variables. Ignore other statements.
     """
