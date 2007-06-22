@@ -40,7 +40,7 @@ class PJLParserError(Exception):
 class PJLParser :
     """A parser for PJL documents.
     
-       Information extracted for bpl11897_PJL-Reference.pdf which was
+       Information extracted for bpl11897.pdf which was
        downloaded from Hewlett-Packard's website.
     
        Only extracts the PJL SET variables. Ignore other statements.
