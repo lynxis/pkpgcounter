@@ -189,7 +189,7 @@ class Parser(pdlparser.PDLParser) :
             # of copies is an unsigned 16 bits integer
             try :
                 nbcopies = unpack(self.unpackShort, minfile[pos3-2:pos3])[0]
-                self.logdebug("Number of copies : %i" % nbcopies)
+                # self.logdebug("Number of copies : %i" % nbcopies)
                 self.pages[self.pagecount]["copies"] = nbcopies
             except KeyError :    
                 self.logdebug("It looks like this PCLXL file is corrupted.")
@@ -650,7 +650,7 @@ class Parser(pdlparser.PDLParser) :
             oldpjlcopies = pjlcopies    
             oldduplexmode = duplexmode
             oldpapersize = papersize
-            copies = pjlcopies * page["copies"]
+            copies = max(pjlcopies, page["copies"]) # Was : pjlcopies * page["copies"]
             self.pagecount += (copies - 1)
             self.logdebug("%s*%s*%s*%s*%s*%s*%s" % (copies, 
                                                  page["mediatype"], 

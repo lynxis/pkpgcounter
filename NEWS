@@ -21,6 +21,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 pkpgcounter News :
 
+  * 2.17 : 
+  
+    - Fixed problems in the handling of PJL number of copies (COPIES= and QTY=)
+      which caused the number of copies for each page to be squared.
+    
   * 2.16 : 
   
     - Fixed a problem in the PCL3/4/5 parser to accomodate line based

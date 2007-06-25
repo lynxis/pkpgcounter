@@ -285,7 +285,7 @@ class Parser(pdlparser.PDLParser) :
             oldpjlcopies = pjlcopies    
             oldduplexmode = duplexmode
             oldpapersize = papersize
-            copies = pjlcopies * page["copies"]
+            copies = max(pjlcopies, page["copies"]) # Was : pjlcopies * page["copies"]
             self.pagecount += (copies - 1)
             self.logdebug("%s*%s*%s*%s" % (copies, 
                                            papersize, 

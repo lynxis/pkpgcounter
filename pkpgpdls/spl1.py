@@ -29,7 +29,6 @@ import mmap
 from struct import unpack
 
 import pdlparser
-import pjl
 import version
 
 ESCAPECHARS = (chr(0x1b), chr(0x24))
