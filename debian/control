@@ -1,0 +1,47 @@
+Source: pkpgcounter
+Section: text
+Priority: optional
+Maintainer: Jerome Alet <alet@librelogiciel.com>
+Build-Depends: debhelper (>= 4.0.0), python, python-dev
+Standards-Version: 3.6.2
+
+Package: pkpgcounter
+Architecture: any
+Depends: python, python-imaging, gs | gs-esp
+Suggests: python-psyco, ghostpcl | gspcl
+Description: pkpgcounter is a command line tool and Python
+ library which can count the number of pages in files or
+ compute the percent of ink used for each color in a 
+ number of different colorspaces.
+ .
+ The supported file formats are :
+ .
+   * PostScript
+ .
+   * PCLXL (aka PCL6)
+ .
+   * PCL3/4/5
+ .
+   * PDF
+ .
+   * DVI
+ .
+   * Plain text
+ .
+   * TIFF
+ .
+   * ESC/P2
+ .
+   * OpenDocument (ISO/IEC DIS 26300)
+ .
+   * Zenographics ZjStream
+ .
+   * Samsung QPDL (aka SPL2)
+ .
+   * Samsung SPL1
+ .
+ The five latter formats, as well as some TIFF files, are
+ only supported in page counting mode.
+ .
+ pkpgcounter is often used in combination with print
+ accounting solutions like PyKota or JasMine.
