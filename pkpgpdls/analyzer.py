@@ -114,7 +114,7 @@ class PDLAnalyzer :
             return
             
         # Use a temporary file, always seekable contrary to standard input.
-        self.infile = tempfile.TemporaryFile(mode="w+bU")
+        self.infile = tempfile.TemporaryFile(mode="w+b") # TODO : not opened in universal newline mode, Python 2.5 refuses.
         while 1 :
             data = infile.read(pdlparser.MEGABYTE) 
             if not data :

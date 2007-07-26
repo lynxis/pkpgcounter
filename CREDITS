@@ -34,6 +34,8 @@ The following people helped the pkpgcounter project :
 
   - Franck (?) : sent a path to improve the PostScript parser when
                  the PS code generated several copies.
+                 
+  - Yves Lavoie : reported a bug with Python 2.5                 
 
 ==============================================================
 
