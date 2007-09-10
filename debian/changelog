@@ -1,3 +1,9 @@
+pkpgcounter (3.00-1) unstable; urgency=low
+
+  * Made from tarball.
+
+   -- Jerome Alet <alet@librelogiciel.com>  Mon, 10 Sep 2007 22:59:46 +0200
+
 pkpgcounter (2.18-1) unstable; urgency=low
 
   * Made from tarball.
