@@ -3,9 +3,9 @@
 pkpgcounter : a generic Page Description Language parser
 
 (c) 2003, 2004, 2005, 2006, 2007 Jerome Alet <alet@librelogiciel.com>
-This program is free software; you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
+the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -14,8 +14,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =============================================================================
 
@@ -141,8 +140,8 @@ or the terms of the GNU General Public License of the Free Software Foundation.
 Beginning with pkpgcounter v1.86, the PCL3/4/5 parser was rewritten from
 scratch, and is now much more readable, maintainable, and of course accurate.
 
-The old parser is still available, but not used, in the pkpgpdls/oldpcl345.py
-Python module.
+The old parser was still available until pkpgcounter v2.18 was published, but
+was definitely removed after that, just before pkpgcounter v3.00 was published.
     
 pkpgcounter's PCLXL (aka PCL6) parser doesn't originate from PCLCount, but 
 was written from scratch, just like all the other parsers included in
@@ -153,7 +152,7 @@ pkpgcounter.
 pkpgcounter's ink coverage algorithm for the CMYK colorspace is a 
 direct Python port from the PrintBill project by Daniel Franklin. 
 PrintBill is distributed under the terms of the GNU General Public 
-License of the Free Software Foundation, just like pkpgcounter. The 
+License of the Free Software Foundation, version 2 or higher. The 
 algorithms used for the other colorspaces are a complete rewrite of 
 PrintBill's algorithms using both Python and the Python Imaging 
 Library's facilities. 
