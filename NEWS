@@ -20,6 +20,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pkpgcounter News :
 
+  * 3.00 :
+  
+    - Fixed a problem in the code handling the output of Canon's ImageRunner
+      printer drivers.
+      
+    - Licensing terms changed to GNU GPL v3.0 or higher.  
+    
+  * 2.18 :
+  
+    - Fixed an incompatibility with Python v2.5
+    
   * 2.17 : 
   
     - Fixed problems in the handling of PJL number of copies (COPIES= and QTY=)
