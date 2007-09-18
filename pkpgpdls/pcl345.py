@@ -348,7 +348,7 @@ class Parser(pdlparser.PDLParser) :
         if tag == ord(self.imagerunnermarker1[-1]) :
             oldpos = self.pos-2
             codop = self.minfile[self.pos:self.pos+2]
-            length = unpack(">H", self.minfile[pos+6:pos+8])[0]
+            length = unpack(">H", self.minfile[self.pos+6:self.pos+8])[0]
             self.pos += 18
             if codop != self.imagerunnermarker2 :
                 self.pos += length
