@@ -20,7 +20,7 @@
 # $Id$
 #
 
-"""This modules implements a really minimalist PJL parser."""
+"""This modules implements a really minimalist PJL/EJL parser."""
 
 # NOTES : QTY= is the number of collated copies for a job.
 # NOTES : COPIES= is the number of uncollated copies for each page of a job
@@ -41,12 +41,12 @@ class PJLParser :
     
        Information extracted for bpl11897.pdf which was
        downloaded from Hewlett-Packard's website.
-    
-       Only extracts the PJL SET variables. Ignore other statements.
     """
+    JL = "PJL"
     def __init__(self, pjljob, debug=0) :
-        """Initializes PJL Parser."""
+        """Initializes JL Parser."""
         self.debug = debug
+        self.jlmarker = "@%s" % self.JL
         self.statements = pjljob.replace("\r\n", "\n").split("\n")
         self.default_variables = {}
         self.environment_variables = {}
@@ -82,21 +82,23 @@ class PJLParser :
                     varsdic[k] = v[0]
         
     def parse(self) :
-        """Parses a PJL job."""
+        """Parses a JL job."""
         for i in range(len(self.statements)) :
             statement = self.statements[i]
-            if statement.startswith("@PJL") :
+            if statement.startswith(self.jlmarker) :
                 parts = statement.split()
                 nbparts = len(parts)
-                if parts[0] == "@PJL" :
-                    # this is a valid PJL statement, but we don't
+                if parts[0] == self.jlmarker :
+                    # this is a valid JL statement, but we don't
                     # want to examine all of them...
-                    if (nbparts > 2) and (parts[1].upper() in ("SET", "DEFAULT")) :
+                    if (nbparts > 2) \
+                         and ((parts[1].upper() in ("SET", "DEFAULT")) \
+                                  or ((self.jlmarker == "@EJL") and (parts[1].upper() == "JI"))) :
                         # this is what we are interested in !
                         try :    
-                            (varname, value) = "".join(parts[2:]).split("=", 1)
+                            (varname, value) = "".join(parts[2:]).split("=", 1) # TODO : parse multiple assignments on the same SET/JI statement
                         except :    
-                            self.logdebug("Invalid PJL SET statement [%s]" % repr(statement))
+                            self.logdebug("Invalid JL SET statement [%s]" % repr(statement))
                         else :    
                             # all still looks fine...
                             if parts[1].upper() == "DEFAULT" :
@@ -106,27 +108,35 @@ class PJLParser :
                             variable = varsdic.setdefault(varname.upper(), [])
                             variable.append(value)
                     else :
-                        self.logdebug("Ignored PJL statement [%s]" % repr(statement))
+                        self.logdebug("Ignored JL statement [%s]" % repr(statement))
+                        self.logdebug(parts)
                 else :
-                    self.logdebug("Invalid PJL statement [%s]" % repr(statement))
+                    self.logdebug("Invalid JL statement [%s]" % repr(statement))
             else :
-                self.logdebug("Invalid PJL statement [%s]" % repr(statement))
+                self.logdebug("Invalid JL statement [%s]" % repr(statement))
         self.cleanvars()
         self.parsed = 1
+        
+class EJLParser(PJLParser) :
+    """A parser for EJL (Epson Job Language) documents."""
+    JL = "EJL"
         
 def test() :        
     """Test function."""
     if (len(sys.argv) < 2) or ((not sys.stdin.isatty()) and ("-" not in sys.argv[1:])) :
         sys.argv.append("-")
     for arg in sys.argv[1:] :
+        klass = PJLParser
         if arg == "-" :
             infile = sys.stdin
             mustclose = 0
         else :    
+            if arg.endswith(".ejl") :
+                klass = EJLParser
             infile = open(arg, "rb")
             mustclose = 1
         try :
-            parser = PJLParser(infile.read(), debug=1)
+            parser = klass(infile.read(), debug=1)
         except PJLParserError, msg :    
             sys.stderr.write("ERROR: %s\n" % msg)
             sys.stderr.flush()
