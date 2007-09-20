@@ -31,18 +31,18 @@ import pdlparser
 import pjl
 
 class Parser(pdlparser.PDLParser) :
-    """A parser for ESC/PAGES03 documents."""
+    """A parser for ESC/PageS03 documents."""
     def isValid(self) :        
         """Returns True if data is TIFF, else False."""
         if self.firstblock.startswith("\033\1@EJL") and \
             (self.firstblock.find("=ESC/PAGES03\n") != -1) :
-            self.logdebug("DEBUG: Input file is in the ESC/PAGES03 format.")
+            self.logdebug("DEBUG: Input file is in the ESC/PageS03 format.")
             return True
         else :    
             return False
     
     def getJobSize(self) :
-        """Counts pages in an ESC/PAGES03 document.
+        """Counts pages in an ESC/PageS03 document.
         
            Algorithm by Jerome Alet.
            Reverse engineered the file format.
@@ -54,46 +54,38 @@ class Parser(pdlparser.PDLParser) :
         startpos = minfile.find(marker)
         startsequence = chr(0x1d)
         if startpos == -1 :
-            raise pdlparser.PDLParserError, "Invalid ESC/PAGES03 file."
+            raise pdlparser.PDLParserError, "Invalid ESC/PageS03 file."
         startpos += len(marker)
         if minfile[startpos] != startsequence :
-            raise pdlparser.PDLParserError, "Invalid ESC/PAGES03 file."
+            raise pdlparser.PDLParserError, "Invalid ESC/PageS03 file."
         endsequence = "eps{I"
         lgendsequence = len(endsequence)
         try :
             try :    
                 while True :
                     if minfile[startpos] == startsequence :
-                        #self.logdebug("Start sequence at %08x" % startpos)
                         skiplen = 0
                         while True :
                             startpos += 1
                             c = minfile[startpos]
                             if not c.isdigit() :
-                                #self.logdebug("stop on %02x at %08x" % (ord(c), startpos))
                                 break
                             else :
                                 skiplen = (skiplen * 10) + int(c)
                         if minfile[startpos:startpos+lgendsequence] == endsequence :
-                            #self.logdebug("skipped %i bytes at %08x until %08x" % (skiplen, startpos, startpos+skiplen+lgendsequence))
-                            startpos += skiplen + lgendsequence
-                        else :    
-                            #self.logdebug("Problem at %08x" % startpos)
-                            pass
+                            startpos += (skiplen + lgendsequence)
                     else :
                         if minfile[startpos:startpos+6] == "\033\1@EJL" :
-                            # self.logdebug("EJL found at %08x" % startpos)
+                            # Probably near the end of the file.
+                            # Test suite was too small to be sure.
                             ejlparser = pjl.EJLParser(minfile[startpos:])
                             pagecount = ejlparser.environment_variables.get("PAGES", "1")
                             if pagecount.startswith('"') and pagecount.endswith('"') :
                                 pagecount = pagecount[1:-1]
                             pagecount = int(pagecount)    
                             if pagecount <= 0 :
-                                pagecount = 1 # TODO : 1000000 ;-)
+                                pagecount = 1 # TODO : 0 or 1000000 ??? ;-)
                             break
-                        else :    
-                            #self.logdebug("Skipped byte at %08x" % startpos)
-                            pass
                         startpos += 1    
             except IndexError :            
                 pass
