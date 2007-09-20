@@ -40,7 +40,9 @@ Description: pkpgcounter is a command line tool and Python
  .
    * Samsung SPL1
  .
- The five latter formats, as well as some TIFF files, are
+   * ESC/PageS03
+ .
+ The six latter formats, as well as some TIFF files, are
  only supported in page counting mode.
  .
  pkpgcounter is often used in combination with print
