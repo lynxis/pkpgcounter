@@ -20,6 +20,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pkpgcounter News :
 
+  * 3.10 :
+  
+    - Added a minimal parser for ESC/PAGES03 style documents.
+    
+    - Fixed another problem in the code handling the output of Canon's
+      ImageRunner printer drivers.
+    
   * 3.00 :
   
     - Fixed a problem in the code handling the output of Canon's ImageRunner
