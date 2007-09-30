@@ -94,6 +94,7 @@ class Parser(pdlparser.PDLParser) :
             
     def beginPage(self, nextpos) :
         """Indicates the beginning of a new page, and extracts media information."""
+        # self.logdebug("BeginPage at %x" % nextpos)
         self.pagecount += 1
         
         # Default values
@@ -180,6 +181,7 @@ class Parser(pdlparser.PDLParser) :
         
     def endPage(self, nextpos) :    
         """Indicates the end of a page."""
+        # self.logdebug("EndPage at %x" % nextpos)
         pos3 = nextpos - 3
         minfile = self.minfile
         if minfile[pos3:nextpos-1] == self.setNumberOfCopies :
@@ -198,7 +200,7 @@ class Parser(pdlparser.PDLParser) :
     def setColorSpace(self, nextpos) :    
         """Changes the color space."""
         if self.minfile[nextpos-4:nextpos-1] == self.RGBColorSpace : # TODO : doesn't seem to handle all cases !
-            self.iscolor = 1
+            self.iscolor = True
         return 0
             
     def array_Generic(self, nextpos, size) :
@@ -223,8 +225,23 @@ class Parser(pdlparser.PDLParser) :
         return self.array_Generic(nextpos, 2)
         
     def array_32(self, nextpos) :
-        """Handles 32 bits arrays."""
-        return self.array_Generic(nextpos, 4)
+        """Handles 32 bits arrays and Canon ImageRunner tags."""
+        minfile = self.minfile
+        irtag = minfile[nextpos-1:nextpos+3]
+        if irtag in (self.imagerunnermarker1, self.imagerunnermarker2) :
+            # This is the beginning of a Canon ImageRunner tag
+            # self.logdebug("Canon ImageRunner tag at %x" % (nextpos-1))
+            codop = minfile[nextpos+1:nextpos+3]
+            length = unpack(">H", minfile[nextpos+7:nextpos+9])[0]
+            # self.logdebug("Canon ImageRunner block length=%04x" % length)
+            toskip = 19
+            if irtag != self.imagerunnermarker2 :
+                toskip += length
+            # self.logdebug("Canon ImageRunner skip until %x" % (nextpos+toskip))
+            return toskip    
+        else :
+            # This is a normal PCLXL array
+            return self.array_Generic(nextpos, 4)
         
     def embeddedDataSmall(self, nextpos) :
         """Handle small amounts of data."""
@@ -234,19 +251,34 @@ class Parser(pdlparser.PDLParser) :
         """Handle normal amounts of data."""
         return 4 + unpack(self.unpackLong, self.minfile[nextpos:nextpos+4])[0]
         
+    def skipHPPCLXL(self, nextpos) :    
+        """Skip the 'HP-PCL XL' statement if needed."""
+        minfile = self.minfile
+        if nextpos and (minfile[nextpos:nextpos+11] == " HP-PCL XL;") :
+            pos = nextpos
+            while minfile[pos] != '\n' :
+                pos += 1
+            length = (pos - nextpos + 1)    
+            # self.logdebug("Skip HP PCLXL statement until %x" % (nextpos + length))  
+            return length
+        else :    
+            return 0
+        
     def littleEndian(self, nextpos) :
         """Toggles to little endianness."""
         self.unpackType = { 1 : "B", 2 : "<H", 4 : "<I" }
         self.unpackShort = self.unpackType[2]
         self.unpackLong = self.unpackType[4]
-        return 0
+        # self.logdebug("LittleEndian at %x" % (nextpos - 1))
+        return self.skipHPPCLXL(nextpos)
         
     def bigEndian(self, nextpos) :
         """Toggles to big endianness."""
         self.unpackType = { 1 : "B", 2 : ">H", 4 : ">I" }
         self.unpackShort = self.unpackType[2]
         self.unpackLong = self.unpackType[4]
-        return 0
+        # self.logdebug("BigEndian at %x" % (nextpos - 1))
+        return self.skipHPPCLXL(nextpos)
     
     def reservedForFutureUse(self, nextpos) :
         """Outputs something when a reserved byte is encountered."""
@@ -334,7 +366,12 @@ class Parser(pdlparser.PDLParser) :
            Protocol Class 3.0 Supplement
            xl_refsup30r089.pdf
         """
-        self.iscolor = None
+        
+        infileno = self.infile.fileno()
+        self.minfile = minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
+        
+        self.iscolor = False
+        
         found = False
         while not found :
             line = self.infile.readline()
@@ -348,7 +385,7 @@ class Parser(pdlparser.PDLParser) :
                     self.littleEndian(0)
                 elif endian == 0x28 :    
                     self.bigEndian(0)
-                # elif endian == 0x27 : # TODO : This is the ESC code : parse it for PJL statements !
+                # elif endian == 0x27 : # TODO : This is the ASCII binding code : what does it do exactly ?
                 # 
                 else :    
                     raise pdlparser.PDLParserError, "Unknown endianness marker 0x%02x at start !" % endian
@@ -445,7 +482,7 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0xca] = self.array_32 # uint32_array
         self.tags[0xcb] = self.array_16 # sint16_array
         self.tags[0xcc] = self.array_32 # sint32_array
-        self.tags[0xcd] = self.array_32 # real32_array
+        self.tags[0xcd] = self.array_32 # real32_array and unfortunately Canon ImageRunner
         
         self.tags[0xce] = self.reservedForFutureUse # reserved
         self.tags[0xcf] = self.reservedForFutureUse # reserved
@@ -524,7 +561,10 @@ class Parser(pdlparser.PDLParser) :
                                0x98 : 2,
                              }
                              
-        infileno = self.infile.fileno()
+        # Markers for Canon ImageRunner printers
+        self.imagerunnermarker1 = chr(0xcd) + chr(0xca) + chr(0x10) + chr(0x00)
+        self.imagerunnermarker2 = chr(0xcd) + chr(0xca) + chr(0x10) + chr(0x02)
+                             
         self.pages = { 0 : { "copies" : 1, 
                              "orientation" : "Default", 
                              "mediatype" : "Plain", 
@@ -533,7 +573,6 @@ class Parser(pdlparser.PDLParser) :
                              "duplex" : None,
                            } 
                      }      
-        self.minfile = minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
         tags = self.tags
         self.pagecount = 0
         self.escapedStuff = {}   # For escaped datas, mostly PJL commands
