@@ -20,6 +20,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pkpgcounter News :
 
+  * 3.20 :
+   
+    - Added a minimal parser for Brother HBP documents.
+    
+    - Added support for Canon ImageRunner commands to the PCLXL parser,
+      much like it was already done for the PCL3/4/5 parser.
+      
   * 3.10 :
   
     - Added a minimal parser for ESC/PAGES03 style documents.

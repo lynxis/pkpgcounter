@@ -51,8 +51,9 @@ pkpgcounter currently recognizes the following document formats :
     * Samsung QPDL (aka SPL2)
     * Samsung SPL1
     * ESC/PageS03
+    * Brother HBP
 
-The six latter ones, as well as some TIFF documents, are currently 
+The seven latter ones, as well as some TIFF documents, are currently 
 only supported in page counting mode. 
 
 command line usage :

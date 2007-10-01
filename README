@@ -50,7 +50,9 @@ pkpgcounter currently recognizes the following document formats :
         
         - ESC/PageS03
         
-The six latter ones, as well as some TIFF documents, are currently 
+        - Brother HBP
+        
+The seven latter ones, as well as some TIFF documents, are currently 
 only supported in page counting mode. 
 
 By default, when launched pkpgcounter prints on its standard output 

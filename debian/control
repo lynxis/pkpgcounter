@@ -42,7 +42,9 @@ Description: pkpgcounter is a command line tool and Python
  .
    * ESC/PageS03
  .
- The six latter formats, as well as some TIFF files, are
+   * Brother HBP
+ .
+ The seven latter formats, as well as some TIFF files, are
  only supported in page counting mode.
  .
  pkpgcounter is often used in combination with print
