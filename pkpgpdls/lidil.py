@@ -20,7 +20,13 @@
 # $Id$
 #
 
-"""This modules implements a page counter for HP LIDIL format."""
+"""This modules implements a page counter for HP LIDIL format.
+
+   Documentation used : 
+   
+        hplip-2.7.10/prnt/ldl.py
+        hplip-2.7.10/prnt/hpijs/ldlencap.h
+"""
 
 import sys
 import os
@@ -33,16 +39,16 @@ class Parser(pdlparser.PDLParser) :
     """A parser for HP LIDIL documents."""
     def isValid(self) :    
         """Returns True if data is LIDIL, else False."""
-	# Beginning Of File marker is a Sync packet, followed with
-	# a Sync Complete packet followed with a Reset packet.
-	# We just look at the start of the Sync packet for simplicity's sake.
-	BOFMarker = "$\x01\x00\x00\x07"
-	# End Of File marker is a Sync Complete packet followed
-	# with a Reset packet. We ignore the preceding Sync packet
-	# for simplicity's sake.
+        # Beginning Of File marker is a Sync packet, followed with
+        # a Sync Complete packet followed with a Reset packet.
+        # We just look at the start of the Sync packet for simplicity's sake.
+        BOFMarker = "$\x01\x00\x00\x07"
+        # End Of File marker is a Sync Complete packet followed
+        # with a Reset packet. We ignore the preceding Sync packet
+        # for simplicity's sake.
         EOFMarker = "$\x00\x10\x00\x08\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$$\x00\x10\x00\x06\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$" 
         if self.firstblock.startswith(BOFMarker) \
-	   and self.lastblock.endswith(EOFMarker) :
+           and self.lastblock.endswith(EOFMarker) :
             self.logdebug("DEBUG: Input file is in the Hewlett-Packard LIDIL format.")
             return True
         else :    
@@ -50,6 +56,7 @@ class Parser(pdlparser.PDLParser) :
         
     def getJobSize(self) :
         """Computes the number of pages in a HP LIDIL document."""
+        ejectpagemarker = "$\x00\x01\x00\x00\x02" # ensure it's a complete packet (ends with '$')
         return 0
 
 if __name__ == "__main__" :    
