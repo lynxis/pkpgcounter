@@ -83,6 +83,7 @@ for device in hl1240 \
               hpdj890c \
               hpdjplus \
               hpdjportable \
+              gdi \
               tiff12nc \
               tiff24nc \
               tiffcrle \
