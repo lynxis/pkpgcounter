@@ -28,7 +28,7 @@ import os
 import tempfile
 
 import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, \
-       escp2, dvi, tiff, ooo, zjstream, qpdl, spl1, escpages03, plain
+       lidil, escp2, dvi, tiff, ooo, zjstream, qpdl, spl1, escpages03, plain
 import inkcoverage
 
 class AnalyzerOptions :
@@ -165,6 +165,7 @@ class PDLAnalyzer :
                            zjstream, \
                            ooo, \
                            hbp, \
+                           lidil, \
                            pcl345, \
                            escp2, \
                            escpages03, \

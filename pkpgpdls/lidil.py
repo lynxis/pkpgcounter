@@ -35,6 +35,21 @@ from struct import unpack
 
 import pdlparser
 
+# Packet types taken from hplip-2.7.10/prnt/ldl.py
+PACKET_TYPE_COMMAND = 0
+PACKET_TYPE_DISABLE_PACING = 1
+PACKET_TYPE_ENABLE_PACING = 2
+PACKET_TYPE_RESUME_NORMAL_OPERATION = 3
+PACKET_TYPE_DISABLE_RESPONSES = 4
+PACKET_TYPE_ENABLE_RESPONSES = 5
+PACKET_TYPE_RESET_LIDIL = 6
+PACKET_TYPE_SYNC = 7
+PACKET_TYPE_SYNC_COMPLETE = 8
+
+# Command codes we are interested in.
+LDL_LOAD_PAGE = 1
+LDL_EJECT_PAGE = 2
+
 class Parser(pdlparser.PDLParser) :
     """A parser for HP LIDIL documents."""
     def isValid(self) :    
@@ -56,8 +71,34 @@ class Parser(pdlparser.PDLParser) :
         
     def getJobSize(self) :
         """Computes the number of pages in a HP LIDIL document."""
-        ejectpagemarker = "$\x00\x01\x00\x00\x02" # ensure it's a complete packet (ends with '$')
-        return 0
+        pagecount = 0
+        infileno = self.infile.fileno()
+        minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
+        pos = 0
+        try :
+            try :
+                while 1 :
+                    if minfile[pos] != "$" :    # Frame Sync
+                        raise pdlparser.PDLParserError, "This file doesn't seem to be valid Hewlett-Packard LIDIL datas"
+                    try :    
+                        (framesync,     
+                         cmdlength,
+                         dummy,
+                         packettype,
+                         commandnumber,
+                         referencenumber,
+                         datalength) = unpack(">BHBBBHH", minfile[pos:pos+10])
+                    except struct.error :    
+                        raise pdlparser.PDLParserError, "This file doesn't seem to be valid Hewlett-Packard LIDIL datas"
+                    if (packettype == PACKET_TYPE_COMMAND) \
+                        and (commandnumber == LDL_EJECT_PAGE) :
+                        pagecount += 1
+                    pos += (cmdlength + datalength)
+            except IndexError : # EOF ?
+                pass 
+        finally :        
+            minfile.close()
+        return pagecount
 
 if __name__ == "__main__" :    
     pdlparser.test(Parser)

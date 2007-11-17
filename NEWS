@@ -20,6 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pkpgcounter News :
 
+  * 3.30 :
+  
+    - Added a minimal parser for Hewlett-Packard LIDIL documents, as 
+      produced by the hpijs driver.
+      
   * 3.20 :
    
     - Added a minimal parser for Brother HBP documents.
