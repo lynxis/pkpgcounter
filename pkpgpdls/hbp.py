@@ -60,16 +60,18 @@ class Parser(pdlparser.PDLParser) :
         fflen = len(formfeed)
         pos = 0
         try :
-            while True :
-                if (minfile[pos] == "@") \
-                   and (minfile[pos:pos+fflen] == formfeed) :
-                    pagecount += 1
-                    pos += fflen
-                else :        
-                    pos += 1
-        except IndexError : # EOF ?
-            pass
-        minfile.close() # reached EOF
+            try :
+                while True :
+                    if (minfile[pos] == "@") \
+                       and (minfile[pos:pos+fflen] == formfeed) :
+                        pagecount += 1
+                        pos += fflen
+                    else :        
+                        pos += 1
+            except IndexError : # EOF ?
+                pass
+        finally :        
+            minfile.close() # reached EOF
         return pagecount
         
 if __name__ == "__main__" :    

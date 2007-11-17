@@ -59,18 +59,20 @@ class Parser(pdlparser.PDLParser) :
         eofchar = chr(0xdf)
         postchar = chr(0xf8)
         try :
-            while minfile[pos] == eofchar :
-                pos -= 1
-            idbyte = minfile[pos]    
-            if idbyte != minfile[1] :
-                raise IndexError, "Invalid DVI file."
-            pos = unpack(">I", minfile[pos - 4:pos])[0]
-            if minfile[pos] != postchar :
-                raise IndexError, "Invalid DVI file."
-            pagecount = unpack(">H", minfile[pos + 27: pos + 29])[0]
-        except IndexError : # EOF ?
-            pass
-        minfile.close() # reached EOF
+            try :
+                while minfile[pos] == eofchar :
+                    pos -= 1
+                idbyte = minfile[pos]    
+                if idbyte != minfile[1] :
+                    raise IndexError, "Invalid DVI file."
+                pos = unpack(">I", minfile[pos - 4:pos])[0]
+                if minfile[pos] != postchar :
+                    raise IndexError, "Invalid DVI file."
+                pagecount = unpack(">H", minfile[pos + 27: pos + 29])[0]
+            except IndexError : # EOF ?
+                pass
+        finally :        
+            minfile.close() # reached EOF
         return pagecount
         
 if __name__ == "__main__" :    

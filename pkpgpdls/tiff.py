@@ -65,16 +65,18 @@ class Parser(pdlparser.PDLParser) :
         else :    
             raise pdlparser.PDLParserError, "Unknown file endianness."
         pos = 4    
-        try :    
-            nextifdoffset = unpack(integerbyteorder, minfile[pos : pos + 4])[0]
-            while nextifdoffset :
-                direntrycount = unpack(shortbyteorder, minfile[nextifdoffset : nextifdoffset + 2])[0]
-                pos = nextifdoffset + 2 + (direntrycount * 12)
+        try :
+            try :    
                 nextifdoffset = unpack(integerbyteorder, minfile[pos : pos + 4])[0]
-                pagecount += 1
-        except IndexError :            
-            pass
-        minfile.close()
+                while nextifdoffset :
+                    direntrycount = unpack(shortbyteorder, minfile[nextifdoffset : nextifdoffset + 2])[0]
+                    pos = nextifdoffset + 2 + (direntrycount * 12)
+                    nextifdoffset = unpack(integerbyteorder, minfile[pos : pos + 4])[0]
+                    pagecount += 1
+            except IndexError :            
+                pass
+        finally :        
+            minfile.close()
         return pagecount
         
 if __name__ == "__main__" :    
