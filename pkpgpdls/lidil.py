@@ -31,7 +31,7 @@
 import sys
 import os
 import mmap
-from struct import unpack
+import struct
 
 import pdlparser
 
@@ -71,7 +71,8 @@ class Parser(pdlparser.PDLParser) :
         
     def getJobSize(self) :
         """Computes the number of pages in a HP LIDIL document."""
-        pagecount = 0
+        unpack = struct.unpack
+        ejectpage = loadpage = 0
         infileno = self.infile.fileno()
         minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
         pos = 0
@@ -90,15 +91,24 @@ class Parser(pdlparser.PDLParser) :
                          datalength) = unpack(">BHBBBHH", minfile[pos:pos+10])
                     except struct.error :    
                         raise pdlparser.PDLParserError, "This file doesn't seem to be valid Hewlett-Packard LIDIL datas"
-                    if (packettype == PACKET_TYPE_COMMAND) \
-                        and (commandnumber == LDL_EJECT_PAGE) :
-                        pagecount += 1
+                    if packettype == PACKET_TYPE_COMMAND :
+                        if commandnumber == LDL_LOAD_PAGE :
+                            loadpage += 1
+                        elif commandnumber == LDL_EJECT_PAGE :
+                            ejectpage += 1
                     pos += (cmdlength + datalength)
             except IndexError : # EOF ?
                 pass 
         finally :        
             minfile.close()
-        return pagecount
+            
+        # Number of page eject commands should be sufficient,
+        # but we never know : someone could try to cheat the printer
+        # by loading a page but not ejecting it, and ejecting it manually
+        # later on. Not sure if the printers would support this, but
+        # taking the max value works around the problem in any case.
+        self.logdebug("Load : %i    Eject : %i" % (loadpage, ejectpage))
+        return max(loadpage, ejectpage)
 
 if __name__ == "__main__" :    
     pdlparser.test(Parser)
