@@ -33,6 +33,7 @@ import inkcoverage
 class Parser(pdlparser.PDLParser) :
     """A parser for PostScript documents."""
     totiffcommands = [ 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -' ]
+    openmode = "rU"
     def isValid(self) :    
         """Returns True if data is PostScript, else False."""
         if self.firstblock.startswith("%!") or \
@@ -51,36 +52,41 @@ class Parser(pdlparser.PDLParser) :
     def throughGhostScript(self) :
         """Get the count through GhostScript, useful for non-DSC compliant PS files."""
         self.logdebug("Internal parser sucks, using GhostScript instead...")
-        self.infile.seek(0)
         command = 'gs -sDEVICE=bbox -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET - 2>&1 | grep -c "%%HiResBoundingBox:" 2>/dev/null'
-        child = popen2.Popen4(command)
-        try :
-            data = self.infile.read(pdlparser.MEGABYTE)    
-            while data :
-                child.tochild.write(data)
-                data = self.infile.read(pdlparser.MEGABYTE)
-            child.tochild.flush()
-            child.tochild.close()    
-        except (IOError, OSError), msg :    
-            raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
-            
         pagecount = 0
+        # we need to reopen the input file in binary mode again, just in case
+        # otherwise we might break the original file's contents.
+        infile = open(self.filename, "rb")
         try :
-            pagecount = int(child.fromchild.readline().strip())
-        except (IOError, OSError, AttributeError, ValueError), msg :
-            raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
-        child.fromchild.close()
-        
-        try :
-            child.wait()
-        except OSError, msg :    
-            raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+            child = popen2.Popen4(command)
+            try :
+                data = infile.read(pdlparser.MEGABYTE)    
+                while data :
+                    child.tochild.write(data)
+                    data = infile.read(pdlparser.MEGABYTE)
+                child.tochild.flush()
+                child.tochild.close()    
+            except (IOError, OSError), msg :    
+                raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+                
+            pagecount = 0
+            try :
+                pagecount = int(child.fromchild.readline().strip())
+            except (IOError, OSError, AttributeError, ValueError), msg :
+                raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+            child.fromchild.close()
+            
+            try :
+                child.wait()
+            except OSError, msg :    
+                raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+        finally :        
+            infile.close()
         self.logdebug("GhostScript said : %s pages" % pagecount)    
         return pagecount * self.copies
         
     def natively(self) :
         """Count pages in a DSC compliant PostScript document."""
-        self.infile.seek(0)
         pagecount = 0
         self.pages = { 0 : { "copies" : 1 } }
         oldpagenum = None
@@ -89,7 +95,8 @@ class Parser(pdlparser.PDLParser) :
         prescribe = 0 # Kyocera's Prescribe commands
         acrobatmarker = 0
         pagescomment = None
-        for line in self.infile : 
+        for line in self.infile :
+            line = line.strip()
             if (not prescribe) and line.startswith(r"%%BeginResource: procset pdf") \
                and not acrobatmarker :
                 notrust = 1 # Let this stuff be managed by GhostScript, but we still extract number of copies
@@ -120,7 +127,7 @@ class Parser(pdlparser.PDLParser) :
                     self.pages[pagecount] = { "copies" : self.pages[pagecount-1]["copies"] }
             elif line.startswith(r"%%Requirements: numcopies(") :    
                 try :
-                    number = int(line.strip().split('(')[1].split(')')[0])
+                    number = int(line.split('(')[1].split(')')[0])
                 except :     
                     pass
                 else :    
@@ -129,7 +136,7 @@ class Parser(pdlparser.PDLParser) :
             elif line.startswith(r"%%BeginNonPPDFeature: NumCopies ") :
                 # handle # of copies set by some Windows printer driver
                 try :
-                    number = int(line.strip().split()[2])
+                    number = int(line.split()[2])
                 except :     
                     pass
                 else :    
@@ -138,7 +145,7 @@ class Parser(pdlparser.PDLParser) :
             elif line.startswith("1 dict dup /NumCopies ") :
                 # handle # of copies set by mozilla/kprinter
                 try :
-                    number = int(line.strip().split()[4])
+                    number = int(line.split()[4])
                 except :     
                     pass
                 else :    
@@ -147,7 +154,7 @@ class Parser(pdlparser.PDLParser) :
             elif line.startswith("{ pop 1 dict dup /NumCopies ") :
                 # handle # of copies set by firefox/kprinter/cups (alternate syntax)
                 try :
-                    number = int(line.strip().split()[6])
+                    number = int(line.split()[6])
                 except :
                     pass
                 else :
@@ -155,7 +162,7 @@ class Parser(pdlparser.PDLParser) :
                         self.pages[pagecount]["copies"] = number
             elif line.startswith("/languagelevel where{pop languagelevel}{1}ifelse 2 ge{1 dict dup/NumCopies") :
                 try :
-                    number = int(previousline.strip()[2:])
+                    number = int(previousline[2:])
                 except :
                     pass
                 else :
@@ -163,7 +170,7 @@ class Parser(pdlparser.PDLParser) :
                         self.pages[pagecount]["copies"] = number
             elif line.startswith("/#copies ") :
                 try :
-                    number = int(line.strip().split()[1])
+                    number = int(line.split()[1])
                 except :     
                     pass
                 else :    
@@ -171,7 +178,7 @@ class Parser(pdlparser.PDLParser) :
                         self.pages[pagecount]["copies"] = number
             elif line.startswith(r"%RBINumCopies: ") :   
                 try :
-                    number = int(line.strip().split()[1])
+                    number = int(line.split()[1])
                 except :     
                     pass
                 else :    
@@ -206,6 +213,3 @@ class Parser(pdlparser.PDLParser) :
             except pdlparser.PDLParserError, msg :
                 self.logdebug(msg)
         return max(nbpages, newnbpages)    
-        
-if __name__ == "__main__" :    
-    pdlparser.test(Parser)

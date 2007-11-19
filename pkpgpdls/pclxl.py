@@ -699,6 +699,3 @@ class Parser(pdlparser.PDLParser) :
                                                  duplexmode, 
                                                  colormode))
         return self.pagecount
-        
-if __name__ == "__main__" :    
-    pdlparser.test(Parser)

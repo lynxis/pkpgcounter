@@ -41,21 +41,14 @@ class PDLParserError(Exception):
 class PDLParser :
     """Generic PDL parser."""
     totiffcommands = None        # Default command to convert to TIFF
-    def __init__(self, infile, debug=0, firstblock=None, lastblock=None) :
+    openmode = "rb"              # Default file opening mode
+    def __init__(self, filename, debug=0) :
         """Initialize the generic parser."""
-        self.infile = infile
+        self.filename = filename
         self.debug = debug
-        if firstblock is None :
-            self.infile.seek(0)
-            firstblock = self.infile.read(FIRSTBLOCKSIZE)
-            try :
-                self.infile.seek(-LASTBLOCKSIZE, 2)
-                lastblock = self.infile.read(LASTBLOCKSIZE)
-            except IOError :    
-                lastblock = ""
-            self.infile.seek(0)
-        self.firstblock = firstblock
-        self.lastblock = lastblock
+        self.infile = None
+        (self.firstblock, self.lastblock) = self.readBlocks()
+        self.infile = open(self.filename, self.openmode)
         if not self.isValid() :
             raise PDLParserError, "Invalid file format !"
         try :
@@ -67,6 +60,25 @@ class PDLParser :
             # the CPU intensive methods : PCL and PCLXL
             # parsing will greatly benefit from this.
             psyco.bind(self.getJobSize)
+            
+    def __del__(self) :
+        """Ensures the input file gets closed."""
+        if self.infile :
+            self.infile.close()
+            
+    def readBlocks(self) :        
+        """Reads first and last block of the input file."""
+        infile = open(self.filename, "rb")
+        try :
+            firstblock = infile.read(FIRSTBLOCKSIZE)
+            try :
+                infile.seek(-LASTBLOCKSIZE, 2)
+                lastblock = infile.read(LASTBLOCKSIZE)
+            except IOError :    
+                lastblock = ""
+        finally :        
+            infile.close()
+        return (firstblock, lastblock)    
             
     def logdebug(self, message) :       
         """Logs a debug message if needed."""
@@ -86,67 +98,48 @@ class PDLParser :
            Writes TIFF datas to the file named by fname.
         """   
         if self.totiffcommands :
-            for totiffcommand in self.totiffcommands :
-                self.infile.seek(0)
-                error = False
-                commandline = totiffcommand % locals()
-                child = popen2.Popen4(commandline)
-                try :
+            infile = open(self.filename, "rb")
+            try :
+                for totiffcommand in self.totiffcommands :
+                    infile.seek(0)
+                    error = False
+                    commandline = totiffcommand % locals()
+                    child = popen2.Popen4(commandline)
                     try :
-                        data = self.infile.read(MEGABYTE)    
-                        while data :
-                            child.tochild.write(data)
-                            child.tochild.flush()
-                            data = self.infile.read(MEGABYTE)
-                    except (IOError, OSError) :    
-                        error = True
-                finally :    
-                    child.tochild.close()    
-                    dummy = child.fromchild.read()
-                    child.fromchild.close()
-                    
-                try :
-                    status = child.wait()
-                except OSError :    
-                    error = True
-                else :    
-                    if os.WIFEXITED(status) :
-                        if os.WEXITSTATUS(status) :
+                        try :
+                            data = infile.read(MEGABYTE)    
+                            while data :
+                                child.tochild.write(data)
+                                child.tochild.flush()
+                                data = infile.read(MEGABYTE)
+                        except (IOError, OSError) :    
                             error = True
-                    else :        
+                    finally :    
+                        child.tochild.close()    
+                        dummy = child.fromchild.read()
+                        child.fromchild.close()
+                        
+                    try :
+                        status = child.wait()
+                    except OSError :    
                         error = True
-                    
-                if not os.path.exists(fname) :
-                    error = True
-                elif not os.stat(fname).st_size :
-                    error = True
-                else :        
-                    break       # Conversion worked fine it seems.
-                self.logdebug("Command failed : %s" % repr(commandline))
+                    else :    
+                        if os.WIFEXITED(status) :
+                            if os.WEXITSTATUS(status) :
+                                error = True
+                        else :        
+                            error = True
+                        
+                    if not os.path.exists(fname) :
+                        error = True
+                    elif not os.stat(fname).st_size :
+                        error = True
+                    else :        
+                        break       # Conversion worked fine it seems.
+                    self.logdebug("Command failed : %s" % repr(commandline))
+            finally :        
+                infile.close()
             if error :
                 raise PDLParserError, "Problem during conversion to TIFF."
         else :        
             raise PDLParserError, "Impossible to compute ink coverage for this file format."
-            
-def test(parserclass) :        
-    """Test function."""
-    if (len(sys.argv) < 2) or ((not sys.stdin.isatty()) and ("-" not in sys.argv[1:])) :
-        sys.argv.append("-")
-    totalsize = 0    
-    for arg in sys.argv[1:] :
-        if arg == "-" :
-            infile = sys.stdin
-            mustclose = 0
-        else :    
-            infile = open(arg, "rbU")
-            mustclose = 1
-        try :
-            parser = parserclass(infile, debug=1)
-            totalsize += parser.getJobSize()
-        except PDLParserError, msg :    
-            sys.stderr.write("ERROR: %s\n" % msg)
-            sys.stderr.flush()
-        if mustclose :    
-            infile.close()
-    print "%s" % totalsize
-    

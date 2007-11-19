@@ -22,7 +22,6 @@
 
 """This modules implements a page counter for PDF documents."""
 
-import sys
 import re
 
 import pdlparser
@@ -33,6 +32,8 @@ class PDFObject :
         """Initialize the PDF object."""
         self.major = major
         self.minor = minor
+        self.majori = int(major)
+        self.minori = int(minor)
         self.description = description
         self.comments = []
         self.content = []
@@ -42,6 +43,7 @@ class PDFObject :
 class Parser(pdlparser.PDLParser) :
     """A parser for PDF documents."""
     totiffcommands = [ 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -' ]
+    openmode = "rU"
     def isValid(self) :    
         """Returns True if data is PDF, else False."""
         if self.firstblock.startswith("%PDF-") or \
@@ -61,7 +63,7 @@ class Parser(pdlparser.PDLParser) :
         inobject = 0
         objre = re.compile(r"\s?(\d+)\s+(\d+)\s+obj[<\s/]?")
         for line in self.infile :
-            line = line.strip()
+            line = line.strip()    
             if line.startswith("% ") :    
                 if inobject :
                     obj.comments.append(line)
@@ -71,7 +73,7 @@ class Parser(pdlparser.PDLParser) :
                 # New object begins here
                 result = objre.search(line)
                 if result is not None :
-                    (major, minor) = [int(num) for num in line[result.start():result.end()].split()[:2]]
+                    (major, minor) = line[result.start():result.end()].split()[:2]
                     obj = PDFObject(major, minor, lastcomment)
                     obj.content.append(line[result.end():])
                     inobject = 1
@@ -85,15 +87,16 @@ class Parser(pdlparser.PDLParser) :
                         # found in the file will be the one we keep.
                         # if we want the first one, just use > instead of >=
                         oldobject = objects.setdefault(major, obj)
-                        if minor >= oldobject.minor :
+                        if int(minor) >= oldobject.minori :
                             objects[major] = obj
+                            # self.logdebug("Object(%i, %i) overwritten with Object(%i, %i)" % (oldobject.majori, oldobject.minori, obj.majori, obj.minori))
+                        # self.logdebug("Object(%i, %i)" % (obj.majori, obj.minori))
                         inobject = 0        
                 else :    
                     if inobject :
                         obj.content.append(line)
                         
         # Now we check each PDF object we've just created.
-        # colorregexp = re.compile(r"(/ColorSpace) ?(/DeviceRGB|/DeviceCMYK)[/ \t\r\n]", re.I)
         newpageregexp = re.compile(r"(/Type)\s?(/Page)[/>\s]", re.I)
         pagecount = 0
         for obj in objects.values() :
@@ -102,6 +105,3 @@ class Parser(pdlparser.PDLParser) :
             if count and (content != r"<</Type /Page>>") : # Empty pages which are not rendered ?
                 pagecount += count
         return pagecount    
-        
-if __name__ == "__main__" :    
-    pdlparser.test(Parser)

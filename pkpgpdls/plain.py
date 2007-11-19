@@ -22,18 +22,15 @@
 
 """This modules implements a page counter for plain text documents."""
 
-import sys
-import os
-
 import pdlparser
 import version
-
 
 class Parser(pdlparser.PDLParser) :
     """A parser for plain text documents."""
     totiffcommands = [ 'enscript --quiet --portrait --no-header --columns 1 --output - | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -',
                        'a2ps --borders 0 --quiet --portrait --no-header --columns 1 --output - | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -',
                      ]  
+    openmode = "rU"                 
     def isValid(self) :    
         """Returns True if data is plain text, else False.
         
@@ -56,7 +53,7 @@ class Parser(pdlparser.PDLParser) :
         pagecount = 0
         linecount = 0
         for line in self.infile :
-            if line.endswith("\n") or line.endswith("\r") :
+            if line.endswith("\n") :
                 linecount += 1    
                 if (linecount > pagesize) :
                     pagecount += 1
@@ -69,6 +66,3 @@ class Parser(pdlparser.PDLParser) :
             else :        
                 raise pdlparser.PDLParserError, "Unsupported file format. Please send the file to %s" % version.__authoremail__
         return pagecount + 1    # NB : empty files are catched in isValid()
-        
-if __name__ == "__main__" :    
-    pdlparser.test(Parser)

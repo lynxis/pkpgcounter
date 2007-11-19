@@ -22,10 +22,7 @@
 
 """This modules implements a page counter for ZjStream documents."""
 
-import sys
-import os
-import mmap
-from struct import unpack
+import struct
 
 import pdlparser
 
@@ -35,72 +32,63 @@ class Parser(pdlparser.PDLParser) :
         """Returns True if data is ZjStream, else False."""
         if self.firstblock[:4] == "ZJZJ" :
             self.logdebug("DEBUG: Input file is in the Zenographics ZjStream (little endian) format.")
-            self.littleEndian()
-            return True
+            return self.littleEndian()
         elif self.firstblock[:4] == "JZJZ" :    
             self.logdebug("DEBUG: Input file is in the Zenographics ZjStream (big endian) format.")
-            self.bigEndian()
-            return True
+            return self.bigEndian()
         else :    
             return False
         
     def littleEndian(self) :
         """Toggles to little endianness."""
-        self.unpackType = { 1 : "B", 2 : "<H", 4 : "<I" }
-        self.unpackShort = self.unpackType[2]
-        self.unpackLong = self.unpackType[4]
-        return 0
+        self.unpackHeader = "<IIIHH"
+        return True
         
     def bigEndian(self) :
         """Toggles to big endianness."""
-        self.unpackType = { 1 : "B", 2 : ">H", 4 : ">I" }
-        self.unpackShort = self.unpackType[2]
-        self.unpackLong = self.unpackType[4]
-        return 0
+        self.unpackHeader = ">IIIHH"
+        return True
         
     def getJobSize(self) :
         """Computes the number of pages in a ZjStream document."""
-        infileno = self.infile.fileno()
-        minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
-        pos = 4
+        unpack = struct.unpack
+        self.infile.seek(4, 0) # Skip ZJZJ/JZJZ header
         startpagecount = endpagecount = 0
-        try :
-            try :
-                while 1 :
-                    header = minfile[pos:pos+16]
-                    if len(header) != 16 :
-                        break
-                    totalChunkSize = unpack(self.unpackLong, header[:4])[0]
-                    chunkType = unpack(self.unpackLong, header[4:8])[0]
-                    numberOfItems = unpack(self.unpackLong, header[8:12])[0]
-                    reserved = unpack(self.unpackShort, header[12:14])[0]
-                    signature = unpack(self.unpackShort, header[14:])[0]
-                    pos += totalChunkSize
-                    if chunkType == 0 :
-                        self.logdebug("startDoc")
-                    elif chunkType == 1 :    
-                        self.logdebug("endDoc")
-                    elif chunkType == 2 :    
-                        self.logdebug("startPage")
-                        startpagecount += 1
-                    elif chunkType == 3 :
-                        self.logdebug("endPage")
-                        endpagecount += 1
-                        
-                    #self.logdebug("Chunk size : %s" % totalChunkSize)
-                    #self.logdebug("Chunk type : 0x%08x" % chunkType)
-                    #self.logdebug("# items : %s" % numberOfItems)
-                    #self.logdebug("reserved : 0x%04x" % reserved)
-                    #self.logdebug("signature : 0x%04x" % signature)
-                    #self.logdebug("\n")
-            except IndexError : # EOF ?
-                pass 
-        finally :        
-            minfile.close()
+        while True :
+            header = self.infile.read(16)
+            if not header :
+                break
+            try :    
+                (totalChunkSize,
+                 chunkType,
+                 numberOfItems,
+                 reserved,
+                 signature) = unpack(self.unpackHeader, header)
+            except struct.error :
+                raise pdlparser.PDLParserError, "This file doesn't seem to be valid ZjStream datas."
+            self.infile.seek(totalChunkSize - len(header), 1)
+            if chunkType == 2 :    
+                #self.logdebug("startPage")
+                startpagecount += 1
+            elif chunkType == 3 :
+                #self.logdebug("endPage")
+                endpagecount += 1
+            #elif chunkType == 0 :
+            #    self.logdebug("startDoc")
+            #elif chunkType == 1 :    
+            #    self.logdebug("endDoc")
+                
+            #self.logdebug("Chunk size : %s" % totalChunkSize)
+            #self.logdebug("Chunk type : 0x%08x" % chunkType)
+            #self.logdebug("# items : %s" % numberOfItems)
+            #self.logdebug("reserved : 0x%04x" % reserved)
+            #self.logdebug("signature : 0x%04x" % signature)
+            #self.logdebug("\n")
             
-        if startpagecount != endpagecount :    
-            sys.stderr.write("ERROR: Incorrect ZjStream datas.\n")
+        # Number of endpage commands should be sufficient,
+        # but we never know : someone could try to cheat the printer
+        # by starting a page but not ending it, and ejecting it manually
+        # later on. Not sure if the printers would support this, but
+        # taking the max value works around the problem in any case.
+        self.logdebug("StartPage : %i    EndPage : %i" % (startpagecount, endpagecount))
         return max(startpagecount, endpagecount)
-        
-if __name__ == "__main__" :    
-    pdlparser.test(Parser)

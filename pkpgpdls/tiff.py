@@ -78,6 +78,3 @@ class Parser(pdlparser.PDLParser) :
         finally :        
             minfile.close()
         return pagecount
-        
-if __name__ == "__main__" :    
-    pdlparser.test(Parser)

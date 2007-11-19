@@ -73,6 +73,3 @@ class Parser(pdlparser.PDLParser) :
             return pagecount4
         else :    
             return int(pagecount1 / 2)       
-        
-if __name__ == "__main__" :    
-    pdlparser.test(Parser)

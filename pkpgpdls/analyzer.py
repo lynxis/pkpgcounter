@@ -53,7 +53,7 @@ class PDLAnalyzer :
         """
         self.options = options
         self.filename = filename
-        self.infile = None
+        self.workfile = None 
         self.mustclose = None
         
     def getJobSize(self) :    
@@ -81,16 +81,8 @@ class PDLAnalyzer :
         try :
             try :
                 pdlhandler = self.detectPDLHandler()
-                (handle, filename) = tempfile.mkstemp(".tmp", "pkpgcounter")    
-                os.close(handle)
-                try :
-                    pdlhandler.convertToTiffMultiPage24NC(filename, self.options.resolution)
-                    result = inkcoverage.getInkCoverage(filename, cspace)
-                finally :    
-                    try :
-                        os.remove(filename)
-                    except OSError :
-                        sys.stderr.write("Problem when trying to remove temporary file %s\n" % filename)
+                pdlhandler.convertToTiffMultiPage24NC(self.filename, self.options.resolution)
+                result = inkcoverage.getInkCoverage(self.filename, cspace)
             except pdlparser.PDLParserError, msg :    
                 raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
         finally :    
@@ -99,7 +91,7 @@ class PDLAnalyzer :
         
     def openFile(self) :    
         """Opens the job's data stream for reading."""
-        self.mustclose = 0  # by default we don't want to close the file when finished
+        self.mustclose = False  # by default we don't want to close the file when finished
         if hasattr(self.filename, "read") and hasattr(self.filename, "seek") :
             # filename is in fact a file-like object 
             infile = self.filename
@@ -108,72 +100,53 @@ class PDLAnalyzer :
             infile = sys.stdin
         else :    
             # normal file
-            self.infile = open(self.filename, "rbU")
-            self.mustclose = 1
+            self.workfile = open(self.filename, "rb")
+            self.mustclose = True
             return
             
         # Use a temporary file, always seekable contrary to standard input.
-        self.infile = tempfile.TemporaryFile(mode="w+b") # TODO : not opened in universal newline mode, Python 2.5 refuses.
-        while 1 :
+        self.workfile = tempfile.NamedTemporaryFile(mode="w+b")
+        self.filename = self.workfile.name
+        while True :
             data = infile.read(pdlparser.MEGABYTE) 
             if not data :
                 break
-            self.infile.write(data)
-        self.infile.flush()    
-        self.infile.seek(0)
+            self.workfile.write(data)
+        self.workfile.flush()    
+        self.workfile.seek(0)
             
     def closeFile(self) :        
-        """Closes the job's data stream if we can close it."""
+        """Closes the job's data stream if we have to."""
         if self.mustclose :
-            self.infile.close()    
-        else :    
-            # if we don't have to close the file, then
-            # ensure the file pointer is reset to the 
-            # start of the file in case the process wants
-            # to read the file again.
-            try :
-                self.infile.seek(0)
-            except IOError :    
-                pass    # probably stdin, which is not seekable
+            self.workfile.close()    
         
     def detectPDLHandler(self) :    
         """Tries to autodetect the document format.
         
            Returns the correct PDL handler class or None if format is unknown
         """   
-        # Try to detect file type by reading first and last blocks of datas    
-        # Each parser can read them automatically, but here we do this only once.
-        self.infile.seek(0)
-        firstblock = self.infile.read(pdlparser.FIRSTBLOCKSIZE)
-        try :
-            self.infile.seek(-pdlparser.LASTBLOCKSIZE, 2)
-            lastblock = self.infile.read(pdlparser.LASTBLOCKSIZE)
-        except IOError :    
-            lastblock = ""
-        self.infile.seek(0)
-        if not firstblock :
+        if not os.stat(self.filename).st_size :
             raise pdlparser.PDLParserError, "input file %s is empty !" % str(self.filename)
-        else :    
-            # IMPORTANT : the order is important below. FIXME.
-            for module in (postscript, \
-                           pclxl, \
-                           pdf, \
-                           qpdl, \
-                           spl1, \
-                           dvi, \
-                           tiff, \
-                           zjstream, \
-                           ooo, \
-                           hbp, \
-                           lidil, \
-                           pcl345, \
-                           escp2, \
-                           escpages03, \
-                           plain) :     # IMPORTANT : don't move this one up !
-                try :               
-                    return module.Parser(self.infile, self.options.debug, firstblock, lastblock)
-                except pdlparser.PDLParserError :
-                    pass # try next parser
+        # IMPORTANT : the order is important below. FIXME.
+        for module in (postscript, \
+                       pclxl, \
+                       pdf, \
+                       qpdl, \
+                       spl1, \
+                       dvi, \
+                       tiff, \
+                       zjstream, \
+                       ooo, \
+                       hbp, \
+                       lidil, \
+                       pcl345, \
+                       escp2, \
+                       escpages03, \
+                       plain) :     # IMPORTANT : don't move this one up !
+            try :               
+                return module.Parser(self.filename, self.options.debug)
+            except pdlparser.PDLParserError :
+                pass # try next parser
         raise pdlparser.PDLParserError, "Analysis of first data block failed."
             
 def main() :    
@@ -253,7 +226,7 @@ def main() :
             sys.stderr.write("WARN: Aborted at user's request.\n")
             sys.stderr.flush()
         if not options.colorspace :    
-            print "%s" % totalsize
+            print "%i" % totalsize
         else :    
             print "\n".join(lines)
     

@@ -291,6 +291,3 @@ class Parser(pdlparser.PDLParser) :
                                            page["mediasource"], 
                                            duplexmode))
         return self.pagecount
-        
-if __name__ == "__main__" :    
-    pdlparser.test(Parser)

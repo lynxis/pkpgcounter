@@ -61,6 +61,3 @@ class Parser(pdlparser.PDLParser) :
                 # Probably a Spreadsheet document
                 raise pdlparser.PDLParserError, "OpenOffice.org's spreadsheet documents are not yet supported."
         return pagecount
-        
-if __name__ == "__main__" :    
-    pdlparser.test(Parser)
