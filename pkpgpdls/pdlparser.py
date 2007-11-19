@@ -93,52 +93,29 @@ class PDLParser :
         """Counts pages in a document."""
         raise RuntimeError, "Not implemented !"
         
-    def convertToTiffMultiPage24NC(self, fname, dpi) :
+    def convertToTiffMultiPage24NC(self, outfname, dpi) :
         """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
-           Writes TIFF datas to the file named by fname.
+           Writes TIFF datas to the file named by outfname.
         """   
         if self.totiffcommands :
-            infile = open(self.filename, "rb")
-            try :
-                for totiffcommand in self.totiffcommands :
-                    infile.seek(0)
-                    error = False
-                    commandline = totiffcommand % locals()
-                    child = popen2.Popen4(commandline)
-                    try :
-                        try :
-                            data = infile.read(MEGABYTE)    
-                            while data :
-                                child.tochild.write(data)
-                                child.tochild.flush()
-                                data = infile.read(MEGABYTE)
-                        except (IOError, OSError) :    
-                            error = True
-                    finally :    
-                        child.tochild.close()    
-                        dummy = child.fromchild.read()
-                        child.fromchild.close()
-                        
-                    try :
-                        status = child.wait()
-                    except OSError :    
+            infname = self.filename
+            for totiffcommand in self.totiffcommands :
+                error = False
+                commandline = totiffcommand % locals()
+                # self.logdebug("Executing '%s'" % commandline)
+                status = os.system(commandline)
+                if os.WIFEXITED(status) :
+                    if os.WEXITSTATUS(status) :
                         error = True
-                    else :    
-                        if os.WIFEXITED(status) :
-                            if os.WEXITSTATUS(status) :
-                                error = True
-                        else :        
-                            error = True
-                        
-                    if not os.path.exists(fname) :
-                        error = True
-                    elif not os.stat(fname).st_size :
-                        error = True
-                    else :        
-                        break       # Conversion worked fine it seems.
-                    self.logdebug("Command failed : %s" % repr(commandline))
-            finally :        
-                infile.close()
+                else :        
+                    error = True
+                if not os.path.exists(outfname) :
+                    error = True
+                elif not os.stat(outfname).st_size :
+                    error = True
+                else :        
+                    break       # Conversion worked fine it seems.
+                sys.stderr.write("Command failed : %s\n" % repr(commandline))
             if error :
                 raise PDLParserError, "Problem during conversion to TIFF."
         else :        

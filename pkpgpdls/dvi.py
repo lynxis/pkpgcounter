@@ -31,7 +31,7 @@ import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for DVI documents."""
-    totiffcommands = [ 'cat >%(fname)s && dvips -q -o - %(fname)s | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -' ]
+    totiffcommands = [ 'dvips -q -o - "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -' ]
     def isValid(self) :        
         """Returns True if data is DVI, else False."""
         try :

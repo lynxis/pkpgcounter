@@ -115,7 +115,7 @@ def getInkCoverage(fname, colorspace) :
         raise pdlparser.PDLParserError, "%s (%s)" % (msg, fname)
     else :    
         try :
-            while 1 :
+            while True :
                 nbpixels = image.size[0] * image.size[1]
                 result.append(computation(image, nbpixels))
                 index += 1              

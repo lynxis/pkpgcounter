@@ -81,11 +81,19 @@ class PDLAnalyzer :
         try :
             try :
                 pdlhandler = self.detectPDLHandler()
-                pdlhandler.convertToTiffMultiPage24NC(self.filename, self.options.resolution)
-                result = inkcoverage.getInkCoverage(self.filename, cspace)
+                (handle, filename) = tempfile.mkstemp(".tmp", "pkpgcounter")
+                os.close(handle)
+                try :
+                    pdlhandler.convertToTiffMultiPage24NC(filename, self.options.resolution)
+                    result = inkcoverage.getInkCoverage(filename, cspace)
+                finally :    
+                    try :
+                        os.remove(filename)
+                    except OSError :    
+                        sys.stderr.write("Problem while trying to remove temporary file %s\n" % filename)
             except pdlparser.PDLParserError, msg :    
                 raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
-        finally :    
+        finally :
             self.closeFile()
         return result
         

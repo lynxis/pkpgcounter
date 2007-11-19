@@ -27,8 +27,8 @@ import version
 
 class Parser(pdlparser.PDLParser) :
     """A parser for plain text documents."""
-    totiffcommands = [ 'enscript --quiet --portrait --no-header --columns 1 --output - | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -',
-                       'a2ps --borders 0 --quiet --portrait --no-header --columns 1 --output - | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -',
+    totiffcommands = [ 'enscript --quiet --portrait --no-header --columns 1 --output - "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -',
+                       'a2ps --borders 0 --quiet --portrait --no-header --columns 1 --output - "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -',
                      ]  
     openmode = "rU"                 
     def isValid(self) :    

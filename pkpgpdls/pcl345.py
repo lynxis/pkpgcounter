@@ -38,8 +38,8 @@ ASCIILIMIT = chr(0x80)
 
 class Parser(pdlparser.PDLParser) :
     """A parser for PCL3, PCL4, PCL5 documents."""
-    totiffcommands = [ 'pcl6 -sDEVICE=pdfwrite -r%(dpi)i -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -sOutputFile=- - | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -', 
-                       'pcl6 -sDEVICE=pswrite -r%(dpi)i -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -sOutputFile=- - | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(fname)s" -',
+    totiffcommands = [ 'pcl6 -sDEVICE=pdfwrite -r"%(dpi)i" -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -sOutputFile=- "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(outfname)s" -', 
+                       'pcl6 -sDEVICE=pswrite -r"%(dpi)i" -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -sOutputFile=- "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(outfname)s" -',
                      ]
     mediasizes = {  # ESC&l####A
                     0 : "Default",
