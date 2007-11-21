@@ -37,6 +37,8 @@ class Parser(pdlparser.PDLParser) :
            It's hard to detect a plain text file, so we just
            read the first line, and if it doesn't end in CR or LF
            we consider it's not plain text.
+           
+           TODO : use first and last block's content instead of readline().
         """   
         line = self.infile.readline()
         self.infile.seek(0)

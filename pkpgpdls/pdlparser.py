@@ -42,13 +42,12 @@ class PDLParser :
     """Generic PDL parser."""
     totiffcommands = None        # Default command to convert to TIFF
     openmode = "rb"              # Default file opening mode
-    def __init__(self, filename, debug=0) :
+    def __init__(self, filename, firstblock, lastblock, debug=0) :
         """Initialize the generic parser."""
         self.filename = filename
         self.debug = debug
         self.infile = None
-        (self.firstblock, self.lastblock) = self.readBlocks()
-        self.infile = open(self.filename, self.openmode)
+        (self.firstblock, self.lastblock) = (firstblock, lastblock)
         if not self.isValid() :
             raise PDLParserError, "Invalid file format !"
         try :
@@ -60,25 +59,13 @@ class PDLParser :
             # the CPU intensive methods : PCL and PCLXL
             # parsing will greatly benefit from this.
             psyco.bind(self.getJobSize)
+        self.infile = open(self.filename, self.openmode)
+        # self.logdebug("Opened %s in '%s' mode." % (self.filename, self.openmode))
             
     def __del__(self) :
         """Ensures the input file gets closed."""
         if self.infile :
             self.infile.close()
-            
-    def readBlocks(self) :        
-        """Reads first and last block of the input file."""
-        infile = open(self.filename, "rb")
-        try :
-            firstblock = infile.read(FIRSTBLOCKSIZE)
-            try :
-                infile.seek(-LASTBLOCKSIZE, 2)
-                lastblock = infile.read(LASTBLOCKSIZE)
-            except IOError :    
-                lastblock = ""
-        finally :        
-            infile.close()
-        return (firstblock, lastblock)    
             
     def logdebug(self, message) :       
         """Logs a debug message if needed."""

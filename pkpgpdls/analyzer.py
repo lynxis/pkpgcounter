@@ -135,6 +135,16 @@ class PDLAnalyzer :
         """   
         if not os.stat(self.filename).st_size :
             raise pdlparser.PDLParserError, "input file %s is empty !" % str(self.filename)
+        
+        # Now read first and last block of the input file
+        # to be able to detect the real file format and the parser to use.
+        firstblock = self.workfile.read(pdlparser.FIRSTBLOCKSIZE)
+        try :
+            self.workfile.seek(-pdlparser.LASTBLOCKSIZE, 2)
+            lastblock = self.workfile.read(pdlparser.LASTBLOCKSIZE)
+        except IOError :    
+            lastblock = ""
+            
         # IMPORTANT : the order is important below. FIXME.
         for module in (postscript, \
                        pclxl, \
@@ -152,7 +162,9 @@ class PDLAnalyzer :
                        escpages03, \
                        plain) :     # IMPORTANT : don't move this one up !
             try :               
-                return module.Parser(self.filename, self.options.debug)
+                return module.Parser(self.filename, firstblock,
+                                                    lastblock,
+                                                    self.options.debug)
             except pdlparser.PDLParserError :
                 pass # try next parser
         raise pdlparser.PDLParserError, "Analysis of first data block failed."

@@ -99,7 +99,7 @@ class Parser(pdlparser.PDLParser) :
         self.pagecount = 0
         self.escapedStuff = {}   # For escaped datas, mostly PJL commands
         self.bigEndian()
-        
+        codesop = chr(0x06) + chr(0x00) + chr(0x00) + chr(0x80) + chr(0x13) + chr(0x40)
         self.isbitmap = False
         pos = 0
         try :
@@ -113,8 +113,7 @@ class Parser(pdlparser.PDLParser) :
                             raise pdlparser.PDLParserError, "Unfortunately SPL1 is incompletely recognized. Parsing aborted. Please report the problem to %s" % version.__authoremail__
                         offset = unpack(self.unpackLong, minfile[pos:pos+4])[0]
                         sequencenum = unpack(self.unpackShort, minfile[pos+4:pos+6])[0]
-                        codesop = " ".join([ "%02x" % ord(v) for v in minfile[pos+6:pos+12]])
-                        if codesop != "06 00 00 80 13 40" :
+                        if minfile[pos+6:pos+12] != codesop :
                             raise pdlparser.PDLParserError, "Unfortunately SPL1 is incompletely recognized. Parsing aborted. Please report the problem to %s" % version.__authoremail__
                         if not sequencenum :
                             self.pagecount += 1
