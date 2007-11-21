@@ -43,6 +43,7 @@ def getAvailableDevices() :
                                 if dev.startswith("/") \
                                    and (not dev.startswith("/x11")) \
                                    and (not dev == "/ijs") \
+                                   and (not dev == "/nullpage") \
                                    and (not dev == "/bbox") ]
         devices.sort()                           
         return devices
