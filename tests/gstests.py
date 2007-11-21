@@ -94,7 +94,7 @@ def runTests(masterfilename, root) :
             if not size :
                 sys.stdout.write("ERROR : Unsupported file format\n")
             else :    
-                sys.stdout.write("ERROR : Found %(size)i pages instead of %(mastersize)i\n" % locals())
+                sys.stdout.write("WARN : Found %(size)i pages instead of %(mastersize)i\n" % locals())
             failed += 1
         else :    
             sys.stdout.write("OK\n")
