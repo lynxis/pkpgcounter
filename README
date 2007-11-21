@@ -38,6 +38,8 @@ pkpgcounter currently recognizes the following document formats :
         
         - TIFF
         
+        - Several other image formats
+        
         - ESC/P2
         
         - OpenDocument (ISO/IEC DIS 26300)
@@ -117,6 +119,8 @@ software which must be installed. These third party software are :
           
         - The LaTeX typesetting software, in particular the dvips command
           (this one is needed for the DVI file format).
+          
+        - ImageMagick (this one is needed for image file formats)  
         
 =============================================================================
 

@@ -22,6 +22,8 @@ pkpgcounter News :
 
   * 3.30 :
   
+    - Added support for all file formats supported by PIL.
+    
     - Added a minimal parser for Hewlett-Packard LIDIL documents, as 
       produced by the hpijs driver.
       

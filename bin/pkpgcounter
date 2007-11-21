@@ -45,6 +45,7 @@ pkpgcounter currently recognizes the following document formats :
     * DVI
     * Plain text
     * TIFF
+    * Several other image formats
     * ESC/P2
     * OpenDocument (ISO/IEC DIS 26300)
     * Zenographics ZjStream
