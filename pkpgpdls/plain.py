@@ -34,15 +34,16 @@ class Parser(pdlparser.PDLParser) :
     def isValid(self) :    
         """Returns True if data is plain text, else False.
         
-           It's hard to detect a plain text file, so we just
-           read the first line, and if it doesn't end in CR or LF
-           we consider it's not plain text.
-           
-           TODO : use first and last block's content instead of readline().
+           It's hard to detect a plain text file, so we just try to
+           extract lines from the first block (sufficiently large).
+           If it's impossible to find one we consider it's not plain text.
         """   
-        line = self.infile.readline()
-        self.infile.seek(0)
-        if line.endswith("\n") or line.endswith("\r") :
+        lines = firstblock.split("\r\n")
+        if len(lines) == 1 :
+            lines = lines[0].split("\r")
+            if len(lines) == 1 :
+                lines = lines[0].split("\n")
+        if len(lines) > 1 :
             self.logdebug("DEBUG: Input file seems to be in the plain text format.")
             return True
         else :    
