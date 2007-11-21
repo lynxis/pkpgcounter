@@ -27,7 +27,7 @@ import sys
 import os
 import tempfile
 
-import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, \
+import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, pil, \
        lidil, escp2, dvi, tiff, ooo, zjstream, qpdl, spl1, escpages03, plain
 import inkcoverage
 
@@ -81,16 +81,13 @@ class PDLAnalyzer :
         try :
             try :
                 pdlhandler = self.detectPDLHandler()
-                (handle, filename) = tempfile.mkstemp(".tmp", "pkpgcounter")
-                os.close(handle)
+                dummyfile = tempfile.NamedTemporaryFile(mode="w+b")
+                filename = dummyfile.name
                 try :
                     pdlhandler.convertToTiffMultiPage24NC(filename, self.options.resolution)
                     result = inkcoverage.getInkCoverage(filename, cspace)
                 finally :    
-                    try :
-                        os.remove(filename)
-                    except OSError :    
-                        sys.stderr.write("Problem while trying to remove temporary file %s\n" % filename)
+                    dummyfile.close()
             except pdlparser.PDLParserError, msg :    
                 raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
         finally :
@@ -160,6 +157,7 @@ class PDLAnalyzer :
                        pcl345, \
                        escp2, \
                        escpages03, \
+                       pil, \
                        plain) :     # IMPORTANT : don't move this one up !
             try :               
                 return module.Parser(self.filename, firstblock,

@@ -96,8 +96,8 @@ def runTests(masterfilename, root) :
         else :    
             sys.stdout.write("OK\n")
             passed += 1
-    print "Passed : %i     %.2f" % (passed, 100.0 * passed / nbtests)
-    print "Failed : %i     %.2f" % (failed, 100.0 * failed / nbtests)
+    print "Passed : %i (%.2f%%)" % (passed, 100.0 * passed / nbtests)
+    print "Failed : %i (%.2f%%)" % (failed, 100.0 * failed / nbtests)
             
 def main() :        
     """Main function."""
