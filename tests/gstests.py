@@ -87,11 +87,14 @@ def runTests(masterfilename, root) :
     testsuite = glob.glob("%(root)s.*" % locals())
     nbtests = len(testsuite)
     for testfname in testsuite :
+        sys.stdout.write("Testing %(testfname)s ... " % locals())
+        sys.stdout.flush()
         size = computeSize(testfname)
         if size != mastersize :
-            sys.stderr.write("Incorrect parser for %(testfname)s\n" % locals())
+            sys.stdout.write("ERROR\n")
             failed += 1
         else :    
+            sys.stdout.write("OK\n")
             passed += 1
     print "Passed : %i     %.2f" % (passed, 100.0 * passed / nbtests)
     print "Failed : %i     %.2f" % (failed, 100.0 * failed / nbtests)
@@ -120,6 +123,7 @@ def main() :
             tmp.flush()    
             
         genTestSuite(infilename, "testsuite")
+        runTests(infilename, "testsuite")
             
         if istemp :    
             # Cleanly takes care of the temporary file
