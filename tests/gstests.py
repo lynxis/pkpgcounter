@@ -87,6 +87,7 @@ def runTests(masterfilename, root) :
     passed = 0
     failed = 0
     testsuite = glob.glob("%(root)s.*" % locals())
+    testsuite.sort()
     nbtests = len(testsuite)
     for testfname in testsuite :
         sys.stdout.write("Testing %(testfname)s ... " % locals())
