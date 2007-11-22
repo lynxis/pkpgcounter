@@ -26,6 +26,7 @@
 import sys
 import os
 import glob
+import md5
 import tempfile
 
 MEGABYTE = 1024 * 1024
@@ -67,7 +68,7 @@ def genTestSuite(infilename, root) :
             
 def computeSize(filename) :    
     """Computes the size in pages of a file in the testsuite."""
-    answerfd = os.popen('pkpgcounter "%(filename)s"' % locals(), "r")
+    answerfd = os.popen('pkpgcounter "%(filename)s" 2>/dev/null' % locals(), "r")
     try :
         try :
             return int(answerfd.readline().strip())
@@ -81,7 +82,8 @@ def runTests(masterfilename, root) :
     mastersize = computeSize(masterfilename)
     if not mastersize :
         raise RuntimeError, "Unable to compute the size of the testsuite's master file %(masterfilename)s" % locals()
-        
+    else :    
+        sys.stdout.write("Master file's contains %(mastersize)i pages.\n" % locals())
     passed = 0
     failed = 0
     testsuite = glob.glob("%(root)s.*" % locals())
@@ -99,8 +101,8 @@ def runTests(masterfilename, root) :
         else :    
             sys.stdout.write("OK\n")
             passed += 1
-    print "Passed : %i (%.2f%%)" % (passed, 100.0 * passed / nbtests)
-    print "Failed : %i (%.2f%%)" % (failed, 100.0 * failed / nbtests)
+    sys.stdout.write("Passed : %i (%.2f%%)\n" % (passed, 100.0 * passed / nbtests))
+    sys.stdout.write("Failed : %i (%.2f%%)\n" % (failed, 100.0 * failed / nbtests))
             
 def main() :        
     """Main function."""
@@ -110,6 +112,7 @@ def main() :
         sys.stderr.write("usage : gengstests.py [inputfile.ps]\n")
         sys.exit(-1)
     else :    
+        checksum = md5.new() # Ensures we'll recreate a new testsuite if input is different
         infilename = sys.argv[1]
         istemp = False
         if infilename == "-" :
@@ -123,9 +126,11 @@ def main() :
                 if not data :
                     break
                 tmp.write(data)
+                checksum.update(data)
             tmp.flush()    
-            
-        genTestSuite(infilename, "testsuite")
+        else :    
+            checksum.update(infilename)
+        genTestSuite(infilename, "testsuite.%s" % checksum.hexdigest())
         runTests(infilename, "testsuite")
             
         if istemp :    
