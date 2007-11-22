@@ -16,17 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-echo "Generating testsuite..."
-gunzip <master.ps.gz | python ./gstests.py -
-
+echo "Analyzing colors..."
 if ! [ -f "colors.pdf" ]  ; then
    python ./runcolors.py ; 
 fi ;
 echo 
 
-echo "Analyzing colors..."
 for cspace in BW RGB CMY CMYK GC ; do
     echo "Colorspace : $cspace" ;
     pkpgcounter --colorspace $cspace colors.pdf ;
     echo ;
 done    
+
+echo "Generating testsuite..."
+gunzip <master.ps.gz | python ./gstests.py -
+
