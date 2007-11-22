@@ -16,10 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-echo -n "Generating testsuite..."
-gunzip <master.ps.gz >master2.ps
-
-python ./gstests.py master2.ps
+echo "Generating testsuite..."
+gunzip <master.ps.gz | python ./gstests.py -
 
 if ! [ -f "colors.pdf" ]  ; then
    python ./runcolors.py ; 
