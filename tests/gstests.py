@@ -84,8 +84,7 @@ def runTests(masterfilename, root) :
         raise RuntimeError, "Unable to compute the size of the testsuite's master file %(masterfilename)s" % locals()
     else :    
         sys.stdout.write("Master file's contains %(mastersize)i pages.\n" % locals())
-    passed = 0
-    failed = 0
+    passed = failed = unsupported = 0
     testsuite = glob.glob("%(root)s.*" % locals())
     testsuite.sort()
     nbtests = len(testsuite)
@@ -96,14 +95,16 @@ def runTests(masterfilename, root) :
         if size != mastersize :
             if not size :
                 sys.stdout.write("ERROR : Unsupported file format\n")
+                unsupported += 1
             else :    
                 sys.stdout.write("WARN : Found %(size)i pages instead of %(mastersize)i\n" % locals())
-            failed += 1
+                failed += 1
         else :    
             sys.stdout.write("OK\n")
             passed += 1
-    sys.stdout.write("Passed : %i (%.2f%%)\n" % (passed, 100.0 * passed / nbtests))
-    sys.stdout.write("Failed : %i (%.2f%%)\n" % (failed, 100.0 * failed / nbtests))
+    sys.stdout.write("     Passed : %i/%i (%.2f%%)\n" % (passed, nbtests, 100.0 * passed / nbtests))
+    sys.stdout.write("     Failed : %i/%i (%.2f%%)\n" % (failed, nbtests, 100.0 * failed / nbtests))
+    sys.stdout.write("Unsupported : %i/%i (%.2f%%)\n" % (unsupported, nbtests, 100.0 * unsupported / nbtests))
             
 def main() :        
     """Main function."""
