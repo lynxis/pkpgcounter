@@ -35,6 +35,8 @@ The following people helped the pkpgcounter project :
                  the PS code generated several copies.
                  
   - Yves Lavoie : reported a bug with Python 2.5                 
+  
+  - Kumar Appaiah : put pkpgcounter in Debian.
 
 ==============================================================
 
