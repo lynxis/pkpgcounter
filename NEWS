@@ -22,11 +22,16 @@ pkpgcounter News :
 
   * 3.30 :
   
-    - Added support for all file formats supported by PIL.
+    - Added support for all file formats supported by the Python Imaging
+      Library.
     
     - Added a minimal parser for Hewlett-Packard LIDIL documents, as 
       produced by the hpijs driver.
       
+    - Improved general reliability.
+    
+    - Improved detection of PCL3/4/5 jobs.
+    
     - Major code cleaning.  
       
   * 3.20 :
