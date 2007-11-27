@@ -36,14 +36,14 @@ class Parser(pdlparser.PDLParser) :
     openmode = "rU"
     def isValid(self) :    
         """Returns True if data is PostScript, else False."""
-        if self.firstblock.startswith("%!") or \
-           self.firstblock.startswith("\004%!") or \
-           self.firstblock.startswith("\033%-12345X%!PS") or \
-           ((self.firstblock[:128].find("\033%-12345X") != -1) and \
-             ((self.firstblock.find("LANGUAGE=POSTSCRIPT") != -1) or \
-              (self.firstblock.find("LANGUAGE = POSTSCRIPT") != -1) or \
-              (self.firstblock.find("LANGUAGE = Postscript") != -1))) or \
-              (self.firstblock.find("%!PS-Adobe") != -1) :
+        if self.parent.firstblock.startswith("%!") or \
+           self.parent.firstblock.startswith("\004%!") or \
+           self.parent.firstblock.startswith("\033%-12345X%!PS") or \
+           ((self.parent.firstblock[:128].find("\033%-12345X") != -1) and \
+             ((self.parent.firstblock.find("LANGUAGE=POSTSCRIPT") != -1) or \
+              (self.parent.firstblock.find("LANGUAGE = POSTSCRIPT") != -1) or \
+              (self.parent.firstblock.find("LANGUAGE = Postscript") != -1))) or \
+              (self.parent.firstblock.find("%!PS-Adobe") != -1) :
             self.logdebug("DEBUG: Input file is in the PostScript format.")
             return True
         else :    
@@ -56,7 +56,7 @@ class Parser(pdlparser.PDLParser) :
         pagecount = 0
         # we need to reopen the input file in binary mode again, just in case
         # otherwise we might break the original file's contents.
-        infile = open(self.filename, "rb")
+        infile = open(self.parent.filename, "rb")
         try :
             child = popen2.Popen4(command)
             try :

@@ -46,10 +46,10 @@ class Parser(pdlparser.PDLParser) :
     openmode = "rU"
     def isValid(self) :    
         """Returns True if data is PDF, else False."""
-        if self.firstblock.startswith("%PDF-") or \
-           self.firstblock.startswith("\033%-12345X%PDF-") or \
-           ((self.firstblock[:128].find("\033%-12345X") != -1) and (self.firstblock.upper().find("LANGUAGE=PDF") != -1)) or \
-           (self.firstblock.find("%PDF-") != -1) :
+        if self.parent.firstblock.startswith("%PDF-") or \
+           self.parent.firstblock.startswith("\033%-12345X%PDF-") or \
+           ((self.parent.firstblock[:128].find("\033%-12345X") != -1) and (self.parent.firstblock.upper().find("LANGUAGE=PDF") != -1)) or \
+           (self.parent.firstblock.find("%PDF-") != -1) :
             self.logdebug("DEBUG: Input file is in the PDF format.")
             return True
         else :    

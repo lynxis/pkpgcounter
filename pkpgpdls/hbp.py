@@ -33,7 +33,7 @@ class Parser(pdlparser.PDLParser) :
     """A parser for HBP documents."""
     def isValid(self) :        
         """Returns True if data is HBP, else False."""
-        if self.firstblock.find("@PJL ENTER LANGUAGE = HBP\n") != -1 :
+        if self.parent.firstblock.find("@PJL ENTER LANGUAGE = HBP\n") != -1 :
             self.logdebug("DEBUG: Input file is in the HBP format.")
             return True
         else :    

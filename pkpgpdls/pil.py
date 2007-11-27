@@ -34,7 +34,7 @@ class Parser(pdlparser.PDLParser) :
     def isValid(self) :    
         """Returns True if data is an image format supported by PIL, else False."""   
         try :
-            image = Image.open(self.filename)
+            image = Image.open(self.parent.filename)
         except (IOError, OverflowError) :    
             return False
         else :    
@@ -44,7 +44,7 @@ class Parser(pdlparser.PDLParser) :
     def getJobSize(self) :
         """Counts pages in an image file."""
         index = 0
-        image = Image.open(self.filename)
+        image = Image.open(self.parent.filename)
         try :
             while True :
                 index += 1              

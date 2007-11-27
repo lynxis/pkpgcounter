@@ -34,8 +34,8 @@ class Parser(pdlparser.PDLParser) :
     """A parser for ESC/PageS03 documents."""
     def isValid(self) :        
         """Returns True if data is TIFF, else False."""
-        if self.firstblock.startswith("\033\1@EJL") and \
-            (self.firstblock.find("=ESC/PAGES03\n") != -1) :
+        if self.parent.firstblock.startswith("\033\1@EJL") and \
+            (self.parent.firstblock.find("=ESC/PAGES03\n") != -1) :
             self.logdebug("DEBUG: Input file is in the ESC/PageS03 format.")
             return True
         else :    

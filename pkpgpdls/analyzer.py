@@ -55,6 +55,8 @@ class PDLAnalyzer :
         self.filename = filename
         self.workfile = None 
         self.mustclose = None
+        self.firstblock = None
+        self.lastblock = None
         
     def getJobSize(self) :    
         """Returns the job's size."""
@@ -125,6 +127,17 @@ class PDLAnalyzer :
         if self.mustclose :
             self.workfile.close()    
         
+    def readFirstAndLastBlocks(self) :    
+        """Reads the first and last blocks of data."""
+        # Now read first and last block of the input file
+        # to be able to detect the real file format and the parser to use.
+        self.firstblock = self.workfile.read(pdlparser.FIRSTBLOCKSIZE)
+        try :
+            self.workfile.seek(-pdlparser.LASTBLOCKSIZE, 2)
+            self.lastblock = self.workfile.read(pdlparser.LASTBLOCKSIZE)
+        except IOError :    
+            self.lastblock = ""
+            
     def detectPDLHandler(self) :    
         """Tries to autodetect the document format.
         
@@ -132,15 +145,7 @@ class PDLAnalyzer :
         """   
         if not os.stat(self.filename).st_size :
             raise pdlparser.PDLParserError, "input file %s is empty !" % str(self.filename)
-        
-        # Now read first and last block of the input file
-        # to be able to detect the real file format and the parser to use.
-        firstblock = self.workfile.read(pdlparser.FIRSTBLOCKSIZE)
-        try :
-            self.workfile.seek(-pdlparser.LASTBLOCKSIZE, 2)
-            lastblock = self.workfile.read(pdlparser.LASTBLOCKSIZE)
-        except IOError :    
-            lastblock = ""
+        self.readFirstAndLastBlocks()
             
         # IMPORTANT : the order is important below. FIXME.
         for module in (postscript, \
@@ -161,9 +166,7 @@ class PDLAnalyzer :
                        mstrash, \
                        plain) :     # IMPORTANT : don't move this one up !
             try :               
-                return module.Parser(self.filename, firstblock,
-                                                    lastblock,
-                                                    self.options.debug)
+                return module.Parser(self)
             except pdlparser.PDLParserError :
                 pass # try next parser
         raise pdlparser.PDLParserError, "Analysis of first data block failed."

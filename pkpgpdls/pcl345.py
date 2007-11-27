@@ -91,13 +91,13 @@ class Parser(pdlparser.PDLParser) :
         
     def isValid(self) :    
         """Returns True if data is PCL3/4/5, else False."""
-        if self.firstblock.startswith("\033E\033") or \
-           (self.firstblock.startswith("\033*rbC") and (not self.lastblock[-3:] == "\f\033@")) or \
-           self.firstblock.startswith("\033*rB\033") or \
-           self.firstblock.startswith("\033%8\033") or \
-           (self.firstblock.find("\033%-12345X") != -1) or \
-           (self.firstblock.find("@PJL ENTER LANGUAGE=PCL\012\015\033") != -1) or \
-           (self.firstblock.startswith(chr(0xcd)+chr(0xca)) and (self.firstblock.find("\033E\033") != -1)) :
+        if self.parent.firstblock.startswith("\033E\033") or \
+           (self.parent.firstblock.startswith("\033*rbC") and (not self.parent.lastblock[-3:] == "\f\033@")) or \
+           self.parent.firstblock.startswith("\033*rB\033") or \
+           self.parent.firstblock.startswith("\033%8\033") or \
+           (self.parent.firstblock.find("\033%-12345X") != -1) or \
+           (self.parent.firstblock.find("@PJL ENTER LANGUAGE=PCL\012\015\033") != -1) or \
+           (self.parent.firstblock.startswith(chr(0xcd)+chr(0xca)) and (self.parent.firstblock.find("\033E\033") != -1)) :
             self.logdebug("DEBUG: Input file is in the PCL3/4/5 format.")
             return True
         else :    

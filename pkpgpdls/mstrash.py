@@ -35,15 +35,15 @@ class Parser(pdlparser.PDLParser) :
         """Returns True if data is MS crap, else False.
         
            Identifying datas taken from the file command's magic database.
-	   IMPORTANT : some magic values are not reused here because they
-	   IMPORTANT : seem to be specific to some particular i18n release.
+           IMPORTANT : some magic values are not reused here because they
+           IMPORTANT : seem to be specific to some particular i18n release.
         """   
-        if self.firstblock.startswith("PO^Q`") \
-           or self.firstblock.startswith("\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1") \
-	   or self.firstblock.startswith("\xfe7\x00#") \
-	   or self.firstblock.startswith("\xdb\xa5-\x00\x00\x00") \
-	   or self.firstblock.startswith("\x31\xbe\x00\x00") \
-	   or self.firstblock[2112:].startswith("MSWordDoc") :
+        if self.parent.firstblock.startswith("PO^Q`") \
+           or self.parent.firstblock.startswith("\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1") \
+           or self.parent.firstblock.startswith("\xfe7\x00#") \
+           or self.parent.firstblock.startswith("\xdb\xa5-\x00\x00\x00") \
+           or self.parent.firstblock.startswith("\x31\xbe\x00\x00") \
+           or self.parent.firstblock[2112:].startswith("MSWordDoc") :
             self.logdebug("DEBUG: Input file seems to be in a Microsoft shitty file format.")
             return True
         else :    

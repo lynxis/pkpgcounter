@@ -111,7 +111,7 @@ def getInkCoverage(fname, colorspace) :
     index = 0
     try :
         image = Image.open(fname)
-    except IOError, msg :   
+    except (IOError, OverflowError), msg :   
         raise pdlparser.PDLParserError, "%s (%s)" % (msg, fname)
     else :    
         try :
