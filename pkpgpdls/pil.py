@@ -35,7 +35,7 @@ class Parser(pdlparser.PDLParser) :
         """Returns True if data is an image format supported by PIL, else False."""   
         try :
             image = Image.open(self.filename)
-        except IOError :    
+        except (IOError, OverflowError) :    
             return False
         else :    
             self.logdebug("DEBUG: Input file seems to be an image in the %s (%s) format." % (image.format, image.format_description))
