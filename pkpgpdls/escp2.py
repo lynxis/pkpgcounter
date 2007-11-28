@@ -30,10 +30,10 @@ class Parser(pdlparser.PDLParser) :
     """A parser for ESC/P2 documents."""
     def isValid(self) :        
         """Returns True if data is ESC/P2, else False."""
-        if self.parent.firstblock.startswith("\033@") or \
-           self.parent.firstblock.startswith("\033*") or \
-           self.parent.firstblock.startswith("\n\033@") or \
-           self.parent.firstblock.startswith("\0\0\0\033\1@EJL") : # ESC/P Raster ??? Seen on Stylus Photo 1284
+        if self.firstblock.startswith("\033@") or \
+           self.firstblock.startswith("\033*") or \
+           self.firstblock.startswith("\n\033@") or \
+           self.firstblock.startswith("\0\0\0\033\1@EJL") : # ESC/P Raster ??? Seen on Stylus Photo 1284
             self.logdebug("DEBUG: Input file is in the ESC/P2 format.")
             return True
         else :    

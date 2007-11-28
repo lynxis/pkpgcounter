@@ -31,7 +31,7 @@ class Parser(pdlparser.PDLParser) :
     """A parser for OpenOffice.org documents."""
     def isValid(self) :        
         """Returns True if data is OpenDocument, else False."""
-        if self.parent.firstblock[:2] == "PK" :
+        if self.firstblock[:2] == "PK" :
             try :
                 self.archive = zipfile.ZipFile(self.infile)
                 self.contentxml = self.archive.read("content.xml")

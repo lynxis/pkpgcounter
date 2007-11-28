@@ -61,8 +61,8 @@ class Parser(pdlparser.PDLParser) :
         # with a Reset packet. We ignore the preceding Sync packet
         # for simplicity's sake.
         EOFMarker = "$\x00\x10\x00\x08\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$$\x00\x10\x00\x06\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$" 
-        if self.parent.firstblock.startswith(BOFMarker) \
-           and self.parent.lastblock.endswith(EOFMarker) :
+        if self.firstblock.startswith(BOFMarker) \
+           and self.lastblock.endswith(EOFMarker) :
             self.logdebug("DEBUG: Input file is in the Hewlett-Packard LIDIL format.")
             return True
         else :    

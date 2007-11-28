@@ -36,14 +36,14 @@ class Parser(pdlparser.PDLParser) :
     openmode = "rU"
     def isValid(self) :    
         """Returns True if data is PostScript, else False."""
-        if self.parent.firstblock.startswith("%!") or \
-           self.parent.firstblock.startswith("\004%!") or \
-           self.parent.firstblock.startswith("\033%-12345X%!PS") or \
-           ((self.parent.firstblock[:128].find("\033%-12345X") != -1) and \
-             ((self.parent.firstblock.find("LANGUAGE=POSTSCRIPT") != -1) or \
-              (self.parent.firstblock.find("LANGUAGE = POSTSCRIPT") != -1) or \
-              (self.parent.firstblock.find("LANGUAGE = Postscript") != -1))) or \
-              (self.parent.firstblock.find("%!PS-Adobe") != -1) :
+        if self.firstblock.startswith("%!") or \
+           self.firstblock.startswith("\004%!") or \
+           self.firstblock.startswith("\033%-12345X%!PS") or \
+           ((self.firstblock[:128].find("\033%-12345X") != -1) and \
+             ((self.firstblock.find("LANGUAGE=POSTSCRIPT") != -1) or \
+              (self.firstblock.find("LANGUAGE = POSTSCRIPT") != -1) or \
+              (self.firstblock.find("LANGUAGE = Postscript") != -1))) or \
+              (self.firstblock.find("%!PS-Adobe") != -1) :
             self.logdebug("DEBUG: Input file is in the PostScript format.")
             return True
         else :    
@@ -52,7 +52,7 @@ class Parser(pdlparser.PDLParser) :
     def throughGhostScript(self) :
         """Get the count through GhostScript, useful for non-DSC compliant PS files."""
         self.logdebug("Internal parser sucks, using GhostScript instead...")
-        infname = self.parent.filename
+        infname = self.filename
         command = 'gs -sDEVICE=bbox -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET "%(infname)s" 2>&1 | grep -c "%%HiResBoundingBox:" 2>/dev/null'
         pagecount = 0
         fromchild = os.popen(command % locals(), "r")

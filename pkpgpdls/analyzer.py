@@ -55,8 +55,6 @@ class PDLAnalyzer :
         self.filename = filename
         self.workfile = None 
         self.mustclose = None
-        self.firstblock = None
-        self.lastblock = None
         
     def getJobSize(self) :    
         """Returns the job's size."""
@@ -127,16 +125,17 @@ class PDLAnalyzer :
         if self.mustclose :
             self.workfile.close()    
         
-    def readFirstAndLastBlocks(self) :    
+    def readFirstAndLastBlocks(self, inputfile) :
         """Reads the first and last blocks of data."""
         # Now read first and last block of the input file
         # to be able to detect the real file format and the parser to use.
-        self.firstblock = self.workfile.read(pdlparser.FIRSTBLOCKSIZE)
+        firstblock = inputfile.read(pdlparser.FIRSTBLOCKSIZE)
         try :
-            self.workfile.seek(-pdlparser.LASTBLOCKSIZE, 2)
-            self.lastblock = self.workfile.read(pdlparser.LASTBLOCKSIZE)
+            inputfile.seek(-pdlparser.LASTBLOCKSIZE, 2)
+            lastblock = inputfile.read(pdlparser.LASTBLOCKSIZE)
         except IOError :    
-            self.lastblock = ""
+            lastblock = ""
+        return (firstblock, lastblock)     
             
     def detectPDLHandler(self) :    
         """Tries to autodetect the document format.
@@ -145,7 +144,7 @@ class PDLAnalyzer :
         """   
         if not os.stat(self.filename).st_size :
             raise pdlparser.PDLParserError, "input file %s is empty !" % str(self.filename)
-        self.readFirstAndLastBlocks()
+        (firstblock, lastblock) = self.readFirstAndLastBlocks(self.workfile)
             
         # IMPORTANT : the order is important below. FIXME.
         for module in (postscript, \
@@ -166,7 +165,7 @@ class PDLAnalyzer :
                        mstrash, \
                        plain) :     # IMPORTANT : don't move this one up !
             try :               
-                return module.Parser(self)
+                return module.Parser(self, (firstblock, lastblock))
             except pdlparser.PDLParserError :
                 pass # try next parser
         raise pdlparser.PDLParserError, "Analysis of first data block failed."

@@ -42,9 +42,14 @@ class PDLParser :
     """Generic PDL parser."""
     totiffcommands = None        # Default command to convert to TIFF
     openmode = "rb"              # Default file opening mode
-    def __init__(self, parent) :
+    def __init__(self, parent, (firstblock, lastblock)) :
         """Initialize the generic parser."""
         self.parent = parent
+        # We need some copies for later inclusion of parsers which
+        # would modify the parent's values
+        self.filename = parent.filename[:]
+        self.firstblock = firstblock[:]
+        self.lastblock = lastblock[:]
         self.infile = None
         if not self.isValid() :
             raise PDLParserError, "Invalid file format !"
@@ -57,8 +62,8 @@ class PDLParser :
             # the CPU intensive methods : PCL and PCLXL
             # parsing will greatly benefit from this.
             psyco.bind(self.getJobSize)
-        self.infile = open(self.parent.filename, self.openmode)
-        # self.logdebug("Opened %s in '%s' mode." % (self.parent.filename, self.openmode))
+        self.infile = open(self.filename, self.openmode)
+        # self.logdebug("Opened %s in '%s' mode." % (self.filename, self.openmode))
             
     def __del__(self) :
         """Ensures the input file gets closed."""
@@ -83,7 +88,7 @@ class PDLParser :
            Writes TIFF datas to the file named by outfname.
         """   
         if self.totiffcommands :
-            infname = self.parent.filename
+            infname = self.filename
             for totiffcommand in self.totiffcommands :
                 error = False
                 commandline = totiffcommand % locals()
