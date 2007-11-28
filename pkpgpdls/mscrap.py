@@ -30,7 +30,7 @@ import version
 
 class Parser(pdlparser.PDLParser) :
     """A parser for that MS crap thing."""
-    totiffcommands = [ ]
+    totiffcommands = [ 'xvfb-run -a abiword --import-extension=.doc --print="| gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r\"%(dpi)i\" -sOutputFile=\"%(outfname)s\" -" "%(infname)s"' ]
     def isValid(self) :    
         """Returns True if data is MS crap, else False.
         
