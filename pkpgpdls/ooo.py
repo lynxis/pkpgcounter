@@ -30,6 +30,7 @@ import pdlparser
 class Parser(pdlparser.PDLParser) :
     """A parser for OpenOffice.org documents."""
     totiffcommands = [ 'xvfb-run -a abiword --import-extension=.odt --print="| gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r\"%(dpi)i\" -sOutputFile=\"%(outfname)s\" -" "%(infname)s"' ]
+    required = [ "xvfb-run", "xauth", "abiword", "gs" ]
     def isValid(self) :        
         """Returns True if data is OpenDocument, else False."""
         if self.firstblock[:2] == "PK" :

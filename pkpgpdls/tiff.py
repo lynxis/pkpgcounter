@@ -31,7 +31,8 @@ import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for TIFF documents."""
-    totiffcommands = [ '/bin/cp "%(infname)s" "%(outfname)s"' ]
+    totiffcommands = [ 'cp "%(infname)s" "%(outfname)s"' ]
+    required = [ "cp" ]
     def isValid(self) :        
         """Returns True if data is TIFF, else False."""
         littleendian = (chr(0x49)*2) + chr(0x2a) + chr(0)

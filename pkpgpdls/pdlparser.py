@@ -22,7 +22,6 @@
 
 import sys
 import os
-import popen2
 
 KILOBYTE = 1024    
 MEGABYTE = 1024 * KILOBYTE    
@@ -40,8 +39,9 @@ class PDLParserError(Exception):
         
 class PDLParser :
     """Generic PDL parser."""
-    totiffcommands = None        # Default command to convert to TIFF
-    openmode = "rb"              # Default file opening mode
+    totiffcommands = None       # Default command to convert to TIFF
+    required = []               # Default list of required commands
+    openmode = "rb"             # Default file opening mode
     def __init__(self, parent, (firstblock, lastblock)) :
         """Initialize the generic parser."""
         self.parent = parent
@@ -70,6 +70,29 @@ class PDLParser :
         if self.infile :
             self.infile.close()
             
+    def findExecutable(self, command) :
+        """Finds an executable in the PATH and returns True if found else False."""
+        for cmd in [p.strip() for p in command.split("|")] : # | can separate alternatives for similar commands (e.g. a2ps|enscript)
+            for path in os.environ.get("PATH", "").split(":") :
+                fullname = os.path.abspath(os.path.join(os.path.expanduser(path), cmd))
+                if os.path.isfile(fullname) and os.access(fullname, os.X_OK) :
+                    return True
+        return False
+        
+    def isMissing(self, commands) :    
+        """Returns True if some required commands are missing, else False.""" 
+        howmanythere = 0
+        for command in commands :
+            if not self.findExecutable(command) :
+                sys.stderr.write("ERROR: %(command)s is missing or not executable. You MUST install it for pkpgcounter to be able to do what you want.\n" % locals())
+                sys.stderr.flush()
+            else :    
+                howmanythere += 1
+        if howmanythere == len(commands) :
+            return False
+        else :   
+            return True
+        
     def logdebug(self, message) :       
         """Logs a debug message if needed."""
         if self.parent.options.debug :
@@ -88,6 +111,8 @@ class PDLParser :
            Writes TIFF datas to the file named by outfname.
         """   
         if self.totiffcommands :
+            if self.isMissing(self.required) :
+                raise PDLParserError, "At least one of the following commands is missing and should be installed for the computation of ink coverage : %s" % repr(self.required)
             infname = self.filename
             for totiffcommand in self.totiffcommands :
                 error = False

@@ -24,9 +24,13 @@
 
 import sys
 
-from PIL import Image
-
 import pdlparser
+
+try :
+    from PIL import Image
+except ImportError :    
+    sys.stderr.write("ERROR: You MUST install the Python Imaging Library (python-imaging) for pkpgcounter to work.\n")
+    raise pdlparser.PDLParserError, "The Python Imaging Library is missing."
 
 def getPercent(img, nbpix) :
     """Extracts the percents per color component from a picture.

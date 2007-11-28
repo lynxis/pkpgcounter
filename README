@@ -106,21 +106,31 @@ Installation :
       
   3 - That's all !    
   
-  
-IMPORTANT : To compute ink coverage, pkpgcounter relies on third party
-software which must be installed. These third party software are :
+DEPENDENCIES :
 
-        - GhostScript (this one is needed for all file formats).
-        
-        - The Python Imaging Library, aka PIL (this one is needed for all
-          file formats).
-        
-        - GhostPCL (this one is needed for the PCL3/4/5 and PCLXL formats)
-          
-        - The LaTeX typesetting software, in particular the dvips command
-          (this one is needed for the DVI file format).
-          
-        - ImageMagick (this one is needed for image file formats)  
+  Depending on the file formats you plan to work with, and on the accounting
+  mode you want to use (pages vs ink), you may need to install some or all
+  of the additional software listed below. Usually, if one is needed then
+  pkpgcounter will complain. So your best bet is probably to not install
+  anything until pkpgcounter asks you to do so on its standard error
+  stream. Here's the list of software which may be needed for some
+  operations with pkpgcounter :
+
+  - GhostScript (gs)
+  
+  - The Python Imaging Library (python-imaging)
+  
+  - The X Virtual Frame Buffer (xvfb)
+  
+  - The X authority file utility xauth (xbase-clients)
+  
+  - The dvips converter from TeX DVI to PostScript (tetex-bin)
+  
+  - The ImageMagick image manipulation toolkit (imagemagick)
+  
+  - The AbiWord word processor (abiword)
+
+  - The GhostPCL/GhostPDL's pcl6 converter from PCL to PostScript
         
 =============================================================================
 

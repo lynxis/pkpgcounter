@@ -24,8 +24,6 @@
 
 import sys
 import os
-import tempfile
-import popen2
 
 import pdlparser
 import inkcoverage
@@ -33,6 +31,7 @@ import inkcoverage
 class Parser(pdlparser.PDLParser) :
     """A parser for PostScript documents."""
     totiffcommands = [ 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" "%(infname)s"' ]
+    required = [ "gs" ]
     openmode = "rU"
     def isValid(self) :    
         """Returns True if data is PostScript, else False."""
@@ -52,6 +51,8 @@ class Parser(pdlparser.PDLParser) :
     def throughGhostScript(self) :
         """Get the count through GhostScript, useful for non-DSC compliant PS files."""
         self.logdebug("Internal parser sucks, using GhostScript instead...")
+        if self.isMissing(self.required) :
+            raise pdlparser.PDLParserError, "The gs interpreter is nowhere to be found in your PATH (%s)" % os.environ.get("PATH", "")
         infname = self.filename
         command = 'gs -sDEVICE=bbox -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET "%(infname)s" 2>&1 | grep -c "%%HiResBoundingBox:" 2>/dev/null'
         pagecount = 0

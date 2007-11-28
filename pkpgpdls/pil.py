@@ -22,15 +22,20 @@
 
 """This modules implements a page counter for image formats supported by the Python Imaging Library."""
 
-from PIL import Image
-
 import pdlparser
+
+try :
+    from PIL import Image
+except ImportError :    
+    sys.stderr.write("ERROR: You MUST install the Python Imaging Library (python-imaging) for pkpgcounter to work.\n")
+    raise pdlparser.PDLParserError, "The Python Imaging Library is missing."
+
 import version
 
 class Parser(pdlparser.PDLParser) :
     """A parser for plain text documents."""
-    totiffcommands = [ 'convert "%(infname)s" "%(outfname)s"',
-                     ]  
+    totiffcommands = [ 'convert "%(infname)s" "%(outfname)s"' ]  
+    required = [ "convert" ]
     def isValid(self) :    
         """Returns True if data is an image format supported by PIL, else False."""   
         try :

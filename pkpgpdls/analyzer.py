@@ -56,14 +56,6 @@ class PDLAnalyzer :
         self.workfile = None 
         self.mustclose = None
         
-    def findExecutable(self, command) :
-        """Finds an executable in the PATH and returns True if found else False."""
-        for path in os.environ.get("PATH", "").split(":") :
-            fullname = os.path.abspath(os.path.join(os.path.expanduser(path), command))
-            if os.path.isfile(fullname) and os.access(fullname, os.X_OK) :
-                return True
-        return False
-        
     def getJobSize(self) :    
         """Returns the job's size."""
         size = 0
@@ -73,7 +65,7 @@ class PDLAnalyzer :
                 pdlhandler = self.detectPDLHandler()
                 size = pdlhandler.getJobSize()
             except pdlparser.PDLParserError, msg :    
-                raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
+                raise pdlparser.PDLParserError, "Unsupported file format for %s (%s)" % (self.filename, msg)
         finally :    
             self.closeFile()
         return size
@@ -97,7 +89,7 @@ class PDLAnalyzer :
                 finally :    
                     dummyfile.close()
             except pdlparser.PDLParserError, msg :    
-                raise pdlparser.PDLParserError, "Unknown file format for %s (%s)" % (self.filename, msg)
+                raise pdlparser.PDLParserError, "Unsupported file format for %s (%s)" % (self.filename, msg)
         finally :
             self.closeFile()
         return result

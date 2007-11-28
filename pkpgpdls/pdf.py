@@ -43,6 +43,7 @@ class PDFObject :
 class Parser(pdlparser.PDLParser) :
     """A parser for PDF documents."""
     totiffcommands = [ 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" "%(infname)s"' ]
+    required = [ "gs" ]
     openmode = "rU"
     def isValid(self) :    
         """Returns True if data is PDF, else False."""

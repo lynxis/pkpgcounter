@@ -30,6 +30,7 @@ class Parser(pdlparser.PDLParser) :
     totiffcommands = [ 'enscript --quiet --portrait --no-header --columns 1 --output - "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -',
                        'a2ps --borders 0 --quiet --portrait --no-header --columns 1 --output - "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -',
                      ]  
+    required = [ "a2ps | enscript", "gs" ]
     openmode = "rU"                 
     def isValid(self) :    
         """Returns True if data is plain text, else False.
