@@ -52,36 +52,18 @@ class Parser(pdlparser.PDLParser) :
     def throughGhostScript(self) :
         """Get the count through GhostScript, useful for non-DSC compliant PS files."""
         self.logdebug("Internal parser sucks, using GhostScript instead...")
-        command = 'gs -sDEVICE=bbox -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET - 2>&1 | grep -c "%%HiResBoundingBox:" 2>/dev/null'
+        infname = self.parent.filename
+        command = 'gs -sDEVICE=bbox -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET "%(infname)s" 2>&1 | grep -c "%%HiResBoundingBox:" 2>/dev/null'
         pagecount = 0
-        # we need to reopen the input file in binary mode again, just in case
-        # otherwise we might break the original file's contents.
-        infile = open(self.parent.filename, "rb")
+        fromchild = os.popen(command % locals(), "r")
         try :
-            child = popen2.Popen4(command)
             try :
-                data = infile.read(pdlparser.MEGABYTE)    
-                while data :
-                    child.tochild.write(data)
-                    data = infile.read(pdlparser.MEGABYTE)
-                child.tochild.flush()
-                child.tochild.close()    
-            except (IOError, OSError), msg :    
-                raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
-                
-            pagecount = 0
-            try :
-                pagecount = int(child.fromchild.readline().strip())
+                pagecount = int(fromchild.readline().strip())
             except (IOError, OSError, AttributeError, ValueError), msg :
                 raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
-            child.fromchild.close()
-            
-            try :
-                child.wait()
-            except OSError, msg :    
-                raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
         finally :        
-            infile.close()
+            if fromchild.close() is not None :
+                raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document"
         self.logdebug("GhostScript said : %s pages" % pagecount)    
         return pagecount * self.copies
         
@@ -91,19 +73,19 @@ class Parser(pdlparser.PDLParser) :
         self.pages = { 0 : { "copies" : 1 } }
         oldpagenum = None
         previousline = ""
-        notrust = 0
-        prescribe = 0 # Kyocera's Prescribe commands
-        acrobatmarker = 0
+        notrust = False
+        prescribe = False # Kyocera's Prescribe commands
+        acrobatmarker = False
         pagescomment = None
         for line in self.infile :
             line = line.strip()
             if (not prescribe) and line.startswith(r"%%BeginResource: procset pdf") \
                and not acrobatmarker :
-                notrust = 1 # Let this stuff be managed by GhostScript, but we still extract number of copies
+                notrust = True # Let this stuff be managed by GhostScript, but we still extract number of copies
             elif line.startswith(r"%ADOPrintSettings: L") :
-                acrobatmarker = 1
+                acrobatmarker = True
             elif line.startswith("!R!") :
-                prescribe = 1
+                prescribe = True
             elif line.startswith(r"%%Pages: ") :
                 try :
                     pagescomment = max(pagescomment or 0, int(line.split()[1]))
