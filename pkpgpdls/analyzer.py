@@ -27,7 +27,7 @@ import sys
 import os
 import tempfile
 
-import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, pil, mstrash, \
+import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, pil, mscrap, \
        lidil, escp2, dvi, tiff, ooo, zjstream, qpdl, spl1, escpages03, plain
 import inkcoverage
 
@@ -162,7 +162,7 @@ class PDLAnalyzer :
                        escp2, \
                        escpages03, \
                        pil, \
-                       mstrash, \
+                       mscrap, \
                        plain) :     # IMPORTANT : don't move this one up !
             try :               
                 return module.Parser(self, (firstblock, lastblock))
