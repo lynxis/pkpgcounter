@@ -42,12 +42,12 @@ class PDLParser :
     totiffcommands = None       # Default command to convert to TIFF
     required = []               # Default list of required commands
     openmode = "rb"             # Default file opening mode
-    def __init__(self, parent, (firstblock, lastblock)) :
+    def __init__(self, parent, filename, (firstblock, lastblock)) :
         """Initialize the generic parser."""
         self.parent = parent
         # We need some copies for later inclusion of parsers which
         # would modify the parent's values
-        self.filename = parent.filename[:]
+        self.filename = filename[:]
         self.firstblock = firstblock[:]
         self.lastblock = lastblock[:]
         self.infile = None

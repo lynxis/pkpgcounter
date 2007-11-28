@@ -44,6 +44,7 @@ pkpgcounter currently recognizes the following document formats :
     * PCL3/4/5
     * DVI
     * OpenDocument (ISO/IEC DIS 26300)
+    * Microsoft Word (c) (tm) (r) (etc...)
     * Plain text
     * TIFF
     * Several other image formats

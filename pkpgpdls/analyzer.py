@@ -165,7 +165,8 @@ class PDLAnalyzer :
                        mscrap, \
                        plain) :     # IMPORTANT : don't move this one up !
             try :               
-                return module.Parser(self, (firstblock, lastblock))
+                return module.Parser(self, self.filename, 
+                                           (firstblock, lastblock))
             except pdlparser.PDLParserError :
                 pass # try next parser
         raise pdlparser.PDLParserError, "Analysis of first data block failed."

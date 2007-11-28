@@ -23,7 +23,7 @@
 """This module implements a page counter for Microsoft Word (r) (tm) (c) (etc...) documents"""
 
 import os
-import urllib2
+import tempfile
 
 import pdlparser
 import version
@@ -55,5 +55,27 @@ class Parser(pdlparser.PDLParser) :
             return False
             
     def getJobSize(self) :
-        """Counts pages in a Microsoft Word (r) (tm) (c) (etc...) document."""
-        return 0
+        """Counts pages in a Microsoft Word (r) (tm) (c) (etc...) document.
+
+           First we convert from .doc to .ps, then we use the PostScript parser.
+        """
+        doctops = 'xvfb-run -a abiword --import-extension=.doc --print="%(outfname)s" "%(infname)s"'
+        workfile = tempfile.NamedTemporaryFile(mode="w+b")
+        try :
+            outfname = workfile.name
+            infname = self.filename
+            status = os.system(doctops % locals())
+            if status or not os.stat(outfname).st_size :
+                raise pdlparser.PDLParserError, "Impossible to convert input document %(infname)s to PostScript" % locals()
+            psinputfile = open(outfname, "rb")
+            try :
+                (first, last) = self.parent.readFirstAndLastBlocks(psinputfile)
+                import postscript
+                return postscript.Parser(self.parent, 
+                                         outfname, 
+                                         (first, last)).getJobSize()
+            finally :
+                psinputfile.close()
+        finally :    
+            workfile.close()
+        raise pdlparser.PDLParserError, "Impossible to count pages in %(infname)s" % locals()
