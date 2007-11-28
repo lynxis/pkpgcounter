@@ -34,6 +34,8 @@ pkpgcounter currently recognizes the following document formats :
         
         - DVI
         
+        - OpenDocument (ISO/IEC DIS 26300)
+        
         - Plain text
         
         - TIFF
@@ -41,8 +43,6 @@ pkpgcounter currently recognizes the following document formats :
         - Several other image formats
         
         - ESC/P2
-        
-        - OpenDocument (ISO/IEC DIS 26300)
         
         - Zenographics ZjStream
         
@@ -56,7 +56,7 @@ pkpgcounter currently recognizes the following document formats :
         
         - Hewlett-Packard Lightweight Imaging Device Interface Language
         
-The eight latter ones, as well as some TIFF documents, are currently 
+The seven latter ones, as well as some TIFF documents, are currently 
 only supported in page counting mode. 
 
 By default, when launched pkpgcounter prints on its standard output 
@@ -108,17 +108,19 @@ Installation :
   
 DEPENDENCIES :
 
-  Depending on the file formats you plan to work with, and on the accounting
-  mode you want to use (pages vs ink), you may need to install some or all
-  of the additional software listed below. Usually, if one is needed then
-  pkpgcounter will complain. So your best bet is probably to not install
-  anything until pkpgcounter asks you to do so on its standard error
-  stream. Here's the list of software which may be needed for some
-  operations with pkpgcounter :
-
-  - GhostScript (gs)
+  Most of the time, pkpgcounter only depends on the presence of :
   
   - The Python Imaging Library (python-imaging)
+  
+  But, depending on the file formats you plan to work with, and on the
+  accounting mode you want to use (pages vs ink), you may need to install
+  some or all of the additional software listed below. Usually, if one is
+  needed then pkpgcounter will complain. So your best bet is probably 
+  to NOT INSTALL anything until pkpgcounter asks you to do so on its
+  standard error stream. Here's the list of software which may be needed
+  for some operations with pkpgcounter :
+
+  - GhostScript (gs)
   
   - The X Virtual Frame Buffer (xvfb)
   
@@ -139,7 +141,8 @@ Troubleshooting :
 
   If pkpgcounter gives incorrect results to you, please make an incorrectly
   parsed data file available to us on some website, and tell us which 
-  driver was used.
+  driver was used, how many pages are in the file, and any additional 
+  information you think is relevant.
   
   If pkpgcounter complain about your system lacking the Python Psyco module,
   please consider installing it to speedup file parsing. However, don't forget
