@@ -56,6 +56,14 @@ class PDLAnalyzer :
         self.workfile = None 
         self.mustclose = None
         
+    def findExecutable(self, command) :
+        """Finds an executable in the PATH and returns True if found else False."""
+        for path in os.environ.get("PATH", "").split(":") :
+            fullname = os.path.abspath(os.path.join(os.path.expanduser(path), command))
+            if os.path.isfile(fullname) and os.access(fullname, os.X_OK) :
+                return True
+        return False
+        
     def getJobSize(self) :    
         """Returns the job's size."""
         size = 0
