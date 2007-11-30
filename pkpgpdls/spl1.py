@@ -22,10 +22,9 @@
 
 """This modules implements a page counter for SPL1 documents."""
 
-import sys
 import os
 import mmap
-from struct import unpack
+import struct
 
 import pdlparser
 import version
@@ -50,6 +49,7 @@ class Parser(pdlparser.PDLParser) :
         self.unpackType = { 1 : "B", 2 : "<H", 4 : "<I" }
         self.unpackShort = self.unpackType[2]
         self.unpackLong = self.unpackType[4]
+        # self.logdebug("Little Endian")
         return 0
         
     def bigEndian(self) :
@@ -57,6 +57,7 @@ class Parser(pdlparser.PDLParser) :
         self.unpackType = { 1 : "B", 2 : ">H", 4 : ">I" }
         self.unpackShort = self.unpackType[2]
         self.unpackLong = self.unpackType[4]
+        # self.logdebug("Big Endian")
         return 0
     
     def escape(self, nextpos) :    
@@ -86,6 +87,7 @@ class Parser(pdlparser.PDLParser) :
         stuff.append(datas)
         if datas.endswith("$PJL BITMAP START\r\n") :
             self.isbitmap = True
+            # self.logdebug("New bitmap")
         self.logdebug("Escaped datas : [%s]" % repr(datas))
         return endpos - pos + 1
         
@@ -99,9 +101,9 @@ class Parser(pdlparser.PDLParser) :
         self.pagecount = 0
         self.escapedStuff = {}   # For escaped datas, mostly PJL commands
         self.bigEndian()
-        codesop = chr(0x06) + chr(0x00) + chr(0x00) + chr(0x80) + chr(0x13) + chr(0x40)
         self.isbitmap = False
         pos = 0
+        unpack = struct.unpack
         try :
             try :
                 while 1 :
@@ -111,13 +113,15 @@ class Parser(pdlparser.PDLParser) :
                     else :    
                         if not self.isbitmap :
                             raise pdlparser.PDLParserError, "Unfortunately SPL1 is incompletely recognized. Parsing aborted. Please report the problem to %s" % version.__authoremail__
-                        offset = unpack(self.unpackLong, minfile[pos:pos+4])[0]
-                        sequencenum = unpack(self.unpackShort, minfile[pos+4:pos+6])[0]
-                        if minfile[pos+6:pos+12] != codesop :
-                            raise pdlparser.PDLParserError, "Unfortunately SPL1 is incompletely recognized. Parsing aborted. Please report the problem to %s" % version.__authoremail__
-                        if not sequencenum :
+                        (offset,
+                         seqnum) = unpack(">IH", minfile[pos:pos+6])
+                        # self.logdebug("Offset : %i      Sequence Number : %i" % (offset, seqnum))
+                        if not seqnum : 
+                            # Sequence number resets to 0 for each new page.
                             self.pagecount += 1
                         pos += 4 + offset
+            except struct.error, msg :     
+                raise pdlparser.PDLParserError, "Unfortunately SPL1 is incompletely recognized (%s). Parsing aborted. Please report the problem to %s" % (msg, version.__authoremail__)
             except IndexError : # EOF ?            
                 pass
         finally :
