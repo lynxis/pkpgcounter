@@ -72,14 +72,14 @@ class Parser(pdlparser.PDLParser) :
         """Computes the number of pages in a HP LIDIL document."""
         unpack = struct.unpack
         ejectpage = loadpage = 0
-        while True :
-            header = self.infile.read(HEADERSIZE)
-            if not header :
-                break
-            if (len(header) != HEADERSIZE) or (header[0] != "$") :
-                # Invalid header or no Frame Sync byte.
-                raise pdlparser.PDLParserError, "This file doesn't seem to be valid Hewlett-Packard LIDIL datas."
-            try :    
+        try :
+            while True :
+                header = self.infile.read(HEADERSIZE)
+                if not header :
+                    break
+                if (len(header) != HEADERSIZE) or (header[0] != "$") :
+                    # Invalid header or no Frame Sync byte.
+                    raise pdlparser.PDLParserError, "This file doesn't seem to be valid Hewlett-Packard LIDIL datas."
                 (framesync,     
                  cmdlength,
                  dummy,
@@ -87,14 +87,14 @@ class Parser(pdlparser.PDLParser) :
                  commandnumber,
                  referencenumber,
                  datalength) = unpack(">BHBBBHH", header)
-            except struct.error :    
-                raise pdlparser.PDLParserError, "This file doesn't seem to be valid Hewlett-Packard LIDIL datas."
-            if packettype == PACKET_TYPE_COMMAND :
-                if commandnumber == LDL_LOAD_PAGE :
-                    loadpage += 1
-                elif commandnumber == LDL_EJECT_PAGE :
-                    ejectpage += 1
-            self.infile.seek(cmdlength + datalength - len(header), 1) # relative seek
+                if packettype == PACKET_TYPE_COMMAND :
+                    if commandnumber == LDL_LOAD_PAGE :
+                        loadpage += 1
+                    elif commandnumber == LDL_EJECT_PAGE :
+                        ejectpage += 1
+                self.infile.seek(cmdlength + datalength - len(header), 1) # relative seek
+        except struct.error :    
+            raise pdlparser.PDLParserError, "This file doesn't seem to be valid Hewlett-Packard LIDIL datas."
             
         # Number of page eject commands should be sufficient,
         # but we never know : someone could try to cheat the printer

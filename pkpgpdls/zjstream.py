@@ -51,39 +51,40 @@ class Parser(pdlparser.PDLParser) :
         
     def getJobSize(self) :
         """Computes the number of pages in a ZjStream document."""
-        unpack = struct.unpack
         self.infile.seek(4, 0) # Skip ZJZJ/JZJZ header
         startpagecount = endpagecount = 0
-        while True :
-            header = self.infile.read(16)
-            if not header :
-                break
-            try :    
+        unpackHeader = self.unpackHeader
+        unpack = struct.unpack
+        try :
+            while True :
+                header = self.infile.read(16)
+                if not header :
+                    break
                 (totalChunkSize,
                  chunkType,
                  numberOfItems,
                  reserved,
-                 signature) = unpack(self.unpackHeader, header)
-            except struct.error :
-                raise pdlparser.PDLParserError, "This file doesn't seem to be valid ZjStream datas."
-            self.infile.seek(totalChunkSize - len(header), 1)
-            if chunkType == 2 :    
-                #self.logdebug("startPage")
-                startpagecount += 1
-            elif chunkType == 3 :
-                #self.logdebug("endPage")
-                endpagecount += 1
-            #elif chunkType == 0 :
-            #    self.logdebug("startDoc")
-            #elif chunkType == 1 :    
-            #    self.logdebug("endDoc")
-                
-            #self.logdebug("Chunk size : %s" % totalChunkSize)
-            #self.logdebug("Chunk type : 0x%08x" % chunkType)
-            #self.logdebug("# items : %s" % numberOfItems)
-            #self.logdebug("reserved : 0x%04x" % reserved)
-            #self.logdebug("signature : 0x%04x" % signature)
-            #self.logdebug("\n")
+                 signature) = unpack(unpackHeader, header)
+                self.infile.seek(totalChunkSize - len(header), 1)
+                if chunkType == 2 :    
+                    #self.logdebug("startPage")
+                    startpagecount += 1
+                elif chunkType == 3 :
+                    #self.logdebug("endPage")
+                    endpagecount += 1
+                #elif chunkType == 0 :
+                #    self.logdebug("startDoc")
+                #elif chunkType == 1 :    
+                #    self.logdebug("endDoc")
+                #    
+                #self.logdebug("Chunk size : %s" % totalChunkSize)
+                #self.logdebug("Chunk type : 0x%08x" % chunkType)
+                #self.logdebug("# items : %s" % numberOfItems)
+                #self.logdebug("reserved : 0x%04x" % reserved)
+                #self.logdebug("signature : 0x%04x" % signature)
+                #self.logdebug("\n")
+        except struct.error :
+            raise pdlparser.PDLParserError, "This file doesn't seem to be valid ZjStream datas."
             
         # Number of endpage commands should be sufficient,
         # but we never know : someone could try to cheat the printer
