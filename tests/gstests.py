@@ -38,33 +38,54 @@ def getAvailableDevices() :
     """
     answerfd = os.popen('/bin/echo "devicenames ==" | gs -dBATCH -dQUIET -dNOPAUSE -dPARANOIDSAFER -sDEVICE=nullpage -', "r")
     answer = answerfd.readline().strip()
-    answerfd.close()
-    if answer.startswith("[/") and answer.endswith("]") :
-        devices = [ dev[1:] for dev in answer[1:-1].split() \
-                                if dev.startswith("/") \
-                                   and (not dev.startswith("/x11")) \
-                                   and (not dev == "/ijs") \
-                                   and (not dev == "/nullpage") \
-                                   and (not dev == "/bbox") ]
-        devices.sort()                           
-        return devices
-    else :
-        return []
+    if not answerfd.close() :
+        if answer.startswith("[/") and answer.endswith("]") :
+            devices = [ dev[1:] for dev in answer[1:-1].split() \
+                                    if dev.startswith("/") \
+                                       and (not dev.startswith("/x11")) \
+                                       and (not dev == "/ijs") \
+                                       and (not dev == "/nullpage") \
+                                       and (not dev == "/bbox") ]
+            devices.sort()                           
+            return devices
+    return []
         
-def genTestSuite(infilename, root) :
-    """Generate the testsuite."""
-    for device in getAvailableDevices() :
+def getAvailableIJSPrintClasses() :
+    """Returns a list of available IJS Print Classes.
+    
+       Currently the list is a static one and doesn't contain all the available print classes.
+    """
+    return [ "DJ3600", "DJ3320", "DJ9xx", "DJGenericVIP", "LJColor", 
+             "DJ850", "DJ890", "DJ9xxVIP", "DJ8xx", "DJ540", "DJ660",
+             "DJ6xx", "DJ350", "DJ6xxPhoto", "DJ630", "DJ8x5", "DJ4100",
+             "AP21xx", "AP2560", "AP2xxx", "PSP100", "PSP470", "Undefined",
+             "Postscript", "LJJetReady", "LJMono", "LJFastRaster",
+             "LJZjsMono", ]
+        
+def batchGeneration(infilename, devices, root, command) :
+    """Loops over a set of devices calling a particular command."""
+    for device in devices :
         outfilename = "%(root)s.%(device)s" % locals()
-        if not os.path.exists(outfilename) :
+        if os.path.exists(outfilename) and os.stat(outfilename).st_size :
+            sys.stdout.write("Skipping %(outfilename)s : already exists.\n" % locals())
+        else :    
             sys.stdout.write("Generating %(outfilename)s " % locals())
             sys.stdout.flush()
-            os.system('gs -dQUIET -dBATCH -dNOPAUSE -dPARANOIDSAFER -sOutputFile="%(outfilename)s" -sDEVICE="%(device)s" "%(infilename)s"' % locals())
+            os.system(command % locals())
             sys.stdout.write("\n")
-        else :    
-            sys.stdout.write("Skipping %(outfilename)s : already exists.\n" % locals())
             
         if not os.path.exists(outfilename) :
             sys.stderr.write("ERROR while generating %(outfilename)s\n" % locals())
+    
+def genTestSuite(infilename, root) :
+    """Generate the testsuite."""
+    batchGeneration(infilename, getAvailableDevices(), 
+                                root, 
+                                'gs -dQUIET -dBATCH -dNOPAUSE -dPARANOIDSAFER -sOutputFile="%(outfilename)s" -sDEVICE="%(device)s" "%(infilename)s"')
+                                
+    batchGeneration(infilename, getAvailableIJSPrintClasses(), 
+                                "%(root)s.hpijs" % locals(), 
+                                'gs -dBATCH -dQUIET -dPARANOIDSAFER -dNOPAUSE -sDEVICE=ijs -sIjsServer=hpijs -dIjsUseOutputFD -sDeviceManufacturer="HEWLETT-PACKARD" -sDeviceModel="%(device)s" -sOutputFile="%(outfilename)s" "%(infilename)s"')
             
 def computeSize(filename) :    
     """Computes the size in pages of a file in the testsuite."""
