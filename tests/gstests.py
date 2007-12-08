@@ -177,7 +177,7 @@ class TestSuite :
                 devname = ".".join(parts[2:])
             else :    
                 devname = parts[-1]
-            result = self.results.setdefault(testfname, { "command" : "Unknown", 
+            result = self.results.setdefault(testfname, { "command" : "See above", 
                                                           "device" : devname, 
                                                           "result" : None, 
                                                           "details" : None })
