@@ -243,16 +243,19 @@ class TestSuite :
         
 def main() :        
     """Main function."""
-    if len(sys.argv) == 1 :
-        sys.argv.append("-")
-    if len(sys.argv) != 2 :
-        sys.stderr.write("usage : %s [inputfile.ps]\n" % sys.argv[0])
-        sys.exit(-1)
-    else :    
-        testsuite = TestSuite(sys.argv[1])
-        testsuite.genTestSuite()
-        testsuite.runTests()
-        testsuite.genHTMLReport("%s.html" % testsuite.md5sum)
+    try :
+        if len(sys.argv) == 1 :
+            sys.argv.append("-")
+        if len(sys.argv) != 2 :
+            sys.stderr.write("usage : %s [inputfile.ps]\n" % sys.argv[0])
+            sys.exit(-1)
+        else :    
+            testsuite = TestSuite(sys.argv[1])
+            testsuite.genTestSuite()
+            testsuite.runTests()
+            testsuite.genHTMLReport("%s.html" % testsuite.md5sum)
+    except KeyboardInterrupt :        
+        sys.stderr.write("Interrupted at user's request !\n")
         
 if __name__ == "__main__" :
     sys.exit(main())
