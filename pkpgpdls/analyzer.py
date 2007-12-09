@@ -27,8 +27,9 @@ import sys
 import os
 import tempfile
 
-import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, pil, mscrap, \
-       lidil, escp2, dvi, tiff, ooo, zjstream, qpdl, spl1, escpages03, plain
+import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, \
+       pil, mscrap, cfax, lidil, escp2, dvi, tiff, ooo, zjstream, \
+       qpdl, spl1, escpages03, plain
 import inkcoverage
 
 class AnalyzerOptions :
@@ -154,6 +155,7 @@ class PDLAnalyzer :
                        spl1, \
                        dvi, \
                        tiff, \
+                       cfax, \
                        zjstream, \
                        ooo, \
                        hbp, \

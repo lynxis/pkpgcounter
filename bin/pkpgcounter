@@ -55,8 +55,9 @@ pkpgcounter currently recognizes the following document formats :
     * ESC/PageS03
     * Brother HBP
     * Hewlett-Packard LIDIL (hpijs)
+    * Structured Fax
 
-The seven latter ones, as well as some TIFF documents, are currently
+The eight latter ones, as well as some TIFF documents, are currently
 only supported in page counting mode.
 
 command line usage :

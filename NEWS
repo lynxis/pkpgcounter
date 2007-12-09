@@ -20,6 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pkpgcounter News :
 
+  * 3.50 :
+  
+    - Added support for Structured Fax documents in page counting mode.
+    
+    - Fixed a problem with the parsing of SPL1 (GDI) documents.
+    
   * 3.40 :
   
     - Fixed a major bug in the detection of OpenDocument (ISO/IEC DIS 26300)
