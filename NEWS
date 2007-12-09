@@ -24,7 +24,10 @@ pkpgcounter News :
   
     - Added support for Structured Fax documents in page counting mode.
     
-    - Fixed a problem with the parsing of SPL1 (GDI) documents.
+    - Fixed a problem with the parsing of SPL1 (GDI) documents : all such
+      documents should now be correctly parsed.
+    
+    - Improved the PCL3/4/5 parser.
     
   * 3.40 :
   
