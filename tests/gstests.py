@@ -149,16 +149,21 @@ class TestSuite :
                                         "%(root)s.hpijs" % locals(), 
                                         'gs -dBATCH -dQUIET -dPARANOIDSAFER -dNOPAUSE -sDEVICE=ijs -sIjsServer=hpijs -dIjsUseOutputFD -sDeviceManufacturer="HEWLETT-PACKARD" -sDeviceModel="%(device)s" -sOutputFile="%(outfilename)s" "%(infilename)s"')
                 
-    def computeSize(self, filename) :    
-        """Computes the size in pages of a file in the testsuite."""
-        answerfd = os.popen('pkpgcounter "%(filename)s" 2>/dev/null' % locals(), "r")
+    def runPipe(self, cmd) :            
+        """Runs a command in a pipe, returns the command's output as a string."""
+        answerfd = os.popen(cmd, "r")
         try :
-            try :
-                return int(answerfd.readline().strip())
-            except (ValueError, TypeError) :    
-                return 0
+            return answerfd.read().strip()
         finally :        
             answerfd.close()
+        
+    def computeSize(self, filename) :    
+        """Computes the size in pages of a file in the testsuite."""
+        answer = self.runPipe('pkpgcounter "%(filename)s" 2>/dev/null' % locals())
+        try :
+            return int(answer)
+        except (ValueError, TypeError) :    
+            return 0
         
     def runTests(self) :
         """Launches the page counting tests against the testsuite."""
@@ -202,20 +207,24 @@ class TestSuite :
     def genHTMLReport(self, filename) :
         """Generates an HTML report."""
         reportdate = "%s (UTC)" % time.asctime(time.gmtime(time.time()))
-        title = "pkpgcounter report for testsuite %s generated on %s" % (self.md5sum, reportdate)
+        title = "pkpgcounter v%s report for testsuite %s generated on %s" \
+                        % (self.runPipe("pkpgcounter --version"), \
+                           self.md5sum, \
+                           reportdate)
         out = open(filename, "w")
         out.write("<html><head><title>%s</title></head><body>\n" % title)
         out.write("<h3>%s</h3>\n" % title)
         out.write("<ul>\n")
         out.write("<li>Testsuite's MD5 checksum : <strong>%s</strong></li>\n" % self.md5sum)
         out.write("<li>Testsuite contains : <strong>%i pages</strong></li>\n" % self.mastersize)
+        out.write("<li>Ghostscript used to generate testsuite : <strong>v%s</strong></li>\n" % self.runPipe("gs --version"))
         out.write("<li>Supported : <strong>%.2f%%</strong></li>\n" % self.supportedpct)
         out.write("<li>Failed : <strong>%.2f%%</strong></li>\n" % self.failedpct)
         out.write("<li>Unsupported : <strong>%.2f%%</strong></li>\n" % self.unsupportedpct)
         out.write("</ul>\n")
-        out.write("<p><strong>Green</strong> means that pkpgcounter obtained the expected result</p>\n")
-        out.write("<p><strong>Orange</strong> means that pkpgcounter obtained an incorrect result</p>\n")
-        out.write("<p><strong>Red</strong> means that pkpgcounter doesn't recognize the input file's format</p>\n")
+        out.write("<p><strong>Green</strong> means that pkpgcounter obtained the expected result.</p>\n")
+        out.write("<p><strong>Orange</strong> means that pkpgcounter obtained an incorrect result.<em>IMPORTANT : if only 1 page is found, this is often due to image formats which don't support multiple pages anyway.</em></p>\n")
+        out.write("<p><strong>Red</strong> means that pkpgcounter doesn't recognize the input file's format.</p>\n")
         out.write('<table border="1"><tr bgcolor="gold"><th width="15%">Device</th><th width="25%">Details</th><th width="60%">Command line</th></tr>\n')
         linecount = 0
         keys = self.results.keys()
