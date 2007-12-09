@@ -494,6 +494,9 @@ class Parser(pdlparser.PDLParser) :
                     
         self.pagecount = self.pagecount or nbmediasourcesdefault
         
+        if not self.pagecount :
+            if self.resets == len(self.startgfx) :
+                self.pagecount = self.resets 
         
         defaultpjlcopies = 1    
         defaultduplexmode = "Simplex"
