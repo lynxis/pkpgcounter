@@ -26,8 +26,7 @@ import pdlparser
 import version
 
 class Parser(pdlparser.PDLParser) :
-    """A parser for Netpbm documents."""
-    required = [ "a2ps | enscript", "gs" ]
+    """A parser for PNM (ascii) documents."""
     openmode = "rU"                 
     def isValid(self) :    
         """Returns True if data is plain text, else False.
