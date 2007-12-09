@@ -35,7 +35,7 @@ class Parser(pdlparser.PDLParser) :
            extract lines from the first block (sufficiently large).
            If it's impossible to find one we consider it's not plain text.
         """   
-        if (self.firstblock[:2] in ("P1", "P2", "P3")) :
+        if (self.firstblock.split()[0] in ("P1", "P2", "P3")) :
             self.logdebug("DEBUG: Input file seems to be in the PNM (ascii) format.")
             self.marker = self.firstblock[:2]
             return True
@@ -45,7 +45,17 @@ class Parser(pdlparser.PDLParser) :
     def getJobSize(self) :
         """Counts pages in a PNM (ascii) document."""
         pagecount = 0
+        linecount = 0
+        divby = 1
         marker = self.marker
         for line in self.infile :
+            linecount += 1
+            if (linecount == 2) and (line.find("device=pksm") != -1) :
+                # Special case of cmyk map
+                divby = 4
             pagecount += line.split().count(marker)
-        return pagecount
+            
+        if not (pagecount % divby) :    
+            return pagecount // divby
+        else :    
+            return pagecount
