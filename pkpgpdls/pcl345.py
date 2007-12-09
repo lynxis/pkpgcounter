@@ -42,6 +42,7 @@ class Parser(pdlparser.PDLParser) :
                        'pcl6 -sDEVICE=pswrite -r"%(dpi)i" -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -sOutputFile=- "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r%(dpi)i -sOutputFile="%(outfname)s" -',
                      ]
     required = [ "pcl6", "gs" ]
+    format = "PCL3/4/5"
     mediasizes = {  # ESC&l####A
                     0 : "Default",
                     1 : "Executive",
@@ -109,7 +110,6 @@ class Parser(pdlparser.PDLParser) :
                (firstblock.find("\033%-12345X") != -1) or \
                (firstblock.find("@PJL ENTER LANGUAGE=PCL\012\015\033") != -1) or \
                (firstblock.startswith(chr(0xcd)+chr(0xca)) and (firstblock.find("\033E\033") != -1)) :
-                self.logdebug("DEBUG: Input file is in the PCL3/4/5 format.")
                 return True
             else :    
                 return False

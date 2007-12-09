@@ -33,6 +33,7 @@ class Parser(pdlparser.PDLParser) :
     totiffcommands = [ 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" "%(infname)s"' ]
     required = [ "gs" ]
     openmode = "rU"
+    format = "PostScript"
     def isValid(self) :    
         """Returns True if data is PostScript, else False."""
         if self.firstblock.startswith("%!") or \
@@ -43,7 +44,6 @@ class Parser(pdlparser.PDLParser) :
               (self.firstblock.find("LANGUAGE = POSTSCRIPT") != -1) or \
               (self.firstblock.find("LANGUAGE = Postscript") != -1))) or \
               (self.firstblock.find("%!PS-Adobe") != -1) :
-            self.logdebug("DEBUG: Input file is in the PostScript format.")
             return True
         else :    
             return False

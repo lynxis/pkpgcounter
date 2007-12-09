@@ -29,10 +29,10 @@ import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for Canon BJ documents."""
+    format = "Canon BJ/BJC"
     def isValid(self) :        
         """Returns True if data is BJ/BJC, else False."""
         if self.firstblock.startswith("\033[K\002\000") :
-            self.logdebug("DEBUG: Input file is in the Canon BJ format.")
             return True
         else :    
             return False

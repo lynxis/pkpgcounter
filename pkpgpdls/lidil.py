@@ -51,6 +51,7 @@ LDL_EJECT_PAGE = 2
 
 class Parser(pdlparser.PDLParser) :
     """A parser for HP LIDIL documents."""
+    format = "Hewlett-Packard LIDIL"
     def isValid(self) :    
         """Returns True if data is LIDIL, else False."""
         # Beginning Of File marker is a Sync packet, followed with
@@ -63,7 +64,6 @@ class Parser(pdlparser.PDLParser) :
         EOFMarker = "$\x00\x10\x00\x08\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$$\x00\x10\x00\x06\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$" 
         if self.firstblock.startswith(BOFMarker) \
            and self.lastblock.endswith(EOFMarker) :
-            self.logdebug("DEBUG: Input file is in the Hewlett-Packard LIDIL format.")
             return True
         else :    
             return False

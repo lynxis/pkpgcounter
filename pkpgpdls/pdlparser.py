@@ -42,6 +42,7 @@ class PDLParser :
     totiffcommands = None       # Default command to convert to TIFF
     required = []               # Default list of required commands
     openmode = "rb"             # Default file opening mode
+    format = "Unknown"          # Default file format
     def __init__(self, parent, filename, (firstblock, lastblock)) :
         """Initialize the generic parser."""
         self.parent = parent
@@ -53,6 +54,8 @@ class PDLParser :
         self.infile = None
         if not self.isValid() :
             raise PDLParserError, "Invalid file format !"
+        else :    
+            self.logdebug("Input file is in the '%s' file format." % self.format)
         try :
             import psyco 
         except ImportError :    

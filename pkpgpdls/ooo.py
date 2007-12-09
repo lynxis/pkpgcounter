@@ -31,6 +31,7 @@ class Parser(pdlparser.PDLParser) :
     """A parser for OpenOffice.org documents."""
     totiffcommands = [ 'xvfb-run -a abiword --import-extension=.odt --print="| gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r\"%(dpi)i\" -sOutputFile=\"%(outfname)s\" -" "%(infname)s"' ]
     required = [ "xvfb-run", "xauth", "abiword", "gs" ]
+    format = "ISO/IEC DIS 26300"
     def isValid(self) :        
         """Returns True if data is OpenDocument, else False."""
         if self.firstblock[:2] == "PK" :
@@ -41,7 +42,6 @@ class Parser(pdlparser.PDLParser) :
             except :    
                 return False
             else :
-                self.logdebug("DEBUG: Input file is in the OpenDocument (ISO/IEC DIS 26300) format.")
                 return True
         else :    
             return False

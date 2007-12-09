@@ -45,13 +45,13 @@ class Parser(pdlparser.PDLParser) :
     totiffcommands = [ 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" "%(infname)s"' ]
     required = [ "gs" ]
     openmode = "rU"
+    format = "PDF"
     def isValid(self) :    
         """Returns True if data is PDF, else False."""
         if self.firstblock.startswith("%PDF-") or \
            self.firstblock.startswith("\033%-12345X%PDF-") or \
            ((self.firstblock[:128].find("\033%-12345X") != -1) and (self.firstblock.upper().find("LANGUAGE=PDF") != -1)) or \
            (self.firstblock.find("%PDF-") != -1) :
-            self.logdebug("DEBUG: Input file is in the PDF format.")
             return True
         else :    
             return False

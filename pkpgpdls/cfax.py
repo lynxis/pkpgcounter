@@ -28,10 +28,10 @@ import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for Structured Fax documents."""
+    format = "Structured Fax"
     def isValid(self) :        
         """Returns True if data is Structured Fax, else False."""
         if self.firstblock.startswith("Sfff") :
-            self.logdebug("DEBUG: Input file is in the Structured Fax format.")
             return True
         else :    
             return False

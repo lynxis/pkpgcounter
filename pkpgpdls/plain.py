@@ -32,6 +32,7 @@ class Parser(pdlparser.PDLParser) :
                      ]  
     required = [ "a2ps | enscript", "gs" ]
     openmode = "rU"                 
+    format = "plain text"
     def isValid(self) :    
         """Returns True if data is plain text, else False.
         
@@ -45,7 +46,6 @@ class Parser(pdlparser.PDLParser) :
             if len(lines) == 1 :
                 lines = lines[0].split("\n")
         if len(lines) > 1 :
-            self.logdebug("DEBUG: Input file seems to be in the plain text format.")
             return True
         else :    
             return False

@@ -33,13 +33,13 @@ ESCAPECHARS = (chr(0x1b), chr(0x24))
 
 class Parser(pdlparser.PDLParser) :
     """A parser for SPL1 documents."""
+    format = "SPL1 (aka GDI)"
     def isValid(self) :    
         """Returns True if data is SPL1, else False."""
         if ((self.firstblock[:128].find("\033%-12345X") != -1) and \
             (self.firstblock.find("$PJL ") != -1) and \
              ((self.firstblock.find("LANGUAGE=SMART") != -1) or \
               (self.firstblock.find("LANGUAGE = SMART") != -1))) :
-            self.logdebug("DEBUG: Input file is in the SPL1 format.")
             return True
         else :    
             return False

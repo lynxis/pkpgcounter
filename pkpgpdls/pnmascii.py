@@ -27,10 +27,10 @@ import pdlparser
 class Parser(pdlparser.PDLParser) :
     """A parser for PNM (ascii) documents."""
     openmode = "rU"                 
+    format = "PNM (ascii)"
     def isValid(self) :    
         """Returns True if data is ASCII PNM, else False."""
         if self.firstblock.split()[0] in ("P1", "P2", "P3") :
-            self.logdebug("DEBUG: Input file seems to be in the PNM (ascii) format.")
             self.marker = self.firstblock[:2]
             return True
         else :    

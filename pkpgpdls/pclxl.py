@@ -36,6 +36,7 @@ class Parser(pdlparser.PDLParser) :
                        'pcl6 -sDEVICE=pswrite -r"%(dpi)i" -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -sOutputFile=- "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -',
                      ]
     required = [ "pcl6", "gs" ]
+    format = "PCLXL (aka PCL6)"
     mediasizes = { 
                     0 : "Letter",
                     1 : "Legal",
@@ -88,7 +89,6 @@ class Parser(pdlparser.PDLParser) :
              ((self.firstblock.find("LANGUAGE=PCLXL") != -1) or \
               (self.firstblock.find("LANGUAGE = PCLXL") != -1)))) \
              or ((self.firstblock.startswith(chr(0xcd)+chr(0xca)) and (self.firstblock.find(" HP-PCL XL;") != -1))) :
-            self.logdebug("DEBUG: Input file is in the PCLXL (aka PCL6) format.")
             return True
         else :    
             return False

@@ -32,11 +32,11 @@ import pjl
 
 class Parser(pdlparser.PDLParser) :
     """A parser for ESC/PageS03 documents."""
+    format = "ESC/PageS03"
     def isValid(self) :        
         """Returns True if data is TIFF, else False."""
         if self.firstblock.startswith("\033\1@EJL") and \
             (self.firstblock.find("=ESC/PAGES03\n") != -1) :
-            self.logdebug("DEBUG: Input file is in the ESC/PageS03 format.")
             return True
         else :    
             return False

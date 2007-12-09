@@ -32,6 +32,7 @@ class Parser(pdlparser.PDLParser) :
     """A parser for that MS crap thing."""
     totiffcommands = [ 'xvfb-run -a abiword --import-extension=.doc --print="| gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r\"%(dpi)i\" -sOutputFile=\"%(outfname)s\" -" "%(infname)s"' ]
     required = [ "xvfb-run", "xauth", "abiword", "gs" ]
+    format = "Microsoft shitty"
     def isValid(self) :    
         """Returns True if data is MS crap, else False.
         
@@ -45,7 +46,6 @@ class Parser(pdlparser.PDLParser) :
            or self.firstblock.startswith("\xdb\xa5-\x00\x00\x00") \
            or self.firstblock.startswith("\x31\xbe\x00\x00") \
            or self.firstblock[2112:].startswith("MSWordDoc") :
-            self.logdebug("DEBUG: Input file seems to be in a Microsoft shitty file format.")
             # Here we do the missing test because all commands will be needed even in page counting mode
             if self.isMissing(self.required) :
                 return False

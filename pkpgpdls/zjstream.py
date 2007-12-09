@@ -31,10 +31,10 @@ class Parser(pdlparser.PDLParser) :
     def isValid(self) :    
         """Returns True if data is ZjStream, else False."""
         if self.firstblock[:4] == "ZJZJ" :
-            self.logdebug("DEBUG: Input file is in the Zenographics ZjStream (little endian) format.")
+            self.format = "Zenographics ZjStream (little endian)"
             return self.littleEndian()
         elif self.firstblock[:4] == "JZJZ" :    
-            self.logdebug("DEBUG: Input file is in the Zenographics ZjStream (big endian) format.")
+            self.format = "Zenographics ZjStream (big endian)"
             return self.bigEndian()
         else :    
             return False

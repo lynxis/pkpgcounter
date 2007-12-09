@@ -43,7 +43,7 @@ class Parser(pdlparser.PDLParser) :
         except (IOError, OverflowError) :    
             return False
         else :    
-            self.logdebug("DEBUG: Input file seems to be an image in the %s (%s) format." % (image.format, image.format_description))
+            self.format = "%s (%s)" % (image.format, image.format_description)
             return True
             
     def getJobSize(self) :
