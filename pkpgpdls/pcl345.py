@@ -469,8 +469,9 @@ class Parser(pdlparser.PDLParser) :
         self.logdebug("NbMediaSizes : \t\t\t%i" % len(self.mediasizesvalues))
         self.logdebug("MediaSources : \t\t\t%s" % self.mediasourcesvalues)
         nbmediasourcesdefault = len([m for m in self.mediasourcesvalues if m == 'Default'])
+        nbmediasourcesnotdefault = len(self.mediasourcesvalues) - nbmediasourcesdefault
         self.logdebug("MediaSourcesDefault : \t\t%i" % nbmediasourcesdefault)
-        self.logdebug("MediaSourcesNOTDefault : \t%i" % (len(self.mediasourcesvalues) - nbmediasourcesdefault))
+        self.logdebug("MediaSourcesNOTDefault : \t%i" % nbmediasourcesnotdefault)
         self.logdebug("Orientations : \t\t\t%s" % self.orientationsvalues)
         nborientations = len(self.orientationsvalues)
         self.logdebug("NbOrientations : \t\t\t%i" % nborientations)
@@ -481,17 +482,26 @@ class Parser(pdlparser.PDLParser) :
         self.logdebug("IsImageRunner : \t\t\t%s" % self.isimagerunner)
         
         if self.isimagerunner :
+            self.logdebug("Adjusting PageCount : +1")
             self.pagecount += 1      # ImageRunner adjustment
         elif self.linesperpage is not None :    
+            self.logdebug("Adjusting PageCount : +1")
             self.pagecount += 1      # Adjusts for incomplete last page
         elif len(self.startgfx) == len(self.endgfx) == 0 :
             if self.resets % 2 :
                 if nborientations == self.pagecount + 1 :
                     self.logdebug("Adjusting PageCount : +1")
                     self.pagecount += 1
-                elif nborientations == self.pagecount - 1 :
+                elif (self.pagecount > 1) \
+                     and (nborientations == self.pagecount - 1) :
                     self.logdebug("Adjusting PageCount : -1")
                     self.pagecount -= 1
+        elif (self.pagecount > 1) \
+             and (self.resets == 2) \
+             and (not nbmediasourcesdefault) \
+             and (nbmediasourcesnotdefault == 1) :
+            self.logdebug("Adjusting PageCount : -1")
+            self.pagecount -= 1
                     
         self.pagecount = self.pagecount or nbmediasourcesdefault
         
