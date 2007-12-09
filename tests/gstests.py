@@ -223,7 +223,7 @@ class TestSuite :
         out.write("<li>Unsupported : <strong>%.2f%%</strong></li>\n" % self.unsupportedpct)
         out.write("</ul>\n")
         out.write("<p><strong>Green</strong> means that pkpgcounter obtained the expected result.</p>\n")
-        out.write("<p><strong>Orange</strong> means that pkpgcounter obtained an incorrect result.<em>IMPORTANT : if only 1 page is found, this is often due to image formats which don't support multiple pages anyway.</em></p>\n")
+        out.write("<p><strong>Orange</strong> means that pkpgcounter obtained an incorrect result. <em>IMPORTANT : if only 1 page is found, this is often due to image formats which don't support multiple pages anyway.</em></p>\n")
         out.write("<p><strong>Red</strong> means that pkpgcounter doesn't recognize the input file's format.</p>\n")
         out.write('<table border="1"><tr bgcolor="gold"><th width="15%">Device</th><th width="25%">Details</th><th width="60%">Command line</th></tr>\n')
         linecount = 0
