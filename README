@@ -60,7 +60,11 @@ pkpgcounter currently recognizes the following document formats :
         
         - Structured Fax
         
-The eight latter ones, as well as some TIFF documents, are currently 
+        - Canon BJ/BJC
+        
+        - ASCII PNM (Netpbm)
+        
+The ten latter ones, as well as some TIFF documents, are currently 
 only supported in page counting mode. 
 
 By default, when launched pkpgcounter prints on its standard output 
