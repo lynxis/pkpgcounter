@@ -22,10 +22,8 @@
 
 """This modules implements a page counter for Canon BJ documents."""
 
-import sys
 import os
 import mmap
-from struct import unpack
 
 import pdlparser
 

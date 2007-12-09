@@ -29,13 +29,8 @@ class Parser(pdlparser.PDLParser) :
     """A parser for PNM (ascii) documents."""
     openmode = "rU"                 
     def isValid(self) :    
-        """Returns True if data is plain text, else False.
-        
-           It's hard to detect a plain text file, so we just try to
-           extract lines from the first block (sufficiently large).
-           If it's impossible to find one we consider it's not plain text.
-        """   
-        if (self.firstblock.split()[0] in ("P1", "P2", "P3")) :
+        """Returns True if data is ASCII PNM, else False."""
+        if self.firstblock.split()[0] in ("P1", "P2", "P3") :
             self.logdebug("DEBUG: Input file seems to be in the PNM (ascii) format.")
             self.marker = self.firstblock[:2]
             return True
@@ -53,6 +48,8 @@ class Parser(pdlparser.PDLParser) :
             if (linecount == 2) and (line.find("device=pksm") != -1) :
                 # Special case of cmyk map
                 divby = 4
+            # Unfortunately any whitespace is valid, 
+            # so we do it the slow way...
             pagecount += line.split().count(marker)
             
         if not (pagecount % divby) :    
