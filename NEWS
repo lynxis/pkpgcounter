@@ -22,6 +22,8 @@ pkpgcounter News :
 
   * 3.50 :
   
+    - Added support for Canon BJ/BJC documents in page counting mode.
+    
     - Added support for Structured Fax documents in page counting mode.
     
     - Fixed a problem with the parsing of SPL1 (GDI) documents : all such

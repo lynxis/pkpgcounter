@@ -29,7 +29,7 @@ import tempfile
 
 import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, \
        pil, mscrap, cfax, lidil, escp2, dvi, tiff, ooo, zjstream, \
-       qpdl, spl1, escpages03, plain
+       bj, qpdl, spl1, escpages03, plain
 import inkcoverage
 
 class AnalyzerOptions :
@@ -163,6 +163,7 @@ class PDLAnalyzer :
                        pcl345, \
                        escp2, \
                        escpages03, \
+                       bj, \
                        pil, \
                        mscrap, \
                        plain) :     # IMPORTANT : don't move this one up !
