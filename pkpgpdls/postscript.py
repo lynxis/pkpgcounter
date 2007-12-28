@@ -92,7 +92,10 @@ class Parser(pdlparser.PDLParser) :
             line = line.strip()
             parts = line.split()
             nbparts = len(parts)
-            part0 = parts[0]
+            if nbparts >= 1 :
+                part0 = parts[0]
+            else :    
+                part0 = ""
             if part0 == r"%ADOPrintSettings:" :
                 acrobatmarker = True
             elif part0 == "!R!" :    
