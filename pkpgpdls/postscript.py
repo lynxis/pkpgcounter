@@ -167,6 +167,16 @@ class Parser(pdlparser.PDLParser) :
                 else :    
                     if number > self.pages[pagecount]["copies"] :
                         self.pages[pagecount]["copies"] = number
+            else :   
+                parts = line.split()
+                if (len(parts) > 1) and (parts[1] == "@copies") :
+                    try :
+                        number = int(parts[0])
+                    except :     
+                        pass
+                    else :    
+                        if number > self.pages[pagecount]["copies"] :
+                            self.pages[pagecount]["copies"] = number
             previousline = line
             
         # extract max number of copies to please the ghostscript parser, just    
