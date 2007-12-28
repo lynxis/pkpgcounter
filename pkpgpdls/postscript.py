@@ -68,6 +68,16 @@ class Parser(pdlparser.PDLParser) :
         self.logdebug("GhostScript said : %s pages" % pagecount)    
         return pagecount * self.copies
         
+    def setcopies(self, pagenum, txtvalue) :    
+        """Tries to extract a number of copies from a textual value and set the instance attributes accordingly."""
+        try :
+            number = int(txtvalue)
+        except (ValueError, TypeError) :     
+            pass
+        else :    
+            if number > self.pages[pagenum]["copies"] :
+                self.pages[pagenum]["copies"] = number
+                
     def natively(self) :
         """Count pages in a DSC compliant PostScript document."""
         pagecount = 0
@@ -80,103 +90,67 @@ class Parser(pdlparser.PDLParser) :
         pagescomment = None
         for line in self.infile :
             line = line.strip()
-            if (not prescribe) and line.startswith(r"%%BeginResource: procset pdf") \
-               and not acrobatmarker :
-                notrust = True # Let this stuff be managed by GhostScript, but we still extract number of copies
-            elif line.startswith(r"%ADOPrintSettings: L") :
+            parts = line.split()
+            nbparts = len(parts)
+            part0 = parts[0]
+            if part0 == r"%ADOPrintSettings:" :
                 acrobatmarker = True
-            elif line.startswith("!R!") :
+            elif part0 == "!R!" :    
                 prescribe = True
-            elif line.startswith(r"%%Pages: ") :
+            elif part0 == r"%%Pages:" :
                 try :
-                    pagescomment = max(pagescomment or 0, int(line.split()[1]))
+                    pagescomment = max(pagescomment or 0, int(parts[1]))
                 except ValueError :
                     pass # strange, to say the least
-            elif line.startswith(r"%%Page: ") or line.startswith(r"(%%[Page: ") :
-                proceed = 1
+            elif (part0 == r"%%BeginNonPPDFeature:") \
+                  and (nbparts > 2) \
+                  and (parts[1] == "NumCopies") :
+                self.setcopies(pagecount, parts[2])
+            elif (part0 == r"%%Requirements:") \
+                  and (nbparts > 1) \
+                  and (parts[1] == "numcopies(") :
+                try :
+                    self.setcopies(pagecount, line.split('(')[1].split(')')[0])
+                except IndexError :
+                    pass
+            elif part0 == "/#copies" :
+                if nbparts > 1 :
+                    self.setcopies(pagecount, parts[1])
+            elif part0 == r"%RBINumCopies:" :   
+                if nbparts > 1 :
+                    self.setcopies(pagecount, parts[1])
+            elif (parts[:4] == ["1", "dict", "dup", "/NumCopies"]) \
+                  and (nbparts > 4) :
+                # handle # of copies set by mozilla/kprinter
+                self.setcopies(pagecount, parts[4])
+            elif (parts[:6] == ["{", "pop", "1", "dict", "dup", "/NumCopies"]) \
+                  and (nbparts > 6) :
+                # handle # of copies set by firefox/kprinter/cups (alternate syntax)
+                self.setcopies(pagecount, parts[6])
+            elif (part0 == r"%%Page:") or (part0 == r"(%%[Page:") :
+                proceed = True
                 try :
                     # treats both "%%Page: x x" and "%%Page: (x-y) z" (probably N-up mode)
                     newpagenum = int(line.split(']')[0].split()[-1])
                 except :    
-                    notinteger = 1 # It seems that sometimes it's not an integer but an EPS file name
+                    notinteger = True # It seems that sometimes it's not an integer but an EPS file name
                 else :    
-                    notinteger = 0
+                    notinteger = False
                     if newpagenum == oldpagenum :
-                        proceed = 0
+                        proceed = False
                     else :
                         oldpagenum = newpagenum
                 if proceed and not notinteger :        
                     pagecount += 1
                     self.pages[pagecount] = { "copies" : self.pages[pagecount-1]["copies"] }
-            elif line.startswith(r"%%Requirements: numcopies(") :    
-                try :
-                    number = int(line.split('(')[1].split(')')[0])
-                except :     
-                    pass
-                else :    
-                    if number > self.pages[pagecount]["copies"] :
-                        self.pages[pagecount]["copies"] = number
-            elif line.startswith(r"%%BeginNonPPDFeature: NumCopies ") :
-                # handle # of copies set by some Windows printer driver
-                try :
-                    number = int(line.split()[2])
-                except :     
-                    pass
-                else :    
-                    if number > self.pages[pagecount]["copies"] :
-                        self.pages[pagecount]["copies"] = number
-            elif line.startswith("1 dict dup /NumCopies ") :
-                # handle # of copies set by mozilla/kprinter
-                try :
-                    number = int(line.split()[4])
-                except :     
-                    pass
-                else :    
-                    if number > self.pages[pagecount]["copies"] :
-                        self.pages[pagecount]["copies"] = number
-            elif line.startswith("{ pop 1 dict dup /NumCopies ") :
-                # handle # of copies set by firefox/kprinter/cups (alternate syntax)
-                try :
-                    number = int(line.split()[6])
-                except :
-                    pass
-                else :
-                    if number > self.pages[pagecount]["copies"] :
-                        self.pages[pagecount]["copies"] = number
+            elif (not prescribe) \
+               and (parts[:3] == [r"%%BeginResource:", "procset", "pdf"]) \
+               and not acrobatmarker :
+                notrust = True # Let this stuff be managed by GhostScript, but we still extract number of copies
             elif line.startswith("/languagelevel where{pop languagelevel}{1}ifelse 2 ge{1 dict dup/NumCopies") :
-                try :
-                    number = int(previousline[2:])
-                except :
-                    pass
-                else :
-                    if number > self.pages[pagecount]["copies"] :
-                        self.pages[pagecount]["copies"] = number
-            elif line.startswith("/#copies ") :
-                try :
-                    number = int(line.split()[1])
-                except :     
-                    pass
-                else :    
-                    if number > self.pages[pagecount]["copies"] :
-                        self.pages[pagecount]["copies"] = number
-            elif line.startswith(r"%RBINumCopies: ") :   
-                try :
-                    number = int(line.split()[1])
-                except :     
-                    pass
-                else :    
-                    if number > self.pages[pagecount]["copies"] :
-                        self.pages[pagecount]["copies"] = number
-            else :   
-                parts = line.split()
-                if (len(parts) > 1) and (parts[1] == "@copies") :
-                    try :
-                        number = int(parts[0])
-                    except :     
-                        pass
-                    else :    
-                        if number > self.pages[pagecount]["copies"] :
-                            self.pages[pagecount]["copies"] = number
+                self.setcopies(pagecount, previousline[2:])
+            elif (nbparts > 1) and (parts[1] == "@copies") :
+                self.setcopies(pagecount, part0)
             previousline = line
             
         # extract max number of copies to please the ghostscript parser, just    
