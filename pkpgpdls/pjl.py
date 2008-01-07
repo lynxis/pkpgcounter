@@ -112,10 +112,15 @@ class PJLParser :
                         self.logdebug(parts)
                 else :
                     self.logdebug("Invalid JL statement [%s]" % repr(statement))
+            elif (not statement) \
+                  or (statement == r"%-12345X@PJL EOJ") \
+                  or statement[2:].startswith("HP-PCL XL;") :
+                self.logdebug("Ignored JL statement [%s]" % repr(statement))
             else :
                 self.logdebug("Invalid JL statement [%s]" % repr(statement))
         self.cleanvars()
         self.parsed = 1
+        # self.logdebug("%s\n" % str(self))
         
 class EJLParser(PJLParser) :
     """A parser for EJL (Epson Job Language) documents."""
