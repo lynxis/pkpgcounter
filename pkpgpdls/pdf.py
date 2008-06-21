@@ -19,11 +19,29 @@
 # $Id$
 #
 
-"""This modules implements a page counter for PDF documents."""
+"""This modules implements a page counter for PDF documents.
+
+   Some informations taken from PDF Reference v1.7 by Adobe.
+"""
 
 import re
 
 import pdlparser
+
+PDFWHITESPACE = chr(0) \
+                + chr(9) \
+                + chr(10) \
+                + chr(12) \
+                + chr(13) \
+                + chr(32)
+                 
+PDFDELIMITERS = r"()<>[]{}/%"                 
+PDFCOMMENT = r"%"        # Up to next EOL
+
+PDFPAGEMARKER = "<< /Type /Page " # Where spaces are any whitespace char
+
+PDFMEDIASIZE = "/MediaBox [xmin ymin xmax ymax]" # an example. MUST be present in Page objects
+PDFOBJREGEX = r"\s+(\d+)\s+(\d+)\s+(obj\s*.+\s*endobj)" # Doesn't work as expected
 
 class PDFObject :
     """A class for PDF objects."""
@@ -105,3 +123,36 @@ class Parser(pdlparser.PDLParser) :
             if count and (content != r"<</Type /Page>>") : # Empty pages which are not rendered ?
                 pagecount += count
         return pagecount    
+        
+    def veryFastAndNotAlwaysCorrectgetJobSize(self) :    
+        """Counts pages in a PDF document."""
+        newpageregexp = re.compile(r"/Type\s*/Page[/>\s]")
+        return len(newpageregexp.findall(self.infile.read()))
+
+    def thisOneIsSlowButCorrectgetJobSize(self) :
+        """Counts pages in a PDF document."""
+        oregexp = re.compile(r"\s+(\d+)\s+(\d+)\s+(obj\s*.+?\s*?endobj)", \
+                             re.DOTALL)
+        objtokeep = {}
+        for (smajor, sminor, content) in oregexp.findall(self.infile.read()) :
+            major = int(smajor)
+            minor = int(sminor)
+            (prevmin, prevcont) = objtokeep.get(major, (None, None))
+            if (minor >= prevmin) : # Handles both None and real previous minor
+                objtokeep[major] = (minor, content)
+                #if prevmin is not None :
+                #    self.logdebug("Object %i.%i overwritten with %i.%i" \
+                #                     % (major, prevmin, \
+                #                        major, minor))
+                #else :
+                #    self.logdebug("Object %i.%i OK" % (major, minor))
+        npregexp = re.compile(r"/Type\s*/Page[/>\s]")
+        pagecount = 0
+        for (major, (minor, content)) in objtokeep.items() :
+            count = len(npregexp.findall(content))
+            if count :
+                emptycount = content.count("obj\n<< \n/Type /Page \n>> \nendobj") + content.count("obj\n<< \n/Type /Page \n\n>> \nendobj") # TODO : make this clean
+                if not emptycount :
+                    self.logdebug("%i.%i : %s\n" % (major, minor, repr(content)))
+                pagecount += count - emptycount
+        return pagecount
