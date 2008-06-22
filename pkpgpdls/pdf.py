@@ -73,66 +73,44 @@ class Parser(pdlparser.PDLParser) :
         else :    
             return False
         
-    def getJobSize(self) :    
-        """Counts pages in a PDF document."""
-        # First we start with a generic PDF parser.
-        lastcomment = None
-        objects = {}
-        inobject = 0
-        objre = re.compile(r"\s?(\d+)\s+(\d+)\s+obj[<\s/]?")
-        for line in self.infile :
-            line = line.strip()    
-            if line.startswith("% ") :    
-                if inobject :
-                    obj.comments.append(line)
-                else :
-                    lastcomment = line[2:]
-            else :
-                # New object begins here
-                result = objre.search(line)
-                if result is not None :
-                    (major, minor) = line[result.start():result.end()].split()[:2]
-                    obj = PDFObject(major, minor, lastcomment)
-                    obj.content.append(line[result.end():])
-                    inobject = 1
-                elif line.startswith("endobj") \
-                  or line.startswith(">> endobj") \
-                  or line.startswith(">>endobj") :
-                    # Handle previous object, if any
-                    if inobject :
-                        # only overwrite older versions of this object
-                        # same minor seems to be possible, so the latest one
-                        # found in the file will be the one we keep.
-                        # if we want the first one, just use > instead of >=
-                        oldobject = objects.setdefault(major, obj)
-                        if int(minor) >= oldobject.minori :
-                            objects[major] = obj
-                            # self.logdebug("Object(%i, %i) overwritten with Object(%i, %i)" % (oldobject.majori, oldobject.minori, obj.majori, obj.minori))
-                        # self.logdebug("Object(%i, %i)" % (obj.majori, obj.minori))
-                        inobject = 0        
-                else :    
-                    if inobject :
-                        obj.content.append(line)
-                        
-        # Now we check each PDF object we've just created.
-        newpageregexp = re.compile(r"(/Type)\s?(/Page)[/>\s]", re.I)
-        pagecount = 0
-        for obj in objects.values() :
-            content = "".join(obj.content)
-            count = len(newpageregexp.findall(content))
-            if count and (content != r"<</Type /Page>>") : # Empty pages which are not rendered ?
-                pagecount += count
-        return pagecount    
-        
     def veryFastAndNotAlwaysCorrectgetJobSize(self) :    
-        """Counts pages in a PDF document."""
+        """Counts pages in a PDF document.
+        
+           This method works great in the general case,
+           and is around 30 times faster than the active
+           one.
+           Unfortunately it doesn't take into account documents
+           with redacted pages (only made with FrameMaker ?)
+        """
         newpageregexp = re.compile(r"/Type\s*/Page[/>\s]")
         return len(newpageregexp.findall(self.infile.read()))
 
-    def thisOneIsSlowButCorrectgetJobSize(self) :
-        """Counts pages in a PDF document."""
+    def getJobSize(self) :
+        """Counts pages in a PDF document.
+        
+           A faster way seems to be possible by extracting the
+           "/Type/Pages/Count xxxx" value where there's no /Parent
+           (i.e. the root of the page tree)
+           Unfortunately I can't make a regexp work for this currently.
+           
+           At least the actual method below is accurate, even if 25%
+           slower than the old one.
+        """
+        # Regular expression to extract objects from a PDF document
         oregexp = re.compile(r"\s+(\d+)\s+(\d+)\s+(obj\s*.+?\s*?endobj)", \
                              re.DOTALL)
+                             
+        # Regular expression indicating a new page
+        npregexp = re.compile(r"/Type\s*/Page[/>\s]")
+        
+        # Regular expression indicating an empty page 
+        # (usually to delete an existing one with a lower minor number)
+        epregexp = re.compile(r"obj\s*<<\s*/Type\s*/Page\s*>>\s*endobj") 
+        
+        # First we build a mapping of objects to keep because
+        # if two objects with the same major number are found,
+        # we only keep the one with the higher minor number :
+        # this is the way in PDF to replace existing objects.
         objtokeep = {}
         for (smajor, sminor, content) in oregexp.findall(self.infile.read()) :
             major = int(smajor)
@@ -146,13 +124,17 @@ class Parser(pdlparser.PDLParser) :
                 #                        major, minor))
                 #else :
                 #    self.logdebug("Object %i.%i OK" % (major, minor))
-        npregexp = re.compile(r"/Type\s*/Page[/>\s]")
+                
+        # Now that we have deleted all unneeded objects, we        
+        # can count the ones which are new pages, minus the ones
+        # which are empty and not displayed pages (in fact pages
+        # used to redact existing content).
         pagecount = 0
         for (major, (minor, content)) in objtokeep.items() :
             count = len(npregexp.findall(content))
             if count :
-                emptycount = content.count("obj\n<< \n/Type /Page \n>> \nendobj") + content.count("obj\n<< \n/Type /Page \n\n>> \nendobj") # TODO : make this clean
-                if not emptycount :
-                    self.logdebug("%i.%i : %s\n" % (major, minor, repr(content)))
+                emptycount = len(epregexp.findall(content))
+                #if not emptycount :
+                #    self.logdebug("%i.%i : %s\n" % (major, minor, repr(content)))
                 pagecount += count - emptycount
         return pagecount
