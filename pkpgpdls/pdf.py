@@ -34,28 +34,8 @@ PDFWHITESPACE = chr(0) \
                 + chr(12) \
                 + chr(13) \
                 + chr(32)
-                 
-PDFDELIMITERS = r"()<>[]{}/%"                 
-PDFCOMMENT = r"%"        # Up to next EOL
-
-PDFPAGEMARKER = "<< /Type /Page " # Where spaces are any whitespace char
-
+PDFDELIMITERS = r"()<>[]{}/%"
 PDFMEDIASIZE = "/MediaBox [xmin ymin xmax ymax]" # an example. MUST be present in Page objects
-PDFOBJREGEX = r"\s+(\d+)\s+(\d+)\s+(obj\s*.+\s*endobj)" # Doesn't work as expected
-
-class PDFObject :
-    """A class for PDF objects."""
-    def __init__(self, major, minor, description) :
-        """Initialize the PDF object."""
-        self.major = major
-        self.minor = minor
-        self.majori = int(major)
-        self.minori = int(minor)
-        self.description = description
-        self.comments = []
-        self.content = []
-        self.parent = None
-        self.kids = []
         
 class Parser(pdlparser.PDLParser) :
     """A parser for PDF documents."""
@@ -81,6 +61,8 @@ class Parser(pdlparser.PDLParser) :
            one.
            Unfortunately it doesn't take into account documents
            with redacted pages (only made with FrameMaker ?)
+           where an existing PDF object is replaced with one
+           with the same major number a higher minor number.
         """
         newpageregexp = re.compile(r"/Type\s*/Page[/>\s]")
         return len(newpageregexp.findall(self.infile.read()))
@@ -94,7 +76,9 @@ class Parser(pdlparser.PDLParser) :
            Unfortunately I can't make a regexp work for this currently.
            
            At least the actual method below is accurate, even if 25%
-           slower than the old one.
+           slower than the old one. But we will be able to extract
+           other informations as well when needed, like orientation
+           and size.
         """
         # Regular expression to extract objects from a PDF document
         oregexp = re.compile(r"\s+(\d+)\s+(\d+)\s+(obj\s*.+?\s*?endobj)", \
