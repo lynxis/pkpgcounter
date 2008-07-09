@@ -502,7 +502,7 @@ class Parser(pdlparser.PDLParser) :
             self.logdebug("Adjusting PageCount : -1")
             self.pagecount -= 1
                     
-        self.pagecount = self.pagecount or nbmediasourcesdefault
+        self.pagecount = self.pagecount or nbmediasourcesdefault or nborientations
         
         if not self.pagecount :
             if self.resets == len(self.startgfx) :
