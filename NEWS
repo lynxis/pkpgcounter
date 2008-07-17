@@ -28,7 +28,7 @@ pkpgcounter News :
       e.g. "dvips -c 9 -o output.ps input.dvi" wasn't correctly detected. 
 
     - Increased accuracy in the PDF parser, with some speed expense but
-      some room for future improvements.
+      some big room for future improvements.
       
   * 3.50 :
   
