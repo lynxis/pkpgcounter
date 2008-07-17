@@ -26,6 +26,9 @@ pkpgcounter News :
     
     - Fixed a problem in the PostScript parser where the number of copies set with
       e.g. "dvips -c 9 -o output.ps input.dvi" wasn't correctly detected. 
+
+    - Increased accuracy in the PDF parser, with some speed expense but
+      some room for future improvements.
       
   * 3.50 :
   
