@@ -55,6 +55,8 @@ pkpgcounter currently recognizes the following document formats :
         - ESC/PageS03
         
         - Brother HBP
+
+        - Brother XL2HB
         
         - Hewlett-Packard Lightweight Imaging Device Interface Language
         
@@ -64,7 +66,7 @@ pkpgcounter currently recognizes the following document formats :
         
         - ASCII PNM (Netpbm)
         
-The ten latter ones, as well as some TIFF documents, are currently 
+The eleven latter ones, as well as some TIFF documents, are currently 
 only supported in page counting mode. 
 
 By default, when launched pkpgcounter prints on its standard output 

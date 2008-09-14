@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 #
 # pkpgcounter : a generic Page Description Language parser
 #
@@ -82,12 +82,16 @@ class Parser(pdlparser.PDLParser) :
                    }
             
     def isValid(self) :    
-        """Returns True if data is PCLXL aka PCL6, else False."""
+        """Returns True if data is HP PCLXL aka PCL6, or Brother's' XL2HB, else False."""
         if (((self.firstblock[:128].find("\033%-12345X") != -1) and \
              (self.firstblock.find(" HP-PCL XL;") != -1) and \
              ((self.firstblock.find("LANGUAGE=PCLXL") != -1) or \
               (self.firstblock.find("LANGUAGE = PCLXL") != -1)))) \
              or ((self.firstblock.startswith(chr(0xcd)+chr(0xca)) and (self.firstblock.find(" HP-PCL XL;") != -1))) :
+            return True
+        elif (self.firstblock[:128].find("\033%-12345X") != -1) \
+            and (self.firstblock.find("BROTHER XL2HB;") != -1) :
+            self.format = "XL2HB"
             return True
         else :    
             return False
@@ -254,7 +258,9 @@ class Parser(pdlparser.PDLParser) :
     def skipHPPCLXL(self, nextpos) :    
         """Skip the 'HP-PCL XL' statement if needed."""
         minfile = self.minfile
-        if nextpos and (minfile[nextpos:nextpos+11] == " HP-PCL XL;") :
+        if nextpos \
+           and ((minfile[nextpos:nextpos+11] == " HP-PCL XL;") \
+             or (minfile[nextpos:nextpos+14] == " BROTHER XLHB;")) :
             pos = nextpos
             while minfile[pos] != '\n' :
                 pos += 1
@@ -377,7 +383,9 @@ class Parser(pdlparser.PDLParser) :
             line = self.infile.readline()
             if not line :
                 break
-            pos = line.find(" HP-PCL XL;")    
+            pos = line.find(" HP-PCL XL;")
+            if pos == -1 :
+                pos = line.find(" BROTHER XL2HB;")
             if pos != -1 :
                 found = True
                 endian = ord(line[pos - 1])
