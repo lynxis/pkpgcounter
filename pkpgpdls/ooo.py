@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -31,23 +31,23 @@ class Parser(pdlparser.PDLParser) :
     totiffcommands = [ 'xvfb-run -a abiword --import-extension=.odt --print="| gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r\"%(dpi)i\" -sOutputFile=\"%(outfname)s\" -" "%(infname)s"' ]
     required = [ "xvfb-run", "xauth", "abiword", "gs" ]
     format = "ISO/IEC DIS 26300"
-    def isValid(self) :        
+    def isValid(self) :
         """Returns True if data is OpenDocument, else False."""
         if self.firstblock[:2] == "PK" :
             try :
                 self.archive = zipfile.ZipFile(self.filename)
                 self.contentxml = self.archive.read("content.xml")
                 self.metaxml = self.archive.read("meta.xml")
-            except :    
+            except :
                 return False
             else :
                 return True
-        else :    
+        else :
             return False
-            
+
     def getJobSize(self) :
         """Counts pages in an OpenOffice.org document.
-        
+
            Algorithm by Jerome Alet.
         """
         pagecount = 0

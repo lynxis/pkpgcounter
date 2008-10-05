@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -33,7 +33,7 @@ class Parser(pdlparser.PDLParser) :
     required = [ "gs" ]
     openmode = "rU"
     format = "PostScript"
-    def isValid(self) :    
+    def isValid(self) :
         """Returns True if data is PostScript, else False."""
         if self.firstblock.startswith("%!") or \
            self.firstblock.startswith("\004%!") or \
@@ -44,9 +44,9 @@ class Parser(pdlparser.PDLParser) :
               (self.firstblock.find("LANGUAGE = Postscript") != -1))) or \
               (self.firstblock.find("%!PS-Adobe") != -1) :
             return True
-        else :    
+        else :
             return False
-        
+
     def throughGhostScript(self) :
         """Get the count through GhostScript, useful for non-DSC compliant PS files."""
         self.logdebug("Internal parser sucks, using GhostScript instead...")
@@ -61,22 +61,22 @@ class Parser(pdlparser.PDLParser) :
                 pagecount = int(fromchild.readline().strip())
             except (IOError, OSError, AttributeError, ValueError), msg :
                 raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
-        finally :        
+        finally :
             if fromchild.close() is not None :
                 raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document"
-        self.logdebug("GhostScript said : %s pages" % pagecount)    
+        self.logdebug("GhostScript said : %s pages" % pagecount)
         return pagecount * self.copies
-        
-    def setcopies(self, pagenum, txtvalue) :    
+
+    def setcopies(self, pagenum, txtvalue) :
         """Tries to extract a number of copies from a textual value and set the instance attributes accordingly."""
         try :
             number = int(txtvalue)
-        except (ValueError, TypeError) :     
+        except (ValueError, TypeError) :
             pass
-        else :    
+        else :
             if number > self.pages[pagenum]["copies"] :
                 self.pages[pagenum]["copies"] = number
-                
+
     def natively(self) :
         """Count pages in a DSC compliant PostScript document."""
         pagecount = 0
@@ -93,11 +93,11 @@ class Parser(pdlparser.PDLParser) :
             nbparts = len(parts)
             if nbparts >= 1 :
                 part0 = parts[0]
-            else :    
+            else :
                 part0 = ""
             if part0 == r"%ADOPrintSettings:" :
                 acrobatmarker = True
-            elif part0 == "!R!" :    
+            elif part0 == "!R!" :
                 prescribe = True
             elif part0 == r"%%Pages:" :
                 try :
@@ -118,7 +118,7 @@ class Parser(pdlparser.PDLParser) :
             elif part0 == "/#copies" :
                 if nbparts > 1 :
                     self.setcopies(pagecount, parts[1])
-            elif part0 == r"%RBINumCopies:" :   
+            elif part0 == r"%RBINumCopies:" :
                 if nbparts > 1 :
                     self.setcopies(pagecount, parts[1])
             elif (parts[:4] == ["1", "dict", "dup", "/NumCopies"]) \
@@ -134,15 +134,15 @@ class Parser(pdlparser.PDLParser) :
                 try :
                     # treats both "%%Page: x x" and "%%Page: (x-y) z" (probably N-up mode)
                     newpagenum = int(line.split(']')[0].split()[-1])
-                except :    
+                except :
                     notinteger = True # It seems that sometimes it's not an integer but an EPS file name
-                else :    
+                else :
                     notinteger = False
                     if newpagenum == oldpagenum :
                         proceed = False
                     else :
                         oldpagenum = newpagenum
-                if proceed and not notinteger :        
+                if proceed and not notinteger :
                     pagecount += 1
                     self.pages[pagecount] = { "copies" : self.pages[pagecount-1]["copies"] }
             elif (not prescribe) \
@@ -154,24 +154,24 @@ class Parser(pdlparser.PDLParser) :
             elif (nbparts > 1) and (parts[1] == "@copies") :
                 self.setcopies(pagecount, part0)
             previousline = line
-            
-        # extract max number of copies to please the ghostscript parser, just    
+
+        # extract max number of copies to please the ghostscript parser, just
         # in case we will use it later
         self.copies = max([ v["copies"] for (k, v) in self.pages.items() ])
-        
+
         # now apply the number of copies to each page
-        if not pagecount and pagescomment :    
+        if not pagecount and pagescomment :
             pagecount = pagescomment
         for pnum in range(1, pagecount + 1) :
             page = self.pages.get(pnum, self.pages.get(1, self.pages.get(0, { "copies" : 1 })))
             copies = page["copies"]
             pagecount += (copies - 1)
             self.logdebug("%s * page #%s" % (copies, pnum))
-            
+
         self.logdebug("Internal parser said : %s pages" % pagecount)
         return (pagecount, notrust)
-        
-    def getJobSize(self) :    
+
+    def getJobSize(self) :
         """Count pages in PostScript document."""
         self.copies = 1
         (nbpages, notrust) = self.natively()
@@ -181,4 +181,4 @@ class Parser(pdlparser.PDLParser) :
                 newnbpages = self.throughGhostScript()
             except pdlparser.PDLParserError, msg :
                 self.logdebug(msg)
-        return max(nbpages, newnbpages)    
+        return max(nbpages, newnbpages)

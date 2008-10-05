@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -29,20 +29,20 @@ import pdlparser
 class Parser(pdlparser.PDLParser) :
     """A parser for Canon BJ documents."""
     format = "Canon BJ/BJC"
-    def isValid(self) :        
+    def isValid(self) :
         """Returns True if data is BJ/BJC, else False."""
         if self.firstblock.startswith("\033[K\002\000") :
             return True
-        else :    
+        else :
             return False
-            
+
     def getJobSize(self) :
         """Counts pages in a Canon BJ document.
-        
+
            Algorithm by Jerome Alet.
-           
+
            The documentation used for this was :
-         
+
            ghostscript-8.60/src/gdevbj*.c
         """
         infileno = self.infile.fileno()
@@ -56,7 +56,7 @@ class Parser(pdlparser.PDLParser) :
                         # Look if we've found an initialization sequence
                         # through the Set Initial Condition command
                         pageheader = minfile[pos:pos+7]
-                        if pageheader in ("\033[K\002\000\000\017", 
+                        if pageheader in ("\033[K\002\000\000\017",
                                           "\033[K\002\000\000\044",
                                           "\033[K\002\000\004\044") :
                             pagecount += 1
@@ -64,6 +64,6 @@ class Parser(pdlparser.PDLParser) :
                     pos += 1
             except IndexError : # EOF ?
                 pass
-        finally :        
+        finally :
             minfile.close() # reached EOF
         return pagecount

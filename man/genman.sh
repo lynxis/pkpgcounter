@@ -7,18 +7,18 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # $Id$
 #
-for prog in pkpgcounter ; do 
+for prog in pkpgcounter ; do
     echo "$prog" ;
     help2man --no-info \
              --section=1 \
@@ -26,7 +26,7 @@ for prog in pkpgcounter ; do
              --manual="User Commands" \
              --source="C@LL - Conseil Internet & Logiciels Libres" \
              --output="temp$prog.1" \
-             $prog ; 
+             $prog ;
     /bin/sed -e "s/--/\\\-\\\-/g" <"temp$prog.1" >"$prog.1" ;
     /bin/rm -f "temp$prog.1"
     echo ;

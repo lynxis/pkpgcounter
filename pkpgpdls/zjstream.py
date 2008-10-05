@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -27,27 +27,27 @@ import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for ZjStream documents."""
-    def isValid(self) :    
+    def isValid(self) :
         """Returns True if data is ZjStream, else False."""
         if self.firstblock[:4] == "ZJZJ" :
             self.format = "Zenographics ZjStream (little endian)"
             return self.littleEndian()
-        elif self.firstblock[:4] == "JZJZ" :    
+        elif self.firstblock[:4] == "JZJZ" :
             self.format = "Zenographics ZjStream (big endian)"
             return self.bigEndian()
-        else :    
+        else :
             return False
-        
+
     def littleEndian(self) :
         """Toggles to little endianness."""
         self.unpackHeader = "<IIIHH"
         return True
-        
+
     def bigEndian(self) :
         """Toggles to big endianness."""
         self.unpackHeader = ">IIIHH"
         return True
-        
+
     def getJobSize(self) :
         """Computes the number of pages in a ZjStream document."""
         self.infile.seek(4, 0) # Skip ZJZJ/JZJZ header
@@ -65,7 +65,7 @@ class Parser(pdlparser.PDLParser) :
                  reserved,
                  signature) = unpack(unpackHeader, header)
                 self.infile.seek(totalChunkSize - len(header), 1)
-                if chunkType == 2 :    
+                if chunkType == 2 :
                     #self.logdebug("startPage")
                     startpagecount += 1
                 elif chunkType == 3 :
@@ -73,9 +73,9 @@ class Parser(pdlparser.PDLParser) :
                     endpagecount += 1
                 #elif chunkType == 0 :
                 #    self.logdebug("startDoc")
-                #elif chunkType == 1 :    
+                #elif chunkType == 1 :
                 #    self.logdebug("endDoc")
-                #    
+                #
                 #self.logdebug("Chunk size : %s" % totalChunkSize)
                 #self.logdebug("Chunk type : 0x%08x" % chunkType)
                 #self.logdebug("# items : %s" % numberOfItems)
@@ -84,7 +84,7 @@ class Parser(pdlparser.PDLParser) :
                 #self.logdebug("\n")
         except struct.error :
             raise pdlparser.PDLParserError, "This file doesn't seem to be valid ZjStream datas."
-            
+
         # Number of endpage commands should be sufficient,
         # but we never know : someone could try to cheat the printer
         # by starting a page but not ending it, and ejecting it manually

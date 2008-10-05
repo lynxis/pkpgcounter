@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -21,8 +21,8 @@
 
 """This modules implements a page counter for HP LIDIL format.
 
-   Documentation used : 
-   
+   Documentation used :
+
         hplip-2.7.10/prnt/ldl.py
         hplip-2.7.10/prnt/hpijs/ldlencap.h
 """
@@ -51,7 +51,7 @@ LDL_EJECT_PAGE = 2
 class Parser(pdlparser.PDLParser) :
     """A parser for HP LIDIL documents."""
     format = "Hewlett-Packard LIDIL"
-    def isValid(self) :    
+    def isValid(self) :
         """Returns True if data is LIDIL, else False."""
         # Beginning Of File marker is a Sync packet, followed with
         # a Sync Complete packet followed with a Reset packet.
@@ -60,13 +60,13 @@ class Parser(pdlparser.PDLParser) :
         # End Of File marker is a Sync Complete packet followed
         # with a Reset packet. We ignore the preceding Sync packet
         # for simplicity's sake.
-        EOFMarker = "$\x00\x10\x00\x08\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$$\x00\x10\x00\x06\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$" 
+        EOFMarker = "$\x00\x10\x00\x08\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$$\x00\x10\x00\x06\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$"
         if self.firstblock.startswith(BOFMarker) \
            and self.lastblock.endswith(EOFMarker) :
             return True
-        else :    
+        else :
             return False
-        
+
     def getJobSize(self) :
         """Computes the number of pages in a HP LIDIL document."""
         unpack = struct.unpack
@@ -79,7 +79,7 @@ class Parser(pdlparser.PDLParser) :
                 if (len(header) != HEADERSIZE) or (header[0] != "$") :
                     # Invalid header or no Frame Sync byte.
                     raise pdlparser.PDLParserError, "This file doesn't seem to be valid Hewlett-Packard LIDIL datas."
-                (framesync,     
+                (framesync,
                  cmdlength,
                  dummy,
                  packettype,
@@ -92,9 +92,9 @@ class Parser(pdlparser.PDLParser) :
                     elif commandnumber == LDL_EJECT_PAGE :
                         ejectpage += 1
                 self.infile.seek(cmdlength + datalength - len(header), 1) # relative seek
-        except struct.error :    
+        except struct.error :
             raise pdlparser.PDLParserError, "This file doesn't seem to be valid Hewlett-Packard LIDIL datas."
-            
+
         # Number of page eject commands should be sufficient,
         # but we never know : someone could try to cheat the printer
         # by loading a page but not ejecting it, and ejecting it manually

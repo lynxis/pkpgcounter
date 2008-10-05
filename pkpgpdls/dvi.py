@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -33,24 +33,24 @@ class Parser(pdlparser.PDLParser) :
     totiffcommands = [ 'dvips -q -o - "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -' ]
     required = [ "dvips", "gs" ]
     format = "DVI"
-    def isValid(self) :        
+    def isValid(self) :
         """Returns True if data is DVI, else False."""
         try :
             if (ord(self.firstblock[0]) == 0xf7) \
                 and (ord(self.lastblock[-1]) == 0xdf) :
                 return True
-            else :    
+            else :
                 return False
-        except IndexError :          
+        except IndexError :
             return False
-            
+
     def getJobSize(self) :
         """Counts pages in a DVI document.
-        
+
            Algorithm by Jerome Alet.
-           
+
            The documentation used for this was :
-         
+
            http://www.math.umd.edu/~asnowden/comp-cont/dvi.html
         """
         infileno = self.infile.fileno()
@@ -63,7 +63,7 @@ class Parser(pdlparser.PDLParser) :
             try :
                 while minfile[pos] == eofchar :
                     pos -= 1
-                idbyte = minfile[pos]    
+                idbyte = minfile[pos]
                 if idbyte != minfile[1] :
                     raise IndexError, "Invalid DVI file."
                 pos = unpack(">I", minfile[pos - 4:pos])[0]
@@ -72,6 +72,6 @@ class Parser(pdlparser.PDLParser) :
                 pagecount = unpack(">H", minfile[pos + 27: pos + 29])[0]
             except IndexError : # EOF ?
                 pass
-        finally :        
+        finally :
             minfile.close() # reached EOF
         return pagecount

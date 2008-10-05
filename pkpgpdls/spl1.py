@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -33,16 +33,16 @@ ESCAPECHARS = (chr(0x1b), chr(0x24))
 class Parser(pdlparser.PDLParser) :
     """A parser for SPL1 documents."""
     format = "SPL1 (aka GDI)"
-    def isValid(self) :    
+    def isValid(self) :
         """Returns True if data is SPL1, else False."""
         if ((self.firstblock[:128].find("\033%-12345X") != -1) and \
             (self.firstblock.find("$PJL ") != -1) and \
              ((self.firstblock.find("LANGUAGE=SMART") != -1) or \
               (self.firstblock.find("LANGUAGE = SMART") != -1))) :
             return True
-        else :    
+        else :
             return False
-            
+
     def littleEndian(self) :
         """Toggles to little endianness."""
         self.unpackType = { 1 : "B", 2 : "<H", 4 : "<I" }
@@ -50,7 +50,7 @@ class Parser(pdlparser.PDLParser) :
         self.unpackLong = self.unpackType[4]
         # self.logdebug("Little Endian")
         return 0
-        
+
     def bigEndian(self) :
         """Toggles to big endianness."""
         self.unpackType = { 1 : "B", 2 : ">H", 4 : ">I" }
@@ -58,17 +58,17 @@ class Parser(pdlparser.PDLParser) :
         self.unpackLong = self.unpackType[4]
         # self.logdebug("Big Endian")
         return 0
-    
-    def escape(self, nextpos) :    
+
+    def escape(self, nextpos) :
         """Handles the ESC code."""
         self.isbitmap = False
         pos = endpos = nextpos
         minfile = self.minfile
         if minfile[pos : pos+8] == r"%-12345X" :
             endpos = pos + 9
-        elif minfile[pos-1] in ESCAPECHARS :    
+        elif minfile[pos-1] in ESCAPECHARS :
             endpos = pos
-        else :    
+        else :
             return 0
         endmark = (chr(0x1b), chr(0x00))
         asciilimit = chr(0x80)
@@ -78,8 +78,8 @@ class Parser(pdlparser.PDLParser) :
             if minfile[endpos] == '"' :
                 quotes += 1
             endpos += 1
-            
-        # Store this in a per page mapping.    
+
+        # Store this in a per page mapping.
         # NB : First time will be at page 0 (i.e. **before** page 1) !
         stuff = self.escapedStuff.setdefault(self.pagecount, [])
         datas = minfile[pos-1 : endpos]
@@ -89,10 +89,10 @@ class Parser(pdlparser.PDLParser) :
             # self.logdebug("New bitmap")
         self.logdebug("Escaped datas : [%s]" % repr(datas))
         return endpos - pos + 1
-        
+
     def getJobSize(self) :
         """Counts pages in an SPL1 document.
-        
+
            Algorithm by Jerome Alet.
         """
         infileno = self.infile.fileno()
@@ -109,19 +109,19 @@ class Parser(pdlparser.PDLParser) :
                     tag = minfile[pos]
                     if tag in ESCAPECHARS :
                         pos += self.escape(pos+1)
-                    else :    
+                    else :
                         if not self.isbitmap :
                             raise pdlparser.PDLParserError, "Unfortunately SPL1 is incompletely recognized. Parsing aborted. Please report the problem to %s" % version.__authoremail__
                         (offset,
                          seqnum) = unpack(">IH", minfile[pos:pos+6])
                         # self.logdebug("Offset : %i      Sequence Number : %i" % (offset, seqnum))
-                        if not seqnum : 
+                        if not seqnum :
                             # Sequence number resets to 0 for each new page.
                             self.pagecount += 1
                         pos += 4 + offset
-            except struct.error, msg :     
+            except struct.error, msg :
                 raise pdlparser.PDLParserError, "Unfortunately SPL1 is incompletely recognized (%s). Parsing aborted. Please report the problem to %s" % (msg, version.__authoremail__)
-            except IndexError : # EOF ?            
+            except IndexError : # EOF ?
                 pass
         finally :
             minfile.close()

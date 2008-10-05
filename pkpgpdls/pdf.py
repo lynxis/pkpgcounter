@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -36,26 +36,26 @@ PDFWHITESPACE = chr(0) \
                 + chr(32)
 PDFDELIMITERS = r"()<>[]{}/%"
 PDFMEDIASIZE = "/MediaBox [xmin ymin xmax ymax]" # an example. MUST be present in Page objects
-        
+
 class Parser(pdlparser.PDLParser) :
     """A parser for PDF documents."""
     totiffcommands = [ 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" "%(infname)s"' ]
     required = [ "gs" ]
     openmode = "rU"
     format = "PDF"
-    def isValid(self) :    
+    def isValid(self) :
         """Returns True if data is PDF, else False."""
         if self.firstblock.startswith("%PDF-") or \
            self.firstblock.startswith("\033%-12345X%PDF-") or \
            ((self.firstblock[:128].find("\033%-12345X") != -1) and (self.firstblock.upper().find("LANGUAGE=PDF") != -1)) or \
            (self.firstblock.find("%PDF-") != -1) :
             return True
-        else :    
+        else :
             return False
-        
-    def veryFastAndNotAlwaysCorrectgetJobSize(self) :    
+
+    def veryFastAndNotAlwaysCorrectgetJobSize(self) :
         """Counts pages in a PDF document.
-        
+
            This method works great in the general case,
            and is around 30 times faster than the active
            one.
@@ -69,12 +69,12 @@ class Parser(pdlparser.PDLParser) :
 
     def getJobSize(self) :
         """Counts pages in a PDF document.
-        
+
            A faster way seems to be possible by extracting the
            "/Type/Pages/Count xxxx" value where there's no /Parent
            (i.e. the root of the page tree)
            Unfortunately I can't make a regexp work for this currently.
-           
+
            At least the actual method below is accurate, even if 25%
            slower than the old one. But we will be able to extract
            other informations as well when needed, like orientation
@@ -83,14 +83,14 @@ class Parser(pdlparser.PDLParser) :
         # Regular expression to extract objects from a PDF document
         oregexp = re.compile(r"\s+(\d+)\s+(\d+)\s+(obj\s*.+?\s*?endobj)", \
                              re.DOTALL)
-                             
+
         # Regular expression indicating a new page
         npregexp = re.compile(r"/Type\s*/Page[/>\s]")
-        
-        # Regular expression indicating an empty page 
+
+        # Regular expression indicating an empty page
         # (usually to delete an existing one with a lower minor number)
-        epregexp = re.compile(r"obj\s*<<\s*/Type\s*/Page\s*>>\s*endobj") 
-        
+        epregexp = re.compile(r"obj\s*<<\s*/Type\s*/Page\s*>>\s*endobj")
+
         # First we build a mapping of objects to keep because
         # if two objects with the same major number are found,
         # we only keep the one with the higher minor number :
@@ -108,8 +108,8 @@ class Parser(pdlparser.PDLParser) :
                 #                        major, minor))
                 #else :
                 #    self.logdebug("Object %i.%i OK" % (major, minor))
-                
-        # Now that we have deleted all unneeded objects, we        
+
+        # Now that we have deleted all unneeded objects, we
         # can count the ones which are new pages, minus the ones
         # which are empty and not displayed pages (in fact pages
         # used to redact existing content).

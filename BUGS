@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 =============================================================================
 
 pkpgcounter BUGS :
-   
+
   - All parsers need more testing, especially those which allow the number
     of copies to be specified as part of the data streams, as well as those
     which allow N-up.
