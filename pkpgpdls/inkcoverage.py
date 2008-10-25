@@ -71,7 +71,7 @@ def getPercentGC(img, nbpix) :
     gray = 0
     for (r, g, b) in img.getdata() :
         if not (r == g == b) :
-            # optimize : if a single pixel is no gray the whole page is colored.
+            # optimize : if a single pixel is not gray the whole page is colored.
             return { "G" : 0.0, "C" : 100.0 }
     return { "G" : 100.0, "C" : 0.0 }
 
