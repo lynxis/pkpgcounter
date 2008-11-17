@@ -44,6 +44,8 @@ The following people helped the pkpgcounter project :
   - Geovanny Junio : Sent a patch to support Brother's XL2HB Page
                      Description Language.
 
+  - Martin Schreiber : Fixed the computation in the CMYK colorspace.
+
 ==============================================================
 
   IF YOUR NAME DOESN'T APPEAR IN THE LISTS ABOVE, AND YOU

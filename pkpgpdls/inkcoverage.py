@@ -52,16 +52,17 @@ def getPercentCMYK(img, nbpix) :
         img = img.convert("RGB")
     cyan = magenta = yellow = black = 0
     for (r, g, b) in img.getdata() :
-        if r == g == b :
-            black += 255 - r
-        else :
-            cyan += 255 - r
-            magenta += 255 - g
-            yellow += 255 - b
-    return { "C" : 100.0 * (cyan / 255.0) / nbpix,
-             "M" : 100.0 * (magenta / 255.0) / nbpix,
-             "Y" : 100.0 * (yellow / 255.0) / nbpix,
-             "K" : 100.0 * (black / 255.0) / nbpix,
+        pixblack = 255 - max(r, g, b)
+        black += pixblack
+        cyan += 255 - r - pixblack
+        magenta += 255 - g - pixblack
+        yellow += 255 - b - pixblack
+
+    frac = 100.0 / nbpix
+    return { "C" : frac * (cyan / 255.0),
+             "M" : frac * (magenta / 255.0),
+             "Y" : frac * (yellow / 255.0),
+             "K" : frac * (black / 255.0),
            }
 
 def getPercentGC(img, nbpix) :
