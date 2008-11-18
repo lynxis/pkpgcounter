@@ -17,13 +17,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # $Id$
+#
 
-# Use this to clean the tree from temporary files
+# Use this to generate a tarball
 
-rm -f MANIFEST ChangeLog
-rm -fr build dist
-find . -name "*.bak" -exec rm -f {} \;
-find . -name "*~" -exec rm -f {} \;
-find . -name "*.pyc" -exec rm -f {} \;
-find . -name "*.pyo" -exec rm -f {} \;
-find . -name "*.jem" -exec rm -f {} \;
+./clean.sh
+svn2cl --group-by-day --reparagraph --include-rev --authors=AUTHORS
+python ./setup.py sdist

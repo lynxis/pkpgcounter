@@ -54,8 +54,11 @@ for mofile in mofiles :
     data_files.append((directory, [ mofile ]))
 
 docdir = "share/doc/pkpgcounter"
-docfiles = ["README", "COPYING", "BUGS", "CREDITS", "NEWS"]
+docfiles = ["README", "COPYING", "BUGS", "CREDITS", "AUTHORS", "TODO"]
 data_files.append((docdir, docfiles))
+
+if os.path.exists("ChangeLog") :
+    data_files.append((docdir, ["ChangeLog"]))
 
 directory = os.sep.join(["share", "man", "man1"])
 manpages = glob.glob(os.sep.join(["man", "*.1"]))

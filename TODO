@@ -1,4 +1,4 @@
-#! /bin/sh
+# $Id$
 #
 # pkpgcounter : a generic Page Description Language parser
 #
@@ -16,14 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-# $Id$
 
-# Use this to clean the tree from temporary files
+============================================================
 
-rm -f MANIFEST ChangeLog
-rm -fr build dist
-find . -name "*.bak" -exec rm -f {} \;
-find . -name "*~" -exec rm -f {} \;
-find . -name "*.pyc" -exec rm -f {} \;
-find . -name "*.pyo" -exec rm -f {} \;
-find . -name "*.jem" -exec rm -f {} \;
+If you want to look at the publicly planned features, please look at :
+
+        http://trac.pykota.com/report/1
+
+If you want some feature to be added, please file a bug request
+at :
+
+        http://trac.pykota.com/newticket
+
+Thanks in advance.
