@@ -133,12 +133,12 @@ def test() :
         klass = PJLParser
         if arg == "-" :
             infile = sys.stdin
-            mustclose = 0
+            mustclose = False
         else :
             if arg.endswith(".ejl") :
                 klass = EJLParser
             infile = open(arg, "rb")
-            mustclose = 1
+            mustclose = True
         try :
             parser = klass(infile.read(), debug=1)
         except PJLParserError, msg :
