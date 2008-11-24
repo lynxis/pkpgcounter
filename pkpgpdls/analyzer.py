@@ -56,7 +56,6 @@ class PDLAnalyzer :
         self.options = options
         self.filename = filename
         self.workfile = None
-        self.mustclose = None
 
     def getJobSize(self) :
         """Returns the job's size."""
@@ -101,7 +100,6 @@ class PDLAnalyzer :
 
     def openFile(self) :
         """Opens the job's data stream for reading."""
-        self.mustclose = False  # by default we don't want to close the file when finished
         if hasattr(self.filename, "read") and hasattr(self.filename, "seek") :
             # filename is in fact a file-like object
             infile = self.filename
@@ -111,7 +109,6 @@ class PDLAnalyzer :
         else :
             # normal file
             self.workfile = open(self.filename, "rb")
-            self.mustclose = True
             return
 
         # Use a temporary file, always seekable contrary to standard input.
@@ -130,8 +127,7 @@ class PDLAnalyzer :
 
     def closeFile(self) :
         """Closes the job's data stream if we have to."""
-        if self.mustclose :
-            self.workfile.close()
+        self.workfile.close()
 
     def readFirstAndLastBlocks(self, inputfile) :
         """Reads the first and last blocks of data."""
