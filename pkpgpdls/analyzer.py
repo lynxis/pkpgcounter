@@ -83,7 +83,10 @@ class PDLAnalyzer :
         try :
             try :
                 pdlhandler = self.detectPDLHandler()
-                dummyfile = tempfile.NamedTemporaryFile(mode="w+b")
+                dummyfile = tempfile.NamedTemporaryFile(mode="w+b",
+                                                        prefix="pkpgcounter_",
+                                                        suffix=".tiff",
+                                                        dir=os.environ.get("PYKOTADIRECTORY") or tempfile.gettempdir())
                 filename = dummyfile.name
                 try :
                     pdlhandler.convertToTiffMultiPage24NC(filename, self.options.resolution)
@@ -112,7 +115,10 @@ class PDLAnalyzer :
             return
 
         # Use a temporary file, always seekable contrary to standard input.
-        self.workfile = tempfile.NamedTemporaryFile(mode="w+b")
+        self.workfile = tempfile.NamedTemporaryFile(mode="w+b",
+                                                    prefix="pkpgcounter_",
+                                                    suffix=".prn",
+                                                    dir=os.environ.get("PYKOTADIRECTORY") or tempfile.gettempdir())
         self.filename = self.workfile.name
         while True :
             data = infile.read(pdlparser.MEGABYTE)

@@ -59,7 +59,10 @@ class Parser(pdlparser.PDLParser) :
            First we convert from .doc to .ps, then we use the PostScript parser.
         """
         doctops = 'xvfb-run -a abiword --import-extension=.doc --print="%(outfname)s" "%(infname)s"'
-        workfile = tempfile.NamedTemporaryFile(mode="w+b")
+        workfile = tempfile.NamedTemporaryFile(mode="w+b",
+                                               prefix="pkpgcounter_",
+                                               suffix=".ps",
+                                               dir=os.environ.get("PYKOTADIRECTORY") or tempfile.gettempdir())
         try :
             outfname = workfile.name
             infname = self.filename
