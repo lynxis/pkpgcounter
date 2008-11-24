@@ -130,4 +130,4 @@ def getInkCoverage(fname, colorspace) :
 
 if __name__ == "__main__" :
     # NB : length of result gives number of pages !
-    print getInkCoverage(sys.argv[1], "CMYK")
+    sys.stdout.write("%s\n" % getInkCoverage(sys.argv[1], "CMYK"))

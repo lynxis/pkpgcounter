@@ -146,7 +146,7 @@ def test() :
             sys.stderr.flush()
         if mustclose :
             infile.close()
-        print str(parser)
+        sys.stdout.write("%s\n" % str(parser))
 
 if __name__ == "__main__" :
     test()
