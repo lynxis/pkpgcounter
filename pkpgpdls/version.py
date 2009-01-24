@@ -21,6 +21,7 @@
 
 """This modules defines some important constants used in this software."""
 
+import time
 
 __version__ = "3.51alpha"
 
@@ -28,7 +29,8 @@ __doc__ = """pkpgcounter : a generic Page Description Languages parser."""
 
 __author__ = "Jerome Alet"
 __authoremail__ = "alet@librelogiciel.com"
-__years__ = "2003-2009"
+
+__years__ = "2003-%s" % time.strftime("%Y", time.localtime(time.time()))
 
 __gplblurb__ = """This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
