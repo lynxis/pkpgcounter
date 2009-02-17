@@ -163,7 +163,10 @@ class Parser(pdlparser.PDLParser) :
                         else :
                             raise pdlparser.PDLParserError, "Error on size at %s : %s" % (pos+2, length)
                         break
-                mediatypelabel = minfile[startpos:startpos+size]
+                try :
+                    mediatypelabel = minfile[startpos:startpos+size]
+                except TypeError :
+                    self.logdebug("PCL/XL parser problem at %i" % savepos)
                 # self.logdebug("Media type : %s" % mediatypelabel)
             elif val == 0x34 :
                 duplexmode = "Simplex"
