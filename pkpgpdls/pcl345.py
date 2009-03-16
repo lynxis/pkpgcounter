@@ -193,6 +193,11 @@ class Parser(pdlparser.PDLParser) :
         #self.logdebug("AMP")
         self.handleTag(self.escamptags)
 
+    def escDollar(self) :
+        """Handles the ESC$ sequence."""
+        #self.logdebug("DOLLAR")
+        self.handleTag(self.escdollartags)
+
     def escStar(self) :
         """Handles the ESC* sequence."""
         #self.logdebug("STAR")
@@ -363,7 +368,9 @@ class Parser(pdlparser.PDLParser) :
             self.pos += 18
             if codop != self.imagerunnermarker2 :
                 self.pos += length
-            self.logdebug("IMAGERUNNERTAG SKIP %i AT %08x" % (self.pos-oldpos, self.pos))
+            self.logdebug("ImageRunner tag : Skip %i bytes from 0x%08x to 0x%08x" % (self.pos-oldpos,
+                                                                                     oldpos,
+                                                                                     self.pos))
         else :
             self.pos -= 1 # Adjust position
 
@@ -415,6 +422,7 @@ class Parser(pdlparser.PDLParser) :
         self.esctags = [ lambda : None ] * 256
         self.esctags[ord('%')] = self.escPercent
         self.esctags[ord('*')] = self.escStar
+        self.esctags[ord('$')] = self.escDollar
         self.esctags[ord('&')] = self.escAmp
         self.esctags[ord('(')] = self.escLeftPar
         self.esctags[ord(')')] = self.escRightPar
@@ -440,6 +448,9 @@ class Parser(pdlparser.PDLParser) :
         self.escstartags[ord('l')] = self.escSkipSomethingW
         self.escstartags[ord('m')] = self.escSkipSomethingW
         self.escstartags[ord('v')] = self.escSkipSomethingW
+
+        self.escdollartags = [ lambda : None ] * 256
+        self.escdollartags[ord('b')] = self.escSkipSomethingW
 
         self.escleftpartags = [ lambda : None ] * 256
         self.escleftpartags[ord('s')] = self.escSkipSomethingW
@@ -482,9 +493,12 @@ class Parser(pdlparser.PDLParser) :
         self.logdebug("NbBackSides : \t\t\t%i" % nbbacksides)
         self.logdebug("IsImageRunner : \t\t\t%s" % self.isimagerunner)
 
+#        if self.isimagerunner :
+#            self.logdebug("Adjusting PageCount : +1")
+#            self.pagecount += 1      # ImageRunner adjustment
         if self.isimagerunner :
-            self.logdebug("Adjusting PageCount : +1")
-            self.pagecount += 1      # ImageRunner adjustment
+            self.logdebug("Adjusting PageCount : -1")
+            self.pagecount -= 1      # ImageRunner adjustment
         elif self.linesperpage is not None :
             self.logdebug("Adjusting PageCount : +1")
             self.pagecount += 1      # Adjusts for incomplete last page
