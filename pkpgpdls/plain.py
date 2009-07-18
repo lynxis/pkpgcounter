@@ -56,16 +56,14 @@ class Parser(pdlparser.PDLParser) :
         pagecount = 0
         linecount = 0
         for line in self.infile :
-            if line.endswith("\n") :
-                linecount += 1
-                if (linecount > pagesize) :
-                    pagecount += 1
-                    linecount = 0
-                else :
-                    cnt = line.count("\f")
-                    if cnt :
-                        pagecount += cnt
-                        linecount = 0
+            linecount += 1
+            if (linecount > pagesize) :
+                pagecount += 1
+                linecount = 0
             else :
-                raise pdlparser.PDLParserError, "Unsupported file format. Please send the file to %s" % version.__authoremail__
+                cnt = line.count("\f")
+                if cnt :
+                    pagecount += cnt
+                    linecount = 0
+
         return pagecount + 1    # NB : empty files are catched in isValid()
