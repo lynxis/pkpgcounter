@@ -294,12 +294,27 @@ class Parser(pdlparser.PDLParser) :
         self.logdebug("Byte at %x is out of the PCLXL Protocol Class 2.0 Specification" % nextpos)
         return 0
 
+    def x31_class3(self, nextpos) :
+        """Undocumented tag 0x13 in class 3.0 streams."""
+        #self.logdebug("x31 at 0x%08x" % (nextpos-1))
+        minfile = self.minfile
+        val = ord(minfile[nextpos])
+        if val == 0x90 : # Should we take care of this or not ? It's undocumented after all !
+            # BTW we don't know if it's the 0x31 or the 0x90 which counts, since 0x90 is reserved for future use
+            try :
+                return unpack(self.unpackType[4], self.minfile[nextpos+1:nextpos+5])[0] + 5
+            except KeyError :
+                raise pdlparser.PDLParserError, "Error on size '%s' at %x" % (length, nextpos+1)
+        return 0
+
     def x46_class3(self, nextpos) :
         """Undocumented tag 0x46 in class 3.0 streams."""
+        #self.logdebug("x46 at 0x%08x" % (nextpos-1))
         pos = nextpos - 3
         minfile = self.minfile
         val = ord(minfile[pos])
         while val == 0xf8 :
+            #self.logdebug("x46 continues at 0x%08x with 0x%02x" % (pos, val))
             funcid = ord(minfile[pos+1])
             try :
                 offset = self.x46_functions[funcid]
@@ -307,10 +322,13 @@ class Parser(pdlparser.PDLParser) :
                 self.logdebug("Unexpected subfunction 0x%02x for undocumented tag 0x46 at %x" % (funcid, nextpos))
                 break
             else :
+                #self.logdebug("x46 funcid 0x%02x" % funcid)
                 pos -= offset
+                #self.logdebug("x46 new position 0x%08x" % pos)
                 length = self.tags[ord(self.minfile[pos])]
                 if callable(length) :
                     length = length(pos+1)
+                #self.logdebug("x46 length %i" % length)
                 if funcid == 0x92 : # we want to skip these blocks
                     try :
                         return unpack(self.unpackType[length], self.minfile[pos+1:pos+length+1])[0]
@@ -419,6 +437,7 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0x28] = self.bigEndian    # BigEndian
         self.tags[0x29] = self.littleEndian # LittleEndian
 
+        self.tags[0x31] = self.x31_class3   # What's this ? Does it always follow 0x46 ?
         self.tags[0x43] = self.beginPage    # BeginPage
         self.tags[0x44] = self.endPage      # EndPage
         self.tags[0x45] = self.reservedForFutureUse # reserved
@@ -596,6 +615,7 @@ class Parser(pdlparser.PDLParser) :
                         tag = ord(minfile[pos])
                     except OverflowError :
                         pos = oldpos + 1
+                    #self.logdebug("0x%08x : 0x%02x" % (pos, tag))
                     pos += 1
                     length = tags[tag]
                     if length :
