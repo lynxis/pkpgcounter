@@ -138,7 +138,9 @@ class Parser(pdlparser.PDLParser) :
                     notinteger = True # It seems that sometimes it's not an integer but an EPS file name
                 else :
                     notinteger = False
-                    if newpagenum == oldpagenum :
+                    if newpagenum <= oldpagenum :
+                        # Now correctly handles multiple copies when printed from MSOffice.
+                        # Thanks to Jiri Popelka for the fix.
                         proceed = False
                     else :
                         oldpagenum = newpagenum
