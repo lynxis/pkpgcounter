@@ -480,7 +480,7 @@ class Parser(pdlparser.PDLParser) :
         nbmediasizes = len(self.mediasizesvalues)
         self.logdebug("NbMediaSizes : \t\t\t%i" % nbmediasizes)
         self.logdebug("MediaSources : \t\t\t%s" % self.mediasourcesvalues)
-        nbmediasourcesdefault = len([m for m in self.mediasourcesvalues if m == 'Default'])
+        nbmediasourcesdefault = len([m for m in self.mediasourcesvalues if m in ('Default', 'Auto')])
         nbmediasourcesnotdefault = len(self.mediasourcesvalues) - nbmediasourcesdefault
         self.logdebug("MediaSourcesDefault : \t\t%i" % nbmediasourcesdefault)
         self.logdebug("MediaSourcesNOTDefault : \t%i" % nbmediasourcesnotdefault)
