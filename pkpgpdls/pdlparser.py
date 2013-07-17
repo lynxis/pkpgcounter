@@ -57,15 +57,6 @@ class PDLParser :
             raise PDLParserError, "Invalid file format !"
         else :
             self.logdebug("Input file is in the '%s' file format." % self.format)
-        try :
-            import psyco
-        except ImportError :
-            pass # Psyco is not installed
-        else :
-            # Psyco is installed, tell it to compile
-            # the CPU intensive methods : PCL and PCLXL
-            # parsing will greatly benefit from this.
-            psyco.bind(self.getJobSize)
         self.infile = open(self.filename, self.openmode)
         # self.logdebug("Opened %s in '%s' mode." % (self.filename, self.openmode))
 

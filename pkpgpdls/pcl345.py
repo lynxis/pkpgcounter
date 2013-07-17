@@ -101,6 +101,7 @@ class Parser(pdlparser.PDLParser) :
         else :
             firstblock = self.firstblock[pos:]
             if firstblock.startswith("\033E\033") or \
+               firstblock.startswith("\033(") or \
                firstblock.startswith("\033%1BBPIN;") or \
                ((pos == 11000) and firstblock.startswith("\033")) or \
                (firstblock.startswith("\033*rbC") and (not self.lastblock[-3:] == "\f\033@")) or \

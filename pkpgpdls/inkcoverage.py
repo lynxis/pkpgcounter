@@ -32,10 +32,7 @@ except ImportError :
     raise pdlparser.PDLParserError, "The Python Imaging Library is missing."
 
 def getPercent(img, nbpix) :
-    """Extracts the percents per color component from a picture.
-
-       Faster without Psyco on my own machine.
-    """
+    """Extracts the percents per color component from a picture."""
     result = {}
     bands = img.split()
     for (i, bandname) in enumerate(img.getbands()) :
@@ -46,7 +43,6 @@ def getPercentCMYK(img, nbpix) :
     """Extracts the percents of Cyan, Magenta, Yellow, and Black from a picture.
 
        PIL doesn't produce useable CMYK for our algorithm, so we use the algorithm from PrintBill.
-       Psyco speeds this function up by around 2.5 times on my computer.
     """
     if img.mode != "RGB" :
         img = img.convert("RGB")
@@ -104,14 +100,6 @@ def getInkCoverage(fname, colorspace) :
     result = []
     colorspace = colorspace.upper()
     computation = globals()["getPercent%s" % colorspace]
-    if colorspace in ("CMYK", "GC") : # faster with psyco on my machine
-        try :
-            import psyco
-        except ImportError :
-            pass
-        else :
-            psyco.bind(getPercentCMYK)
-
     index = 0
     try :
         image = Image.open(fname)
