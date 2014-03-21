@@ -29,7 +29,8 @@ class Parser(pdlparser.PDLParser) :
     format = "PNM (ascii)"
     def isValid(self) :
         """Returns True if data is ASCII PNM, else False."""
-        if self.firstblock.split()[0] in ("P1", "P2", "P3") :
+        split = self.firstblock.split()
+        if len(split) > 0 and split[0] in ("P1", "P2", "P3") :
             self.marker = self.firstblock[:2]
             return True
         else :
