@@ -43,7 +43,7 @@ class Parser(pdlparser.PDLParser) :
         marker = self.marker
         for line in self.infile :
             linecount += 1
-            if (linecount == 2) and (line.find("device=pksm") != -1) :
+            if (linecount == 2) and (line.find(b"device=pksm") != -1) :
                 # Special case of cmyk map
                 divby = 4
             # Unfortunately any whitespace is valid,

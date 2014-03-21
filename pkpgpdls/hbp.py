@@ -33,7 +33,7 @@ class Parser(pdlparser.PDLParser) :
     format = "Brother HBP"
     def isValid(self) :
         """Returns True if data is HBP, else False."""
-        if self.firstblock.find("@PJL ENTER LANGUAGE = HBP\n") != -1 :
+        if self.firstblock.find(b"@PJL ENTER LANGUAGE = HBP\n") != -1 :
             return True
         else :
             return False
@@ -55,7 +55,7 @@ class Parser(pdlparser.PDLParser) :
         minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
         pagecount = 0
 
-        formfeed = "@G" + chr(0) + chr(0) + chr(1) + chr(0xff) + "@F"
+        formfeed = b"@G\x00\x00\x01\xff@F"
         fflen = len(formfeed)
         pos = 0
         try :

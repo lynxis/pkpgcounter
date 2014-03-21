@@ -31,7 +31,7 @@ class Parser(pdlparser.PDLParser) :
     format = "Canon BJ/BJC"
     def isValid(self) :
         """Returns True if data is BJ/BJC, else False."""
-        if self.firstblock.startswith("\033[K\002\000") :
+        if self.firstblock.startswith(b"\033[K\002\000") :
             return True
         else :
             return False

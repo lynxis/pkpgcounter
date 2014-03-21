@@ -34,8 +34,8 @@ class Parser(pdlparser.PDLParser) :
     format = "ESC/PageS03"
     def isValid(self) :
         """Returns True if data is TIFF, else False."""
-        if self.firstblock.startswith("\033\1@EJL") and \
-            (self.firstblock.find("=ESC/PAGES03\n") != -1) :
+        if self.firstblock.startswith(b"\033\1@EJL") and \
+            (self.firstblock.find(b"=ESC/PAGES03\n") != -1) :
             return True
         else :
             return False
@@ -51,7 +51,7 @@ class Parser(pdlparser.PDLParser) :
         pagecount = 0
         marker = "=ESC/PAGES03\n"
         startpos = minfile.find(marker)
-        startsequence = chr(0x1d)
+        startsequence = b"\x1d"
         if startpos == -1 :
             raise pdlparser.PDLParserError("Invalid ESC/PageS03 file.")
         startpos += len(marker)

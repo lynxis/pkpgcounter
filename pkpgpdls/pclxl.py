@@ -405,9 +405,9 @@ class Parser(pdlparser.PDLParser) :
             line = self.infile.readline()
             if not line :
                 break
-            pos = line.find(" HP-PCL XL;")
+            pos = line.find(b" HP-PCL XL;")
             if pos == -1 :
-                pos = line.find(" BROTHER XL2HB;")
+                pos = line.find(b" BROTHER XL2HB;")
             if pos != -1 :
                 found = True
                 endian = ord(line[pos - 1])

@@ -100,16 +100,16 @@ class Parser(pdlparser.PDLParser) :
             return False
         else :
             firstblock = self.firstblock[pos:]
-            if firstblock.startswith("\033E\033") or \
-               firstblock.startswith("\033(") or \
-               firstblock.startswith("\033%1BBPIN;") or \
-               ((pos == 11000) and firstblock.startswith("\033")) or \
-               (firstblock.startswith("\033*rbC") and (not self.lastblock[-3:] == "\f\033@")) or \
-               firstblock.startswith("\033*rB\033") or \
-               firstblock.startswith("\033%8\033") or \
-               (firstblock.find("\033%-12345X") != -1) or \
-               (firstblock.find("@PJL ENTER LANGUAGE=PCL\012\015\033") != -1) or \
-               (firstblock.startswith(chr(0xcd)+chr(0xca)) and (firstblock.find("\033E\033") != -1)) :
+            if firstblock.startswith(b"\033E\033") or \
+               firstblock.startswith(b"\033(") or \
+               firstblock.startswith(b"\033%1BBPIN;") or \
+               ((pos == 11000) and firstblock.startswith(b"\033")) or \
+               (firstblock.startswith(b"\033*rbC") and (not self.lastblock[-3:] == "\f\033@")) or \
+               firstblock.startswith(b"\033*rB\033") or \
+               firstblock.startswith(b"\033%8\033") or \
+               (firstblock.find(b"\033%-12345X") != -1) or \
+               (firstblock.find(b"@PJL ENTER LANGUAGE=PCL\012\015\033") != -1) or \
+               (firstblock.startswith(b"\xcd\xca") and (firstblock.find(b"\033E\033") != -1)) :
                 return True
             else :
                 return False
@@ -409,8 +409,8 @@ class Parser(pdlparser.PDLParser) :
         self.startgfx = []
         self.endgfx = []
         self.hpgl2 = False
-        self.imagerunnermarker1 = chr(0xcd) + chr(0xca) # Markers for Canon ImageRunner printers
-        self.imagerunnermarker2 = chr(0x10) + chr(0x02)
+        self.imagerunnermarker1 = b"\xcd\xca" # Markers for Canon ImageRunner printers
+        self.imagerunnermarker2 = b"\x10\x02"
         self.isimagerunner = (minfile[:2] == self.imagerunnermarker1)
 
         tags = [ lambda : None] * 256

@@ -39,12 +39,12 @@ class Parser(pdlparser.PDLParser) :
            IMPORTANT : some magic values are not reused here because they
            IMPORTANT : seem to be specific to some particular i18n release.
         """
-        if self.firstblock.startswith("PO^Q`") \
-           or self.firstblock.startswith("\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1") \
-           or self.firstblock.startswith("\xfe7\x00#") \
-           or self.firstblock.startswith("\xdb\xa5-\x00\x00\x00") \
-           or self.firstblock.startswith("\x31\xbe\x00\x00") \
-           or self.firstblock[2112:].startswith("MSWordDoc") :
+        if self.firstblock.startswith(b"PO^Q`") \
+           or self.firstblock.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1") \
+           or self.firstblock.startswith(b"\xfe7\x00#") \
+           or self.firstblock.startswith(b"\xdb\xa5-\x00\x00\x00") \
+           or self.firstblock.startswith(b"\x31\xbe\x00\x00") \
+           or self.firstblock[2112:].startswith(b"MSWordDoc") :
             # Here we do the missing test because all commands will be needed even in page counting mode
             if self.isMissing(self.required) :
                 return False

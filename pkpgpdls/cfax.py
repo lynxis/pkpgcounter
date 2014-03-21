@@ -30,7 +30,7 @@ class Parser(pdlparser.PDLParser) :
     format = "Structured Fax"
     def isValid(self) :
         """Returns True if data is Structured Fax, else False."""
-        if self.firstblock.startswith("Sfff") :
+        if self.firstblock.startswith(b"Sfff") :
             return True
         else :
             return False

@@ -57,8 +57,8 @@ class Parser(pdlparser.PDLParser) :
         minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
         pagecount = 0
         pos = -1
-        eofchar = chr(0xdf)
-        postchar = chr(0xf8)
+        eofchar = b"\xdf"
+        postchar = b"\xf8"
         try :
             try :
                 while minfile[pos] == eofchar :
