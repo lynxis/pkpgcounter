@@ -37,6 +37,9 @@ from . import inkcoverage
 
 LOG = logging.getLogger("pkpgcounter.analyzer")
 
+VALID_COLORSPACES = ["bw", "rgb", "cmyk", "cmy", "gc"]
+
+
 class AnalyzerOptions:
     """A class for use as the options parameter to PDLAnalyzer's constructor."""
     def __init__(self, debug=None,
@@ -81,8 +84,15 @@ class PDLAnalyzer:
         result = None
         cspace = colorspace or self.options.colorspace
         res = resolution or self.options.resolution
-        if (not cspace) or (not res):
-            raise ValueError("Invalid colorspace (%s) or resolution (%s)" % (cspace, res))
+        if not res:
+            raise RuntimeError("No resolution given")
+        if not isinstance(res, int):
+            raise RuntimeError("Wrong type of resolution. Not an int. %s" % type(res))
+        if not cspace:
+            raise RuntimeError("No colorspace given" % cspace)
+        if not cspace in VALID_COLORSPACES:
+            raise RuntimeError("Invalid colorspace %s given. Valid colorspaces are : %s" % (cspace, VALID_COLORSPACES))
+
         self.openFile()
         try:
             try:
@@ -236,7 +246,7 @@ def main():
     parser.add_option("-c", "--colorspace",
                             dest="colorspace",
                             type="cichoice",
-                            cichoices=["bw", "rgb", "cmyk", "cmy", "gc"],
+                            cichoices=VALID_COLORSPACES,
                             help="Activate the computation of ink usage, and defines the colorspace to use. Supported values are 'BW', 'RGB', 'CMYK', 'CMY', and 'GC'.")
     parser.add_option("-r", "--resolution",
                             type="int",
