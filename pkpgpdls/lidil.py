@@ -56,11 +56,11 @@ class Parser(pdlparser.PDLParser) :
         # Beginning Of File marker is a Sync packet, followed with
         # a Sync Complete packet followed with a Reset packet.
         # We just look at the start of the Sync packet for simplicity's sake.
-        BOFMarker = "$\x01\x00\x00\x07"
+        BOFMarker = b"$\x01\x00\x00\x07"
         # End Of File marker is a Sync Complete packet followed
         # with a Reset packet. We ignore the preceding Sync packet
         # for simplicity's sake.
-        EOFMarker = "$\x00\x10\x00\x08\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$$\x00\x10\x00\x06\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$"
+        EOFMarker = b"$\x00\x10\x00\x08\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$$\x00\x10\x00\x06\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff$"
         if self.firstblock.startswith(BOFMarker) \
            and self.lastblock.endswith(EOFMarker) :
             return True

@@ -39,11 +39,11 @@ class Parser(pdlparser.PDLParser) :
            extract lines from the first block (sufficiently large).
            If it's impossible to find one we consider it's not plain text.
         """
-        lines = self.firstblock.split("\r\n")
+        lines = self.firstblock.split(b"\r\n")
         if len(lines) == 1 :
-            lines = lines[0].split("\r")
+            lines = lines[0].split(b"\r")
             if len(lines) == 1 :
-                lines = lines[0].split("\n")
+                lines = lines[0].split(b"\n")
         if len(lines) > 1 :
             return True
         else :
