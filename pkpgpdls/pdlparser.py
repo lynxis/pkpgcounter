@@ -114,8 +114,8 @@ class PDLParser:
             infname = self.filename
             for totiffcommand in self.totiffcommands:
                 error = False
-                commandline = totiffcommand
-                # self.logdebug("Executing '%s'" % commandline)
+                commandline = totiffcommand % locals()
+                self.logdebug("Executing '%s'" % commandline)
                 status = os.system(commandline)
                 if os.WIFEXITED(status):
                     if os.WEXITSTATUS(status):
