@@ -57,13 +57,13 @@ class PJLParser:
         if not self.parsed:
             return ""
         mybuffer = []
-        if self.default_variables :
+        if self.default_variables:
             mybuffer.append("Default variables :")
-            for (k, v) in list(self.default_variables.items()) :
+            for (k, v) in list(self.default_variables.items()):
                 mybuffer.append("  %s : %s" % (k, v))
-        if self.environment_variables :
+        if self.environment_variables:
             mybuffer.append("Environment variables :")
-            for (k, v) in list(self.environment_variables.items()) :
+            for (k, v) in list(self.environment_variables.items()):
                 mybuffer.append("  %s : %s" % (k, v))
         return "\n".join(mybuffer)
 
