@@ -151,7 +151,7 @@ class Parser(pdlparser.PDLParser):
                and (parts[:3] == [r"%%BeginResource:", "procset", "pdf"]) \
                and not acrobatmarker:
                 notrust = True # Let this stuff be managed by GhostScript, but we still extract number of copies
-            elif line.startswith(b"/languagelevel where{pop languagelevel}{1}ifelse 2 ge{1 dict dup/NumCopies"):
+            elif line.startswith(r"/languagelevel where{pop languagelevel}{1}ifelse 2 ge{1 dict dup/NumCopies"):
                 self.setcopies(pagecount, previousline[2:])
             elif (nbparts > 1) and (parts[1] == "@copies"):
                 self.setcopies(pagecount, part0)
