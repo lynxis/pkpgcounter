@@ -305,7 +305,7 @@ class Parser(pdlparser.PDLParser) :
             try :
                 return unpack(self.unpackType[4], self.minfile[nextpos+1:nextpos+5])[0] + 5
             except KeyError :
-                raise pdlparser.PDLParserError("Error on size '%s' at %x" % (length, nextpos+1))
+                raise pdlparser.PDLParserError("Error at %x" % nextpos+1)
         return 0
 
     def x46_class3(self, nextpos) :
