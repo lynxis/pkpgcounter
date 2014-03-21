@@ -27,11 +27,14 @@ input files, by automatically detecting the best parser to use."""
 import sys
 import os
 import tempfile
+import logging
 
 from . import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, \
        pil, mscrap, cfax, lidil, escp2, dvi, tiff, ooo, zjstream, \
        pnmascii, bj, qpdl, spl1, escpages03, plain
 from . import inkcoverage
+
+LOG = logging.getLogger("pkpgcounter.analyzer")
 
 class AnalyzerOptions:
     """A class for use as the options parameter to PDLAnalyzer's constructor."""

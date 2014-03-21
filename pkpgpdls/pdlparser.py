@@ -23,11 +23,14 @@
 
 import sys
 import os
+import logging
 
 KILOBYTE = 1024
 MEGABYTE = 1024 * KILOBYTE
 FIRSTBLOCKSIZE = 16 * KILOBYTE
 LASTBLOCKSIZE = int(KILOBYTE / 4)
+
+LOG = logging.getLogger("pkpgcounter.pdlparser")
 
 class PDLParserError(Exception):
     """An exception for PDLParser related stuff."""
@@ -91,8 +94,7 @@ class PDLParser:
 
     def logdebug(self, message):
         """Logs a debug message if needed."""
-        if self.parent.options.debug:
-            sys.stderr.write("%s\n" % message)
+        LOG.debug(message)
 
     def isValid(self):
         """Returns True if data is in the expected format, else False."""
