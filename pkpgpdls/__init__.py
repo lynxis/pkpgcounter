@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ from . import pdlparser
 from . import pjl
 import collections
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for PCLXL (aka PCL6) documents."""
     totiffcommands = [ 'pcl6 -sDEVICE=pdfwrite -r"%(dpi)i" -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -sOutputFile=- "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -',
                        'pcl6 -sDEVICE=pswrite -r"%(dpi)i" -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -sOutputFile=- "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -',
@@ -38,51 +38,51 @@ class Parser(pdlparser.PDLParser) :
     required = [ "pcl6", "gs" ]
     format = "PCLXL (aka PCL6)"
     mediasizes = {
-                    0 : "Letter",
-                    1 : "Legal",
-                    2 : "A4",
-                    3 : "Executive",
-                    4 : "Ledger",
-                    5 : "A3",
-                    6 : "COM10Envelope",
-                    7 : "MonarchEnvelope",
-                    8 : "C5Envelope",
-                    9 : "DLEnvelope",
-                    10 : "JB4",
-                    11 : "JB5",
-                    12 : "B5Envelope",
-                    12 : "B5",
-                    14 : "JPostcard",
-                    15 : "JDoublePostcard",
-                    16 : "A5",
-                    17 : "A6",
-                    18 : "JB6",
-                    19 : "JIS8K",
-                    20 : "JIS16K",
-                    21 : "JISExec",
-                    96 : "Default",
+                    0: "Letter",
+                    1: "Legal",
+                    2: "A4",
+                    3: "Executive",
+                    4: "Ledger",
+                    5: "A3",
+                    6: "COM10Envelope",
+                    7: "MonarchEnvelope",
+                    8: "C5Envelope",
+                    9: "DLEnvelope",
+                    10: "JB4",
+                    11: "JB5",
+                    12: "B5Envelope",
+                    12: "B5",
+                    14: "JPostcard",
+                    15: "JDoublePostcard",
+                    16: "A5",
+                    17: "A6",
+                    18: "JB6",
+                    19: "JIS8K",
+                    20: "JIS16K",
+                    21: "JISExec",
+                    96: "Default",
                  }
 
     mediasources = {
-                     0 : "Default",
-                     1 : "Auto",
-                     2 : "Manual",
-                     3 : "MultiPurpose",
-                     4 : "UpperCassette",
-                     5 : "LowerCassette",
-                     6 : "EnvelopeTray",
-                     7 : "ThirdCassette",
+                     0: "Default",
+                     1: "Auto",
+                     2: "Manual",
+                     3: "MultiPurpose",
+                     4: "UpperCassette",
+                     5: "LowerCassette",
+                     6: "EnvelopeTray",
+                     7: "ThirdCassette",
                    }
 
     orientations = {
-                     0 : "Portrait",
-                     1 : "Landscape",
-                     2 : "ReversePortrait",
-                     3 : "ReverseLandscape",
-                     4 : "Default",
+                     0: "Portrait",
+                     1: "Landscape",
+                     2: "ReversePortrait",
+                     3: "ReverseLandscape",
+                     4: "Default",
                    }
 
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is HP PCLXL aka PCL6, or Brother's' XL2HB, else False."""
         if (((self.firstblock[:128].find(b"\033%-12345X") != -1) and \
              (self.firstblock.find(b" HP-PCL XL;") != -1) and \
@@ -94,10 +94,10 @@ class Parser(pdlparser.PDLParser) :
             and (self.firstblock.find(b"BROTHER XL2HB;") != -1):
             self.format = "XL2HB"
             return True
-        else :
+        else:
             return False
 
-    def beginPage(self, nextpos) :
+    def beginPage(self, nextpos):
         """Indicates the beginning of a new page, and extracts media information."""
         # self.logdebug("BeginPage at %x" % nextpos)
         self.pagecount += 1
@@ -113,276 +113,276 @@ class Parser(pdlparser.PDLParser) :
         # this saves time because we don't need a complete parser !
         minfile = self.minfile
         pos = nextpos - 2
-        while pos > 0 : # safety check : don't go back to far !
+        while pos > 0: # safety check: don't go back to far !
             val = minfile[pos]
-            if val in (0x44, 0x48, 0x41) : # if previous endPage or openDataSource or beginSession (first page)
+            if val in (0x44, 0x48, 0x41): # if previous endPage or openDataSource or beginSession (first page)
                 break
-            if val == 0x26 :
+            if val == 0x26:
                 mediasource = ord(minfile[pos - 2])
                 mediasourcelabel = self.mediasources.get(mediasource, str(mediasource))
                 pos -= 4
-            elif val == 0x25 :
-                while (pos > 0) and (ord(minfile[pos]) != 0xc0) :
+            elif val == 0x25:
+                while (pos > 0) and (ord(minfile[pos]) != 0xc0):
                     # we search the preceding ubyte tag
                     pos -= 1
-                if pos > 0 :
-                    if ord(minfile[pos-1]) == 0xc8 :
+                if pos > 0:
+                    if ord(minfile[pos-1]) == 0xc8:
                         # if we found an ubyte_array then the media
                         # size is completely spelled
                         arraylength = ord(minfile[pos+1])
                         mediasizelabel = minfile[pos+2:pos+2+arraylength].title()
                         pos -= 1
-                    else :
+                    else:
                         # if we just found an ubyte, then the media
                         # size is known by its index
                         mediasize = ord(minfile[pos+1])
                         mediasizelabel = self.mediasizes.get(mediasize, str(mediasize))
                     pos -= 1
-                    # self.logdebug("Media size : %s" % mediasizelabel)
-            elif val == 0x28 :
+                    # self.logdebug("Media size: %s" % mediasizelabel)
+            elif val == 0x28:
                 orientation = ord(minfile[pos - 2])
                 orientationlabel = self.orientations.get(orientation, str(orientation))
                 pos -= 4
-            elif val == 0x27 :
+            elif val == 0x27:
                 savepos = pos
                 pos -= 1
                 startpos = size = None
-                while pos > 0 : # safety check : don't go back to far !
+                while pos > 0: # safety check: don't go back to far !
                     val = ord(minfile[pos])
                     pos -= 1
-                    if val == 0xc8 :
+                    if val == 0xc8:
                         length = self.tags[ord(minfile[pos+2])] # will probably always be a byte or uint16
-                        if length == 1 :
+                        if length == 1:
                             startpos = pos + 4
                             size = unpack("B", self.minfile[pos+3:startpos])[0]
-                        elif length == 2 :
+                        elif length == 2:
                             startpos = pos + 5
                             size = unpack(self.unpackShort, self.minfile[pos+3:startpos])[0]
-                        elif length == 4 :
+                        elif length == 4:
                             startpos = pos + 7
                             size = unpack(self.unpackLong, self.minfile[pos+3:startpos])[0]
-                        else :
-                            raise pdlparser.PDLParserError("Error on size at %s : %s" % (pos+2, length))
+                        else:
+                            raise pdlparser.PDLParserError("Error on size at %s: %s" % (pos+2, length))
                         break
-                try :
+                try:
                     mediatypelabel = minfile[startpos:startpos+size]
-                except TypeError :
+                except TypeError:
                     self.logdebug("PCL/XL parser problem at %i" % savepos)
-                # self.logdebug("Media type : %s" % mediatypelabel)
-            elif val == 0x34 :
+                # self.logdebug("Media type: %s" % mediatypelabel)
+            elif val == 0x34:
                 duplexmode = "Simplex"
                 pos -= 2
-            elif val in (0x35, 0x36) :
+            elif val in (0x35, 0x36):
                 duplexmode = "Duplex"
                 pos -= 2
-            # else : TODO : CUSTOM MEDIA SIZE AND UNIT !
-            else :
+            # else: TODO: CUSTOM MEDIA SIZE AND UNIT !
+            else:
                 pos -= 1  # ignored
-        self.pages[self.pagecount] = { "copies" : 1,
-                                       "orientation" : orientationlabel,
-                                       "mediatype" : mediatypelabel,
-                                       "mediasize" : mediasizelabel,
-                                       "mediasource" : mediasourcelabel,
-                                       "duplex" : duplexmode,
+        self.pages[self.pagecount] = { "copies": 1,
+                                       "orientation": orientationlabel,
+                                       "mediatype": mediatypelabel,
+                                       "mediasize": mediasizelabel,
+                                       "mediasource": mediasourcelabel,
+                                       "duplex": duplexmode,
                                      }
         return 0
 
-    def endPage(self, nextpos) :
+    def endPage(self, nextpos):
         """Indicates the end of a page."""
         # self.logdebug("EndPage at %x" % nextpos)
         pos3 = nextpos - 3
         minfile = self.minfile
-        if minfile[pos3:nextpos-1] == self.setNumberOfCopies :
+        if minfile[pos3:nextpos-1] == self.setNumberOfCopies:
             # The EndPage operator may be preceded by a PageCopies attribute
             # So set number of copies for current page.
             # From what I read in PCLXL documentation, the number
             # of copies is an unsigned 16 bits integer
-            try :
+            try:
                 nbcopies = unpack(self.unpackShort, minfile[pos3-2:pos3])[0]
-                # self.logdebug("Number of copies : %i" % nbcopies)
+                # self.logdebug("Number of copies: %i" % nbcopies)
                 self.pages[self.pagecount]["copies"] = nbcopies
-            except KeyError :
+            except KeyError:
                 self.logdebug("It looks like this PCLXL file is corrupted.")
         return 0
 
-    def setColorSpace(self, nextpos) :
+    def setColorSpace(self, nextpos):
         """Changes the color space."""
-        if self.minfile[nextpos-4:nextpos-1] == self.RGBColorSpace : # TODO : doesn't seem to handle all cases !
+        if self.minfile[nextpos-4:nextpos-1] == self.RGBColorSpace: # TODO: doesn't seem to handle all cases !
             self.iscolor = True
         return 0
 
-    def array_Generic(self, nextpos, size) :
+    def array_Generic(self, nextpos, size):
         """Handles all arrays."""
         pos = nextpos
         datatype = ord(self.minfile[pos])
         pos += 1
         length = self.tags[datatype]
-        if isinstance(length, collections.Callable) :
+        if isinstance(length, collections.Callable):
             length = length(pos)
-        try :
+        try:
             return 1 + length + size * unpack(self.unpackType[length], self.minfile[pos:pos+length])[0]
-        except KeyError :
+        except KeyError:
             raise pdlparser.PDLParserError("Error on array size at %x" % nextpos)
 
-    def array_8(self, nextpos) :
+    def array_8(self, nextpos):
         """Handles byte arrays."""
         return self.array_Generic(nextpos, 1)
 
-    def array_16(self, nextpos) :
+    def array_16(self, nextpos):
         """Handles 16 bits arrays."""
         return self.array_Generic(nextpos, 2)
 
-    def array_32(self, nextpos) :
+    def array_32(self, nextpos):
         """Handles 32 bits arrays and Canon ImageRunner tags."""
         minfile = self.minfile
         irtag = minfile[nextpos-1:nextpos+3]
-        if irtag in (self.imagerunnermarker1, self.imagerunnermarker2) :
+        if irtag in (self.imagerunnermarker1, self.imagerunnermarker2):
             # This is the beginning of a Canon ImageRunner tag
             # self.logdebug("Canon ImageRunner tag at %x" % (nextpos-1))
             codop = minfile[nextpos+1:nextpos+3]
             length = unpack(">H", minfile[nextpos+7:nextpos+9])[0]
             # self.logdebug("Canon ImageRunner block length=%04x" % length)
             toskip = 19
-            if irtag != self.imagerunnermarker2 :
+            if irtag != self.imagerunnermarker2:
                 toskip += length
             # self.logdebug("Canon ImageRunner skip until %x" % (nextpos+toskip))
             return toskip
-        else :
+        else:
             # This is a normal PCLXL array
             return self.array_Generic(nextpos, 4)
 
-    def embeddedDataSmall(self, nextpos) :
+    def embeddedDataSmall(self, nextpos):
         """Handle small amounts of data."""
         return 1 + ord(self.minfile[nextpos])
 
-    def embeddedData(self, nextpos) :
+    def embeddedData(self, nextpos):
         """Handle normal amounts of data."""
         return 4 + unpack(self.unpackLong, self.minfile[nextpos:nextpos+4])[0]
 
-    def skipHPPCLXL(self, nextpos) :
+    def skipHPPCLXL(self, nextpos):
         """Skip the 'HP-PCL XL' statement if needed."""
         minfile = self.minfile
         if nextpos \
            and ((minfile[nextpos:nextpos+11] == " HP-PCL XL;") \
-             or (minfile[nextpos:nextpos+14] == " BROTHER XLHB;")) :
+             or (minfile[nextpos:nextpos+14] == " BROTHER XLHB;")):
             pos = nextpos
-            while minfile[pos] != '\n' :
+            while minfile[pos] != '\n':
                 pos += 1
             length = (pos - nextpos + 1)
             # self.logdebug("Skip HP PCLXL statement until %x" % (nextpos + length))
             return length
-        else :
+        else:
             return 0
 
-    def littleEndian(self, nextpos) :
+    def littleEndian(self, nextpos):
         """Toggles to little endianness."""
-        self.unpackType = { 1 : "B", 2 : "<H", 4 : "<I" }
+        self.unpackType = { 1: "B", 2: "<H", 4: "<I" }
         self.unpackShort = self.unpackType[2]
         self.unpackLong = self.unpackType[4]
         # self.logdebug("LittleEndian at %x" % (nextpos - 1))
         return self.skipHPPCLXL(nextpos)
 
-    def bigEndian(self, nextpos) :
+    def bigEndian(self, nextpos):
         """Toggles to big endianness."""
-        self.unpackType = { 1 : "B", 2 : ">H", 4 : ">I" }
+        self.unpackType = { 1: "B", 2: ">H", 4: ">I" }
         self.unpackShort = self.unpackType[2]
         self.unpackLong = self.unpackType[4]
         # self.logdebug("BigEndian at %x" % (nextpos - 1))
         return self.skipHPPCLXL(nextpos)
 
-    def reservedForFutureUse(self, nextpos) :
+    def reservedForFutureUse(self, nextpos):
         """Outputs something when a reserved byte is encountered."""
         self.logdebug("Byte at %x is out of the PCLXL Protocol Class 2.0 Specification" % nextpos)
         return 0
 
-    def x31_class3(self, nextpos) :
+    def x31_class3(self, nextpos):
         """Undocumented tag 0x13 in class 3.0 streams."""
         #self.logdebug("x31 at 0x%08x" % (nextpos-1))
         minfile = self.minfile
         val = ord(minfile[nextpos])
-        if val == 0x90 : # Should we take care of this or not ? It's undocumented after all !
+        if val == 0x90: # Should we take care of this or not ? It's undocumented after all !
             # BTW we don't know if it's the 0x31 or the 0x90 which counts, since 0x90 is reserved for future use
-            try :
+            try:
                 return unpack(self.unpackType[4], self.minfile[nextpos+1:nextpos+5])[0] + 5
-            except KeyError :
+            except KeyError:
                 raise pdlparser.PDLParserError("Error at %x" % nextpos+1)
         return 0
 
-    def x46_class3(self, nextpos) :
+    def x46_class3(self, nextpos):
         """Undocumented tag 0x46 in class 3.0 streams."""
         #self.logdebug("x46 at 0x%08x" % (nextpos-1))
         pos = nextpos - 3
         minfile = self.minfile
         val = ord(minfile[pos])
-        while val == 0xf8 :
+        while val == 0xf8:
             #self.logdebug("x46 continues at 0x%08x with 0x%02x" % (pos, val))
             funcid = ord(minfile[pos+1])
-            try :
+            try:
                 offset = self.x46_functions[funcid]
-            except KeyError :
+            except KeyError:
                 self.logdebug("Unexpected subfunction 0x%02x for undocumented tag 0x46 at %x" % (funcid, nextpos))
                 break
-            else :
+            else:
                 #self.logdebug("x46 funcid 0x%02x" % funcid)
                 pos -= offset
                 #self.logdebug("x46 new position 0x%08x" % pos)
                 length = self.tags[ord(self.minfile[pos])]
-                if isinstance(length, collections.Callable) :
+                if isinstance(length, collections.Callable):
                     length = length(pos+1)
                 #self.logdebug("x46 length %i" % length)
-                if funcid == 0x92 : # we want to skip these blocks
-                    try :
+                if funcid == 0x92: # we want to skip these blocks
+                    try:
                         return unpack(self.unpackType[length], self.minfile[pos+1:pos+length+1])[0]
-                    except KeyError :
+                    except KeyError:
                         raise pdlparser.PDLParserError("Error on size '%s' at %x" % (length, pos+1))
             val = ord(minfile[pos])
         return 0
 
-    def escape(self, nextpos) :
+    def escape(self, nextpos):
         """Handles the ESC code."""
         pos = endpos = nextpos
         minfile = self.minfile
-        if minfile[pos : pos+8] == r"%-12345X" :
+        if minfile[pos: pos+8] == r"%-12345X":
             endpos = pos + 9
             endmark = chr(0x0c) + chr(0x00) + chr(0x1b)
             asciilimit = chr(0x80)
             quotes = 0
             while (minfile[endpos] not in endmark) and \
-                   ((minfile[endpos] < asciilimit) or (quotes % 2)) :
-                if minfile[endpos] == '"' :
+                   ((minfile[endpos] < asciilimit) or (quotes % 2)):
+                if minfile[endpos] == '"':
                     quotes += 1
                 endpos += 1
 
             # Store this in a per page mapping.
-            # NB : First time will be at page 0 (i.e. **before** page 1) !
+            # NB: First time will be at page 0 (i.e. **before** page 1) !
             stuff = self.escapedStuff.setdefault(self.pagecount, [])
-            stuff.append(minfile[pos : endpos])
-            self.logdebug("Escaped datas : [%s]" % repr(minfile[pos : endpos]))
+            stuff.append(minfile[pos: endpos])
+            self.logdebug("Escaped datas: [%s]" % repr(minfile[pos: endpos]))
         return endpos - pos
 
-    def skipKyoceraPrescribe(self, nextpos) :
+    def skipKyoceraPrescribe(self, nextpos):
         """Skips Kyocera Prescribe commands."""
         pos = nextpos - 1
         minfile = self.minfile
-        if minfile[pos:pos+3] == "!R!" :
-            while (pos - nextpos) < 1024 :   # This is a realistic upper bound, to avoid infinite loops
-                if (minfile[pos] == ";") and (minfile[pos-4:pos] == "EXIT") :
+        if minfile[pos:pos+3] == "!R!":
+            while (pos - nextpos) < 1024:   # This is a realistic upper bound, to avoid infinite loops
+                if (minfile[pos] == ";") and (minfile[pos-4:pos] == "EXIT"):
                     pos += 1
                     prescribe = self.prescribeStuff.setdefault(self.pagecount, [])
                     prescribe.append(minfile[nextpos-1:pos])
-                    self.logdebug("Prescribe commands : [%s]" % repr(minfile[nextpos-1:pos]))
+                    self.logdebug("Prescribe commands: [%s]" % repr(minfile[nextpos-1:pos]))
                     break
                 pos += 1
             return (pos - nextpos)
-        else :
+        else:
             return 0
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in a PCLXL (PCL6) document.
 
            Algorithm by Jerome Alet.
 
-           The documentation used for this was :
+           The documentation used for this was:
 
            HP PCL XL Feature Reference
            Protocol Class 2.0
@@ -401,29 +401,29 @@ class Parser(pdlparser.PDLParser) :
         self.iscolor = False
 
         found = False
-        while not found :
+        while not found:
             line = self.infile.readline()
-            if not line :
+            if not line:
                 break
             pos = line.find(b" HP-PCL XL;")
-            if pos == -1 :
+            if pos == -1:
                 pos = line.find(b" BROTHER XL2HB;")
-            if pos != -1 :
+            if pos != -1:
                 found = True
                 endian = ord(line[pos - 1])
-                if endian == 0x29 :
+                if endian == 0x29:
                     self.littleEndian(0)
-                elif endian == 0x28 :
+                elif endian == 0x28:
                     self.bigEndian(0)
-                # elif endian == 0x27 : # TODO : This is the ASCII binding code : what does it do exactly ?
+                # elif endian == 0x27: # TODO: This is the ASCII binding code: what does it do exactly ?
                 #
-                else :
+                else:
                     raise pdlparser.PDLParserError("Unknown endianness marker 0x%02x at start !" % endian)
-        if not found :
+        if not found:
             raise pdlparser.PDLParserError("This file doesn't seem to be PCLXL (aka PCL6)")
 
         # Initialize Media Sources
-        for i in range(8, 256) :
+        for i in range(8, 256):
             self.mediasources[i] = "ExternalTray%03i" % (i - 7)
 
         # Initialize table of tags
@@ -451,7 +451,7 @@ class Parser(pdlparser.PDLParser) :
         self.tags[0x4d] = self.reservedForFutureUse # reserved
         self.tags[0x4e] = self.reservedForFutureUse # reserved
 
-        self.tags[0x56] = self.reservedForFutureUse # TODO : documentation not clear about reserved status
+        self.tags[0x56] = self.reservedForFutureUse # TODO: documentation not clear about reserved status
 
         self.tags[0x57] = self.reservedForFutureUse # reserved
 
@@ -582,26 +582,26 @@ class Parser(pdlparser.PDLParser) :
 
         # subcodes for undocumented tag 0x46 and the negative
         # offset to grab the value from.
-        self.x46_functions = { 0x91 : 5,
-                               0x92 : 5,
-                               0x93 : 3,
-                               0x94 : 3,
-                               0x95 : 5,
-                               0x96 : 2,
-                               0x97 : 2,
-                               0x98 : 2,
+        self.x46_functions = { 0x91: 5,
+                               0x92: 5,
+                               0x93: 3,
+                               0x94: 3,
+                               0x95: 5,
+                               0x96: 2,
+                               0x97: 2,
+                               0x98: 2,
                              }
 
         # Markers for Canon ImageRunner printers
         self.imagerunnermarker1 = chr(0xcd) + chr(0xca) + chr(0x10) + chr(0x00)
         self.imagerunnermarker2 = chr(0xcd) + chr(0xca) + chr(0x10) + chr(0x02)
 
-        self.pages = { 0 : { "copies" : 1,
-                             "orientation" : "Default",
-                             "mediatype" : "Plain",
-                             "mediasize" : "Default",
-                             "mediasource" : "Default",
-                             "duplex" : None,
+        self.pages = { 0: { "copies": 1,
+                             "orientation": "Default",
+                             "mediatype": "Plain",
+                             "mediasize": "Default",
+                             "mediasource": "Default",
+                             "duplex": None,
                            }
                      }
         tags = self.tags
@@ -609,30 +609,30 @@ class Parser(pdlparser.PDLParser) :
         self.escapedStuff = {}   # For escaped datas, mostly PJL commands
         self.prescribeStuff = {} # For Kyocera Prescribe commands
         pos = oldpos = 0
-        try :
-            try :
-                while 1 :
-                    try :
+        try:
+            try:
+                while 1:
+                    try:
                         tag = ord(minfile[pos])
-                    except OverflowError :
+                    except OverflowError:
                         pos = oldpos + 1
-                    #self.logdebug("0x%08x : 0x%02x" % (pos, tag))
+                    #self.logdebug("0x%08x: 0x%02x" % (pos, tag))
                     pos += 1
                     length = tags[tag]
-                    if length :
-                        if isinstance(length, collections.Callable) :
+                    if length:
+                        if isinstance(length, collections.Callable):
                             length = length(pos)
                         oldpos = pos
                         pos += length
-            except IndexError : # EOF ?
+            except IndexError: # EOF ?
                 pass
-        finally :
+        finally:
             self.minfile.close()
 
         # now handle number of copies for each page (may differ).
-        if self.iscolor :
+        if self.iscolor:
             colormode = "Color"
-        else :
+        else:
             colormode = "BW"
 
         defaultduplexmode = "Simplex"
@@ -641,87 +641,87 @@ class Parser(pdlparser.PDLParser) :
         oldpjlcopies = -1
         oldduplexmode = ""
         oldpapersize = ""
-        for pnum in range(1, self.pagecount + 1) :
+        for pnum in range(1, self.pagecount + 1):
             # if no number of copies defined, take 1, as explained
             # in PCLXL documentation.
-            # NB : is number of copies is 0, the page won't be output
-            # but the formula below is still correct : we want
+            # NB: is number of copies is 0, the page won't be output
+            # but the formula below is still correct: we want
             # to decrease the total number of pages in this case.
-            page = self.pages.get(pnum, self.pages.get(1, { "copies" : 1, "mediasize" : "Default", "duplex" : None }))
+            page = self.pages.get(pnum, self.pages.get(1, { "copies": 1, "mediasize": "Default", "duplex": None }))
             pjlstuff = self.escapedStuff.get(pnum, self.escapedStuff.get(0, []))
-            if pjlstuff :
+            if pjlstuff:
                 pjlparser = pjl.PJLParser("".join(pjlstuff))
                 nbdefaultcopies = int(pjlparser.default_variables.get("COPIES", -1))
                 nbcopies = int(pjlparser.environment_variables.get("COPIES", -1))
                 nbdefaultqty = int(pjlparser.default_variables.get("QTY", -1))
                 nbqty = int(pjlparser.environment_variables.get("QTY", -1))
-                if nbdefaultcopies > -1 :
+                if nbdefaultcopies > -1:
                     defaultpjlcopies = nbdefaultcopies
-                if nbdefaultqty > -1 :
+                if nbdefaultqty > -1:
                     defaultpjlcopies = nbdefaultqty
-                if nbcopies > -1 :
+                if nbcopies > -1:
                     pjlcopies = nbcopies
-                elif nbqty > -1 :
+                elif nbqty > -1:
                     pjlcopies = nbqty
-                else :
-                    if oldpjlcopies == -1 :
+                else:
+                    if oldpjlcopies == -1:
                         pjlcopies = defaultpjlcopies
-                    else :
+                    else:
                         pjlcopies = oldpjlcopies
-                if page["duplex"] :
+                if page["duplex"]:
                     duplexmode = page["duplex"]
-                else :
+                else:
                     defaultdm = pjlparser.default_variables.get("DUPLEX", "")
-                    if defaultdm :
-                        if defaultdm.upper() == "ON" :
+                    if defaultdm:
+                        if defaultdm.upper() == "ON":
                             defaultduplexmode = "Duplex"
-                        else :
+                        else:
                             defaultduplexmode = "Simplex"
                     envdm = pjlparser.environment_variables.get("DUPLEX", "")
-                    if envdm :
-                        if envdm.upper() == "ON" :
+                    if envdm:
+                        if envdm.upper() == "ON":
                             duplexmode = "Duplex"
-                        else :
+                        else:
                             duplexmode = "Simplex"
-                    else :
-                        if not oldduplexmode :
+                    else:
+                        if not oldduplexmode:
                             duplexmode = defaultduplexmode
-                        else :
+                        else:
                             duplexmode = oldduplexmode
                 defaultps = pjlparser.default_variables.get("PAPER", "")
-                if defaultps :
+                if defaultps:
                     defaultpapersize = defaultps
                 envps = pjlparser.environment_variables.get("PAPER", "")
-                if envps :
+                if envps:
                     papersize = envps
-                else :
-                    if not oldpapersize :
+                else:
+                    if not oldpapersize:
                         papersize = defaultpapersize
-                    else :
+                    else:
                         papersize = oldpapersize
-            else :
-                if oldpjlcopies == -1 :
+            else:
+                if oldpjlcopies == -1:
                     pjlcopies = defaultpjlcopies
-                else :
+                else:
                     pjlcopies = oldpjlcopies
-                if not oldduplexmode :
+                if not oldduplexmode:
                     duplexmode = defaultduplexmode
-                else :
+                else:
                     duplexmode = oldduplexmode
-                if not oldpapersize :
+                if not oldpapersize:
                     papersize = defaultpapersize
-                else :
+                else:
                     papersize = oldpapersize
                 duplexmode = oldduplexmode
                 papersize = oldpapersize or page["mediasize"]
-            if page["mediasize"] != "Default" :
+            if page["mediasize"] != "Default":
                 papersize = page["mediasize"]
-            if not duplexmode :
+            if not duplexmode:
                 duplexmode = oldduplexmode or defaultduplexmode
             oldpjlcopies = pjlcopies
             oldduplexmode = duplexmode
             oldpapersize = papersize
-            copies = max(pjlcopies, page["copies"]) # Was : pjlcopies * page["copies"]
+            copies = max(pjlcopies, page["copies"]) # Was: pjlcopies * page["copies"]
             self.pagecount += (copies - 1)
             self.logdebug("%s*%s*%s*%s*%s*%s*%s" % (copies,
                                                  page["mediatype"],

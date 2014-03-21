@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -25,29 +25,29 @@ import struct
 
 from . import pdlparser
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for Structured Fax documents."""
     format = "Structured Fax"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is Structured Fax, else False."""
-        if self.firstblock.startswith(b"Sfff") :
+        if self.firstblock.startswith(b"Sfff"):
             return True
-        else :
+        else:
             return False
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in a Structured Fax document.
 
            Algorithm by Jerome Alet.
 
-           The documentation used for this was :
+           The documentation used for this was:
 
            http://delphi.pjh2.de/articles/graphic/sff_format.php
         """
         unpack = struct.unpack
         pagecount = 0
         docheader = self.infile.read(20)
-        try :
+        try:
             (sffid,
              version,
              reserved,
@@ -57,34 +57,34 @@ class Parser(pdlparser.PDLParser) :
              offsetlastpage,
              offsetdocumentend) = unpack("<4sBBHHHII", docheader)
             self.infile.seek(offsetfirstpage - len(docheader), 1)
-            while True :
+            while True:
                 headerid = self.infile.read(1)
-                if not headerid :
+                if not headerid:
                     break
                 headerid = ord(headerid)
-                if 1 <= headerid <= 216 : # Normal record header
+                if 1 <= headerid <= 216: # Normal record header
                     self.infile.seek(headerid, 1)
-                elif headerid == 255 :    # Illegal line / Additional user info
+                elif headerid == 255:    # Illegal line / Additional user info
                     additionalbyte = self.infile.read(1)
-                    if not additionalbyte :
+                    if not additionalbyte:
                         break
                     additionalbyte = ord(additionalbyte)
-                    if 1 <= additionalbyte <= 255 :
+                    if 1 <= additionalbyte <= 255:
                         # Skip additional user information (reserved)
                         self.infile.seek(additionalbyte, 1)
-                elif not headerid :
+                elif not headerid:
                     # Record with more than 216 MH-coded bytes
                     recordlen = self.infile.read(2)
-                    if not recordlen :
+                    if not recordlen:
                         break
                     recordlen = unpack("<H", recordlen)[0]
                     self.infile.seek(recordlen, 1)
-                elif headerid == 254 : # Page header
+                elif headerid == 254: # Page header
                     pageheader = self.infile.read(17)
-                    if not pageheader :
+                    if not pageheader:
                         break
                     headerlen = ord(pageheader[0])
-                    if not headerlen :
+                    if not headerlen:
                         break # End Of Document
                     (vres,
                      hres,
@@ -95,9 +95,9 @@ class Parser(pdlparser.PDLParser) :
                      offsetpreviouspage,
                      offsetnextpage) = unpack("<4BHHII", pageheader[1:])
                     pagecount += 1
-                    if (offsetnextpage == 1) or (vres == 255) :
+                    if (offsetnextpage == 1) or (vres == 255):
                         break # End Of Document
                     self.infile.seek(offsetnextpage, 1)
-        except struct.error :
+        except struct.error:
              raise pdlparser.PDLParserError("Invalid Structured Fax datas")
         return max(docpagecount, pagecount)

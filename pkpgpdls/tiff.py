@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -28,26 +28,26 @@ from struct import unpack
 
 from . import pdlparser
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for TIFF documents."""
     totiffcommands = [ 'cp "%(infname)s" "%(outfname)s"' ]
     required = [ "cp" ]
     format = "TIFF"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is TIFF, else False."""
         littleendian = (chr(0x49)*2) + chr(0x2a) + chr(0)
         bigendian = (chr(0x4d)*2) + chr(0) + chr(0x2a)
-        if self.firstblock[:4] in (littleendian, bigendian) :
+        if self.firstblock[:4] in (littleendian, bigendian):
             return True
-        else :
+        else:
             return False
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in a TIFF document.
 
            Algorithm by Jerome Alet.
 
-           The documentation used for this was :
+           The documentation used for this was:
 
            http://www.ee.cooper.edu/courses/course_pages/past_courses/EE458/TIFF/
         """
@@ -56,25 +56,25 @@ class Parser(pdlparser.PDLParser) :
         pagecount = 0
         littleendian = (chr(0x49)*2) + chr(0x2a) + chr(0)
         bigendian = (chr(0x4d)*2) + chr(0) + chr(0x2a)
-        if minfile[:4] == littleendian :
+        if minfile[:4] == littleendian:
             integerbyteorder = "<I"
             shortbyteorder = "<H"
-        elif minfile[:4] == bigendian :
+        elif minfile[:4] == bigendian:
             integerbyteorder = ">I"
             shortbyteorder = ">H"
-        else :
+        else:
             raise pdlparser.PDLParserError("Unknown file endianness.")
         pos = 4
-        try :
-            try :
-                nextifdoffset = unpack(integerbyteorder, minfile[pos : pos + 4])[0]
-                while nextifdoffset :
-                    direntrycount = unpack(shortbyteorder, minfile[nextifdoffset : nextifdoffset + 2])[0]
+        try:
+            try:
+                nextifdoffset = unpack(integerbyteorder, minfile[pos: pos + 4])[0]
+                while nextifdoffset:
+                    direntrycount = unpack(shortbyteorder, minfile[nextifdoffset: nextifdoffset + 2])[0]
                     pos = nextifdoffset + 2 + (direntrycount * 12)
-                    nextifdoffset = unpack(integerbyteorder, minfile[pos : pos + 4])[0]
+                    nextifdoffset = unpack(integerbyteorder, minfile[pos: pos + 4])[0]
                     pagecount += 1
-            except IndexError :
+            except IndexError:
                 pass
-        finally :
+        finally:
             minfile.close()
         return pagecount

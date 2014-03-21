@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -33,20 +33,20 @@ from . import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, \
        pnmascii, bj, qpdl, spl1, escpages03, plain
 from . import inkcoverage
 
-class AnalyzerOptions :
+class AnalyzerOptions:
     """A class for use as the options parameter to PDLAnalyzer's constructor."""
     def __init__(self, debug=None,
                        colorspace=None,
-                       resolution=None) :
+                       resolution=None):
         """Sets initial attributes."""
         self.debug = debug
         self.colorspace = colorspace
         self.resolution = resolution
 
 
-class PDLAnalyzer :
+class PDLAnalyzer:
     """Class for PDL autodetection."""
-    def __init__(self, filename, options=AnalyzerOptions()) :
+    def __init__(self, filename, options=AnalyzerOptions()):
         """Initializes the PDL analyzer.
 
            filename is the name of the file or '-' for stdin.
@@ -57,30 +57,30 @@ class PDLAnalyzer :
         self.filename = filename
         self.workfile = None
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Returns the job's size."""
         size = 0
         self.openFile()
-        try :
-            try :
+        try:
+            try:
                 pdlhandler = self.detectPDLHandler()
                 size = pdlhandler.getJobSize()
-            except pdlparser.PDLParserError as msg :
+            except pdlparser.PDLParserError as msg:
                 raise pdlparser.PDLParserError("Unsupported file format for %s (%s)" % (self.filename, msg))
-        finally :
+        finally:
             self.closeFile()
         return size
 
-    def getInkCoverage(self, colorspace=None, resolution=None) :
+    def getInkCoverage(self, colorspace=None, resolution=None):
         """Extracts the percents of ink coverage from the input file."""
         result = None
         cspace = colorspace or self.options.colorspace
         res = resolution or self.options.resolution
-        if (not cspace) or (not res) :
+        if (not cspace) or (not res):
             raise ValueError("Invalid colorspace (%s) or resolution (%s)" % (cspace, res))
         self.openFile()
-        try :
-            try :
+        try:
+            try:
                 pdlhandler = self.detectPDLHandler()
                 print(self.detectPDLHandler())
                 dummyfile = tempfile.NamedTemporaryFile(mode="w+b",
@@ -88,26 +88,26 @@ class PDLAnalyzer :
                                                         suffix=".tiff",
                                                         dir=os.environ.get("PYKOTADIRECTORY") or tempfile.gettempdir())
                 filename = dummyfile.name
-                try :
+                try:
                     pdlhandler.convertToTiffMultiPage24NC(filename, self.options.resolution)
                     result = inkcoverage.getInkCoverage(filename, cspace)
-                finally :
+                finally:
                     dummyfile.close()
-            except pdlparser.PDLParserError as msg :
+            except pdlparser.PDLParserError as msg:
                 raise pdlparser.PDLParserError("Unsupported file format for %s (%s)" % (self.filename, msg))
-        finally :
+        finally:
             self.closeFile()
         return result
 
-    def openFile(self) :
+    def openFile(self):
         """Opens the job's data stream for reading."""
-        if hasattr(self.filename, "read") and hasattr(self.filename, "seek") :
+        if hasattr(self.filename, "read") and hasattr(self.filename, "seek"):
             # filename is in fact a file-like object
             infile = self.filename
-        elif self.filename == "-" :
+        elif self.filename == "-":
             # we must read from stdin
             infile = sys.stdin
-        else :
+        else:
             # normal file
             self.workfile = open(self.filename, "rb")
             return
@@ -118,40 +118,39 @@ class PDLAnalyzer :
                                                     suffix=".prn",
                                                     dir=os.environ.get("PYKOTADIRECTORY") or tempfile.gettempdir())
         self.filename = self.workfile.name
-        while True :
+        while True:
             data = infile.read(pdlparser.MEGABYTE)
-            if not data :
+            if not data:
                 break
             self.workfile.write(data)
         self.workfile.flush()
         self.workfile.seek(0)
 
-    def closeFile(self) :
+    def closeFile(self):
         """Closes the job's data stream if we have to."""
         self.workfile.close()
 
-    def readFirstAndLastBlocks(self, inputfile) :
+    def readFirstAndLastBlocks(self, inputfile):
         """Reads the first and last blocks of data."""
         # Now read first and last block of the input file
         # to be able to detect the real file format and the parser to use.
         firstblock = inputfile.read(pdlparser.FIRSTBLOCKSIZE)
-        try :
+        try:
             inputfile.seek(-pdlparser.LASTBLOCKSIZE, 2)
             lastblock = inputfile.read(pdlparser.LASTBLOCKSIZE)
-        except IOError :
+        except IOError:
             lastblock = ""
         return (firstblock, lastblock)
 
-    def detectPDLHandler(self) :
+    def detectPDLHandler(self):
         """Tries to autodetect the document format.
 
            Returns the correct PDL handler class or None if format is unknown
         """
-        if not os.stat(self.filename).st_size :
+        if not os.stat(self.filename).st_size:
             raise pdlparser.PDLParserError("input file %s is empty !" % str(self.filename))
         (firstblock, lastblock) = self.readFirstAndLastBlocks(self.workfile)
-
-        # IMPORTANT : the order is important below. FIXME.
+        # IMPORTANT: the order is important below. FIXME.
         for module in (postscript, \
                        pclxl, \
                        pdf, \
@@ -171,31 +170,31 @@ class PDLAnalyzer :
                        pnmascii, \
                        pil, \
                        mscrap, \
-                       plain) :     # IMPORTANT : don't move this one up !
-            try :
+                       plain):     # IMPORTANT: don't move this one up !
+            try:
                 return module.Parser(self, self.filename,
                                            (firstblock, lastblock))
-            except pdlparser.PDLParserError :
+            except pdlparser.PDLParserError:
                 pass # try next parser
         raise pdlparser.PDLParserError("Analysis of first data block failed.")
 
-def main() :
+def main():
     """Entry point for PDL Analyzer."""
     import optparse
     from copy import copy
 
-    def check_cichoice(option, opt, value) :
+    def check_cichoice(option, opt, value):
         """To add a CaseIgnore Choice option type."""
         valower = value.lower()
-        if valower in [v.lower() for v in option.cichoices] :
+        if valower in [v.lower() for v in option.cichoices]:
             return valower
-        else :
+        else:
             choices = ", ".join([repr(o) for o in option.cichoices])
             raise optparse.OptionValueError(
                 "option %s: invalid choice: %r (choose from %s)"
                 % (opt, value, choices))
 
-    class MyOption(optparse.Option) :
+    class MyOption(optparse.Option):
         """New Option class, with CaseIgnore Choice type."""
         TYPES = optparse.Option.TYPES + ("cichoice",)
         ATTRS = optparse.Option.ATTRS + ["cichoices"]
@@ -223,42 +222,42 @@ def main() :
                             dest="resolution",
                             help="The resolution in DPI to use when checking ink usage. Lower resolution is faster but less accurate. Default is 72 dpi.")
     (options, arguments) = parser.parse_args()
-    if options.version :
+    if options.version:
         sys.stdout.write("%s\n" % version.__version__)
-    elif not (72 <= options.resolution <= 1200) :
+    elif not (72 <= options.resolution <= 1200):
         sys.stderr.write("ERROR: the argument to the --resolution command line option must be between 72 and 1200.\n")
         sys.stderr.flush()
-    else :
-        if (not arguments) or ((not sys.stdin.isatty()) and ("-" not in arguments)) :
+    else:
+        if (not arguments) or ((not sys.stdin.isatty()) and ("-" not in arguments)):
             arguments.append("-")
         totalsize = 0
         lines = []
-        try :
-            for arg in arguments :
-                try :
+        try:
+            for arg in arguments:
+                try:
                     parser = PDLAnalyzer(arg, options)
-                    if not options.colorspace :
+                    if not options.colorspace:
                         totalsize += parser.getJobSize()
-                    else :
+                    else:
                         (cspace, pages) = parser.getInkCoverage()
-                        for page in pages :
+                        for page in pages:
                             lineparts = []
-                            for k in cspace : # NB : this way we preserve the order of the planes
-                                try :
-                                    lineparts.append("%s : %s%%" % (k, ("%f" % page[k]).rjust(10)))
-                                except KeyError :
+                            for k in cspace: # NB: this way we preserve the order of the planes
+                                try:
+                                    lineparts.append("%s: %s%%" % (k, ("%f" % page[k]).rjust(10)))
+                                except KeyError:
                                     pass
                             lines.append("      ".join(lineparts))
-                except (IOError, pdlparser.PDLParserError) as msg :
+                except (IOError, pdlparser.PDLParserError) as msg:
                     sys.stderr.write("ERROR: %s\n" % msg)
                     sys.stderr.flush()
-        except KeyboardInterrupt :
+        except KeyboardInterrupt:
             sys.stderr.write("WARN: Aborted at user's request.\n")
             sys.stderr.flush()
-        if not options.colorspace :
+        if not options.colorspace:
             sys.stdout.write("%i\n" % totalsize)
-        else :
+        else:
             sys.stdout.write("%s\n" % ("\n".join(lines)))
 
-if __name__ == "__main__" :
+if __name__ == "__main__":
     main()

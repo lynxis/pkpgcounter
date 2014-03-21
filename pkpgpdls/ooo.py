@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -26,39 +26,39 @@ import zipfile
 
 from . import pdlparser
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for OpenOffice.org documents."""
     totiffcommands = [ 'xvfb-run -a abiword --import-extension=.odt --print="| gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r\"%(dpi)i\" -sOutputFile=\"%(outfname)s\" -" "%(infname)s"' ]
     required = [ "xvfb-run", "xauth", "abiword", "gs" ]
     format = "ISO/IEC DIS 26300"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is OpenDocument, else False."""
-        if self.firstblock[:2] == "PK" :
-            try :
+        if self.firstblock[:2] == "PK":
+            try:
                 self.archive = zipfile.ZipFile(self.filename)
                 self.contentxml = self.archive.read("content.xml")
                 self.metaxml = self.archive.read("meta.xml")
-            except :
+            except:
                 return False
-            else :
+            else:
                 return True
-        else :
+        else:
             return False
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in an OpenOffice.org document.
 
            Algorithm by Jerome Alet.
         """
         pagecount = 0
-        try :
+        try:
             # First try with Text documents
             index = self.metaxml.index("meta:page-count=")
             pagecount = int(self.metaxml[index:].split('"')[1])
-        except :
+        except:
             # Now try with Impress documents
             pagecount = self.contentxml.count("<draw:page ")
-            if not pagecount :
+            if not pagecount:
                 # Probably a Spreadsheet document
                 raise pdlparser.PDLParserError("OpenOffice.org's spreadsheet documents are not yet supported.")
         return pagecount

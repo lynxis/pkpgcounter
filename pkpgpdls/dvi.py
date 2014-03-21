@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -28,28 +28,28 @@ from struct import unpack
 
 from . import pdlparser
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for DVI documents."""
     totiffcommands = [ 'dvips -q -o - "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -' ]
     required = [ "dvips", "gs" ]
     format = "DVI"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is DVI, else False."""
-        try :
+        try:
             if (self.firstblock[0] == 0xf7) \
-                and (self.lastblock[-1] == 0xdf) :
+                and (self.lastblock[-1] == 0xdf):
                 return True
-            else :
+            else:
                 return False
-        except IndexError :
+        except IndexError:
             return False
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in a DVI document.
 
            Algorithm by Jerome Alet.
 
-           The documentation used for this was :
+           The documentation used for this was:
 
            http://www.math.umd.edu/~asnowden/comp-cont/dvi.html
         """
@@ -59,19 +59,19 @@ class Parser(pdlparser.PDLParser) :
         pos = -1
         eofchar = b"\xdf"
         postchar = b"\xf8"
-        try :
-            try :
-                while minfile[pos] == eofchar :
+        try:
+            try:
+                while minfile[pos] == eofchar:
                     pos -= 1
                 idbyte = minfile[pos]
-                if idbyte != minfile[1] :
+                if idbyte != minfile[1]:
                     raise IndexError("Invalid DVI file.")
                 pos = unpack(">I", minfile[pos - 4:pos])[0]
-                if minfile[pos] != postchar :
+                if minfile[pos] != postchar:
                     raise IndexError("Invalid DVI file.")
                 pagecount = unpack(">H", minfile[pos + 27: pos + 29])[0]
-            except IndexError : # EOF ?
+            except IndexError: # EOF ?
                 pass
-        finally :
+        finally:
             minfile.close() # reached EOF
         return pagecount

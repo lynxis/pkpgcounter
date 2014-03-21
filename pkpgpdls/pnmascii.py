@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -23,35 +23,35 @@
 
 from . import pdlparser
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for PNM (ascii) documents."""
     openmode = "rU"
     format = "PNM (ascii)"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is ASCII PNM, else False."""
         split = self.firstblock.split()
-        if len(split) > 0 and split[0] in ("P1", "P2", "P3") :
+        if len(split) > 0 and split[0] in ("P1", "P2", "P3"):
             self.marker = self.firstblock[:2]
             return True
-        else :
+        else:
             return False
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in a PNM (ascii) document."""
         pagecount = 0
         linecount = 0
         divby = 1
         marker = self.marker
-        for line in self.infile :
+        for line in self.infile:
             linecount += 1
-            if (linecount == 2) and (line.find(b"device=pksm") != -1) :
+            if (linecount == 2) and (line.find(b"device=pksm") != -1):
                 # Special case of cmyk map
                 divby = 4
             # Unfortunately any whitespace is valid,
             # so we do it the slow way...
             pagecount += line.split().count(marker)
 
-        if not (pagecount % divby) :
+        if not (pagecount % divby):
             return pagecount // divby
-        else :
+        else:
             return pagecount

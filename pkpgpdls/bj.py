@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -26,22 +26,22 @@ import mmap
 
 from . import pdlparser
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for Canon BJ documents."""
     format = "Canon BJ/BJC"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is BJ/BJC, else False."""
-        if self.firstblock.startswith(b"\033[K\002\000") :
+        if self.firstblock.startswith(b"\033[K\002\000"):
             return True
-        else :
+        else:
             return False
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in a Canon BJ document.
 
            Algorithm by Jerome Alet.
 
-           The documentation used for this was :
+           The documentation used for this was:
 
            ghostscript-8.60/src/gdevbj*.c
         """
@@ -49,21 +49,21 @@ class Parser(pdlparser.PDLParser) :
         minfile = mmap.mmap(infileno, os.fstat(infileno)[6], prot=mmap.PROT_READ, flags=mmap.MAP_SHARED)
         pagecount = 0
         pos = 0
-        try :
-            try :
-                while True :
-                    if minfile[pos] == "\033" :
+        try:
+            try:
+                while True:
+                    if minfile[pos] == "\033":
                         # Look if we've found an initialization sequence
                         # through the Set Initial Condition command
                         pageheader = minfile[pos:pos+7]
                         if pageheader in ("\033[K\002\000\000\017",
                                           "\033[K\002\000\000\044",
-                                          "\033[K\002\000\004\044") :
+                                          "\033[K\002\000\004\044"):
                             pagecount += 1
                             pos += 6
                     pos += 1
-            except IndexError : # EOF ?
+            except IndexError: # EOF ?
                 pass
-        finally :
+        finally:
             minfile.close() # reached EOF
         return pagecount

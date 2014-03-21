@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -37,23 +37,23 @@ PDFWHITESPACE = chr(0) \
 PDFDELIMITERS = r"()<>[]{}/%"
 PDFMEDIASIZE = "/MediaBox [xmin ymin xmax ymax]" # an example. MUST be present in Page objects
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for PDF documents."""
     totiffcommands = [ 'gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" "%(infname)s"' ]
     required = [ "gs" ]
     openmode = "rU"
     format = "PDF"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is PDF, else False."""
         if self.firstblock.startswith(b"%PDF-") or \
            self.firstblock.startswith(b"\033%-12345X%PDF-") or \
            ((self.firstblock[:128].find(b"\033%-12345X") != -1) and (self.firstblock.upper().find(b"LANGUAGE=PDF") != -1)) or \
-           (self.firstblock.find(b"%PDF-") != -1) :
+           (self.firstblock.find(b"%PDF-") != -1):
             return True
-        else :
+        else:
             return False
 
-    def veryFastAndNotAlwaysCorrectgetJobSize(self) :
+    def veryFastAndNotAlwaysCorrectgetJobSize(self):
         """Counts pages in a PDF document.
 
            This method works great in the general case,
@@ -67,7 +67,7 @@ class Parser(pdlparser.PDLParser) :
         newpageregexp = re.compile(r"/Type\s*/Page[/>\s]")
         return len(newpageregexp.findall(self.infile.read()))
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in a PDF document.
 
            A faster way seems to be possible by extracting the
@@ -93,20 +93,20 @@ class Parser(pdlparser.PDLParser) :
 
         # First we build a mapping of objects to keep because
         # if two objects with the same major number are found,
-        # we only keep the one with the higher minor number :
+        # we only keep the one with the higher minor number:
         # this is the way in PDF to replace existing objects.
         objtokeep = {}
-        for (smajor, sminor, content) in oregexp.findall(self.infile.read()) :
+        for (smajor, sminor, content) in oregexp.findall(self.infile.read()):
             major = int(smajor)
             minor = int(sminor)
             (prevmin, prevcont) = objtokeep.get(major, (None, None))
-            if (minor >= prevmin) : # Handles both None and real previous minor
+            if (minor >= prevmin): # Handles both None and real previous minor
                 objtokeep[major] = (minor, content)
-                #if prevmin is not None :
+                #if prevmin is not None:
                 #    self.logdebug("Object %i.%i overwritten with %i.%i" \
                 #                     % (major, prevmin, \
                 #                        major, minor))
-                #else :
+                #else:
                 #    self.logdebug("Object %i.%i OK" % (major, minor))
 
         # Now that we have deleted all unneeded objects, we
@@ -114,11 +114,11 @@ class Parser(pdlparser.PDLParser) :
         # which are empty and not displayed pages (in fact pages
         # used to redact existing content).
         pagecount = 0
-        for (major, (minor, content)) in list(objtokeep.items()) :
+        for (major, (minor, content)) in list(objtokeep.items()):
             count = len(npregexp.findall(content))
-            if count :
+            if count:
                 emptycount = len(epregexp.findall(content))
-                #if not emptycount :
-                #    self.logdebug("%i.%i : %s\n" % (major, minor, repr(content)))
+                #if not emptycount:
+                #    self.logdebug("%i.%i: %s\n" % (major, minor, repr(content)))
                 pagecount += count - emptycount
         return pagecount

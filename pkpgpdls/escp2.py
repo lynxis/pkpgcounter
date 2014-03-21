@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -25,20 +25,20 @@ import sys
 
 from . import pdlparser
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for ESC/P2 documents."""
     format = "ESC/P2"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is ESC/P2, else False."""
         if self.firstblock.startswith(b"\033@") or \
            self.firstblock.startswith(b"\033*") or \
            self.firstblock.startswith(b"\n\033@") or \
-           self.firstblock.startswith(b"\0\0\0\033\1@EJL") : # ESC/P Raster ??? Seen on Stylus Photo 1284
+           self.firstblock.startswith(b"\0\0\0\033\1@EJL"): # ESC/P Raster ??? Seen on Stylus Photo 1284
             return True
-        else :
+        else:
             return False
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in an ESC/P2 document."""
         # with Gimpprint, at least, for each page there
         # are two Reset Printer sequences (ESC + @)
@@ -64,11 +64,11 @@ class Parser(pdlparser.PDLParser) :
         pagecount3 = data.count(marker3)
         pagecount4 = data.count(marker4)
 
-        if pagecount2 :
+        if pagecount2:
             return pagecount2
-        elif pagecount3 > 1 :
+        elif pagecount3 > 1:
             return pagecount3 - 1
-        elif pagecount4 :
+        elif pagecount4:
             return pagecount4
-        else :
+        else:
             return int(pagecount1 / 2)

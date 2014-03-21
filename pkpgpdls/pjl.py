@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -21,8 +21,8 @@
 
 """This modules implements a really minimalist PJL/EJL parser."""
 
-# NOTES : QTY= is the number of collated copies for a job.
-# NOTES : COPIES= is the number of uncollated copies for each page of a job
+# NOTES: QTY= is the number of collated copies for a job.
+# NOTES: COPIES= is the number of uncollated copies for each page of a job
 
 import sys
 
@@ -35,14 +35,14 @@ class PJLParserError(Exception):
         return self.message
     __str__ = __repr__
 
-class PJLParser :
+class PJLParser:
     """A parser for PJL documents.
 
        Information extracted for bpl11897.pdf which was
        downloaded from Hewlett-Packard's website.
     """
     JL = "PJL"
-    def __init__(self, pjljob, debug=0) :
+    def __init__(self, pjljob, debug=0):
         """Initializes JL Parser."""
         self.debug = debug
         self.jlmarker = "@%s" % self.JL
@@ -52,9 +52,9 @@ class PJLParser :
         self.parsed = 0
         self.parse()
 
-    def __str__(self) :
+    def __str__(self):
         """Outputs our variables as a string of text."""
-        if not self.parsed :
+        if not self.parsed:
             return ""
         mybuffer = []
         if self.default_variables :
@@ -67,86 +67,86 @@ class PJLParser :
                 mybuffer.append("  %s : %s" % (k, v))
         return "\n".join(mybuffer)
 
-    def logdebug(self, message) :
+    def logdebug(self, message):
         """Logs a debug message if needed."""
-        if self.debug :
+        if self.debug:
             sys.stderr.write("%s\n" % message)
 
-    def cleanvars(self) :
+    def cleanvars(self):
         """Cleans the variables dictionnaries."""
-        for dicname in ("default", "environment") :
+        for dicname in ("default", "environment"):
             varsdic = getattr(self, "%s_variables" % dicname)
-            for (k, v) in list(varsdic.items()) :
-                if len(v) == 1 :
+            for (k, v) in list(varsdic.items()):
+                if len(v) == 1:
                     varsdic[k] = v[0]
 
-    def parse(self) :
+    def parse(self):
         """Parses a JL job."""
-        for i in range(len(self.statements)) :
+        for i in range(len(self.statements)):
             statement = self.statements[i]
-            if statement.startswith(self.jlmarker) :
+            if statement.startswith(self.jlmarker):
                 parts = statement.split()
                 nbparts = len(parts)
-                if parts[0] == self.jlmarker :
+                if parts[0] == self.jlmarker:
                     # this is a valid JL statement, but we don't
                     # want to examine all of them...
                     if (nbparts > 2) \
                          and ((parts[1].upper() in ("SET", "DEFAULT")) \
-                                  or ((self.jlmarker == "@EJL") and (parts[1].upper() == "JI"))) :
+                                  or ((self.jlmarker == "@EJL") and (parts[1].upper() == "JI"))):
                         # this is what we are interested in !
-                        try :
-                            (varname, value) = "".join(parts[2:]).split("=", 1) # TODO : parse multiple assignments on the same SET/JI statement
-                        except :
+                        try:
+                            (varname, value) = "".join(parts[2:]).split("=", 1) # TODO: parse multiple assignments on the same SET/JI statement
+                        except:
                             self.logdebug("Invalid JL SET statement [%s]" % repr(statement))
-                        else :
+                        else:
                             # all still looks fine...
-                            if parts[1].upper() == "DEFAULT" :
+                            if parts[1].upper() == "DEFAULT":
                                 varsdic = self.default_variables
-                            else :
+                            else:
                                 varsdic = self.environment_variables
                             variable = varsdic.setdefault(varname.upper(), [])
                             variable.append(value)
-                    else :
+                    else:
                         self.logdebug("Ignored JL statement [%s]" % repr(statement))
                         self.logdebug(parts)
-                else :
+                else:
                     self.logdebug("Invalid JL statement [%s]" % repr(statement))
             elif (not statement) \
                   or (statement == r"%-12345X@PJL EOJ") \
-                  or statement[2:].startswith(b"HP-PCL XL;") :
+                  or statement[2:].startswith(b"HP-PCL XL;"):
                 self.logdebug("Ignored JL statement [%s]" % repr(statement))
-            else :
+            else:
                 self.logdebug("Invalid JL statement [%s]" % repr(statement))
         self.cleanvars()
         self.parsed = 1
         # self.logdebug("%s\n" % str(self))
 
-class EJLParser(PJLParser) :
+class EJLParser(PJLParser):
     """A parser for EJL (Epson Job Language) documents."""
     JL = "EJL"
 
-def test() :
+def test():
     """Test function."""
-    if (len(sys.argv) < 2) or ((not sys.stdin.isatty()) and ("-" not in sys.argv[1:])) :
+    if (len(sys.argv) < 2) or ((not sys.stdin.isatty()) and ("-" not in sys.argv[1:])):
         sys.argv.append("-")
-    for arg in sys.argv[1:] :
+    for arg in sys.argv[1:]:
         klass = PJLParser
-        if arg == "-" :
+        if arg == "-":
             infile = sys.stdin
             mustclose = False
-        else :
-            if arg.endswith(".ejl") :
+        else:
+            if arg.endswith(".ejl"):
                 klass = EJLParser
             infile = open(arg, "rb")
             mustclose = True
-        try :
+        try:
             parser = klass(infile.read(), debug=1)
-        except PJLParserError as msg :
+        except PJLParserError as msg:
             sys.stderr.write("ERROR: %s\n" % msg)
             sys.stderr.flush()
-        if mustclose :
+        if mustclose:
             infile.close()
         sys.stdout.write("%s\n" % str(parser))
 
-if __name__ == "__main__" :
+if __name__ == "__main__":
     test()

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -26,29 +26,29 @@ import sys
 from . import pdlparser
 from functools import reduce
 
-try :
+try:
     from PIL import Image
-except ImportError :
+except ImportError:
     sys.stderr.write("ERROR: You MUST install the Python Imaging Library (python-imaging) for pkpgcounter to work.\n")
     raise pdlparser.PDLParserError("The Python Imaging Library is missing.")
 
-def getPercent(img, nbpix) :
+def getPercent(img, nbpix):
     """Extracts the percents per color component from a picture."""
     result = {}
     bands = img.split()
-    for (i, bandname) in enumerate(img.getbands()) :
+    for (i, bandname) in enumerate(img.getbands()):
         result[bandname] = 100.0 * (reduce(lambda current, next: current + (next[1] * next[0]), enumerate(bands[i].histogram()), 0) / 255.0) / nbpix
     return result
 
-def getPercentCMYK(img, nbpix) :
+def getPercentCMYK(img, nbpix):
     """Extracts the percents of Cyan, Magenta, Yellow, and Black from a picture.
 
        PIL doesn't produce useable CMYK for our algorithm, so we use the algorithm from PrintBill.
     """
-    if img.mode != "RGB" :
+    if img.mode != "RGB":
         img = img.convert("RGB")
     cyan = magenta = yellow = black = 0
-    for (r, g, b) in img.getdata() :
+    for (r, g, b) in img.getdata():
         pixblack = 255 - max(r, g, b)
         black += pixblack
         cyan += 255 - r - pixblack
@@ -56,44 +56,44 @@ def getPercentCMYK(img, nbpix) :
         yellow += 255 - b - pixblack
 
     frac = 100.0 / nbpix
-    return { "C" : frac * (cyan / 255.0),
-             "M" : frac * (magenta / 255.0),
-             "Y" : frac * (yellow / 255.0),
-             "K" : frac * (black / 255.0),
+    return { "C": frac * (cyan / 255.0),
+             "M": frac * (magenta / 255.0),
+             "Y": frac * (yellow / 255.0),
+             "K": frac * (black / 255.0),
            }
 
-def getPercentGC(img, nbpix) :
+def getPercentGC(img, nbpix):
     """Determines if a page is in grayscale or colour mode."""
-    if img.mode != "RGB" :
+    if img.mode != "RGB":
         img = img.convert("RGB")
     gray = 0
-    for (r, g, b) in img.getdata() :
-        if not (r == g == b) :
-            # optimize : if a single pixel is not gray the whole page is colored.
-            return { "G" : 0.0, "C" : 100.0 }
-    return { "G" : 100.0, "C" : 0.0 }
+    for (r, g, b) in img.getdata():
+        if not (r == g == b):
+            # optimize: if a single pixel is not gray the whole page is colored.
+            return { "G": 0.0, "C": 100.0 }
+    return { "G": 100.0, "C": 0.0 }
 
-def getPercentBW(img, nbpix) :
+def getPercentBW(img, nbpix):
     """Extracts the percents of Black from a picture, once converted to gray levels."""
-    if img.mode != "L" :
+    if img.mode != "L":
         img = img.convert("L")
-    return { "B" : 100.0 - getPercent(img, nbpix)["L"] }
+    return { "B": 100.0 - getPercent(img, nbpix)["L"] }
 
-def getPercentRGB(img, nbpix) :
+def getPercentRGB(img, nbpix):
     """Extracts the percents of Red, Green, Blue from a picture, once converted to RGB."""
-    if img.mode != "RGB" :
+    if img.mode != "RGB":
         img = img.convert("RGB")
     return getPercent(img, nbpix)
 
-def getPercentCMY(img, nbpix) :
+def getPercentCMY(img, nbpix):
     """Extracts the percents of Cyan, Magenta, and Yellow from a picture once converted to RGB."""
     result = getPercentRGB(img, nbpix)
-    return { "C" : 100.0 - result["R"],
-             "M" : 100.0 - result["G"],
-             "Y" : 100.0 - result["B"],
+    return { "C": 100.0 - result["R"],
+             "M": 100.0 - result["G"],
+             "Y": 100.0 - result["B"],
            }
 
-def getInkCoverage(fname, colorspace) :
+def getInkCoverage(fname, colorspace):
     """Returns a list of dictionnaries containing for each page,
        for each color component, the percent of ink coverage on
        that particular page.
@@ -102,21 +102,21 @@ def getInkCoverage(fname, colorspace) :
     colorspace = colorspace.upper()
     computation = globals()["getPercent%s" % colorspace]
     index = 0
-    try :
+    try:
         image = Image.open(fname)
-    except (IOError, OverflowError) as msg :
+    except (IOError, OverflowError) as msg:
         raise pdlparser.PDLParserError("%s (%s)" % (msg, fname))
-    else :
-        try :
-            while True :
+    else:
+        try:
+            while True:
                 nbpixels = image.size[0] * image.size[1]
                 result.append(computation(image, nbpixels))
                 index += 1
                 image.seek(index)
-        except EOFError :
+        except EOFError:
             pass
         return (colorspace, result)
 
-if __name__ == "__main__" :
-    # NB : length of result gives number of pages !
+if __name__ == "__main__":
+    # NB: length of result gives number of pages !
     sys.stdout.write("%s\n" % getInkCoverage(sys.argv[1], "CMYK"))

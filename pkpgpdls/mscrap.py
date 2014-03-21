@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -27,33 +27,33 @@ import tempfile
 from . import pdlparser
 from . import version
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for that MS crap thing."""
     totiffcommands = [ 'xvfb-run -a abiword --import-extension=.doc --print="| gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r\"%(dpi)i\" -sOutputFile=\"%(outfname)s\" -" "%(infname)s"' ]
     required = [ "xvfb-run", "xauth", "abiword", "gs" ]
     format = "Microsoft shitty"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is MS crap, else False.
 
            Identifying datas taken from the file command's magic database.
-           IMPORTANT : some magic values are not reused here because they
-           IMPORTANT : seem to be specific to some particular i18n release.
+           IMPORTANT: some magic values are not reused here because they
+           IMPORTANT: seem to be specific to some particular i18n release.
         """
         if self.firstblock.startswith(b"PO^Q`") \
            or self.firstblock.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1") \
            or self.firstblock.startswith(b"\xfe7\x00#") \
            or self.firstblock.startswith(b"\xdb\xa5-\x00\x00\x00") \
            or self.firstblock.startswith(b"\x31\xbe\x00\x00") \
-           or self.firstblock[2112:].startswith(b"MSWordDoc") :
+           or self.firstblock[2112:].startswith(b"MSWordDoc"):
             # Here we do the missing test because all commands will be needed even in page counting mode
-            if self.isMissing(self.required) :
+            if self.isMissing(self.required):
                 return False
-            else :
+            else:
                 return True
-        else :
+        else:
             return False
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in a Microsoft Word (r) (tm) (c) (etc...) document.
 
            First we convert from .doc to .ps, then we use the PostScript parser.
@@ -63,21 +63,21 @@ class Parser(pdlparser.PDLParser) :
                                                prefix="pkpgcounter_",
                                                suffix=".ps",
                                                dir=os.environ.get("PYKOTADIRECTORY") or tempfile.gettempdir())
-        try :
+        try:
             outfname = workfile.name
             infname = self.filename
             status = os.system(doctops % locals())
-            if status or not os.stat(outfname).st_size :
+            if status or not os.stat(outfname).st_size:
                 raise pdlparser.PDLParserError("Impossible to convert input document %(infname)s to PostScript" % locals())
             psinputfile = open(outfname, "rb")
-            try :
+            try:
                 (first, last) = self.parent.readFirstAndLastBlocks(psinputfile)
                 from . import postscript
                 return postscript.Parser(self.parent,
                                          outfname,
                                          (first, last)).getJobSize()
-            finally :
+            finally:
                 psinputfile.close()
-        finally :
+        finally:
             workfile.close()
         raise pdlparser.PDLParserError("Impossible to count pages in %(infname)s" % locals())

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -28,26 +28,26 @@ from struct import unpack
 
 from . import pdlparser
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for HBP documents."""
     format = "Brother HBP"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is HBP, else False."""
-        if self.firstblock.find(b"@PJL ENTER LANGUAGE = HBP\n") != -1 :
+        if self.firstblock.find(b"@PJL ENTER LANGUAGE = HBP\n") != -1:
             return True
-        else :
+        else:
             return False
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in a HBP document.
 
            Algorithm by Jerome Alet.
 
-           The documentation used for this was :
+           The documentation used for this was:
 
            http://sf.net/projects/hbp-for-brother/
 
-           IMPORTANT : this may not work since @F should be sufficient,
+           IMPORTANT: this may not work since @F should be sufficient,
            but the documentation really is unclear and I don't know
            how to skip raster data blocks for now.
         """
@@ -58,17 +58,17 @@ class Parser(pdlparser.PDLParser) :
         formfeed = b"@G\x00\x00\x01\xff@F"
         fflen = len(formfeed)
         pos = 0
-        try :
-            try :
-                while True :
+        try:
+            try:
+                while True:
                     if (minfile[pos] == "@") \
-                       and (minfile[pos:pos+fflen] == formfeed) :
+                       and (minfile[pos:pos+fflen] == formfeed):
                         pagecount += 1
                         pos += fflen
-                    else :
+                    else:
                         pos += 1
-            except IndexError : # EOF ?
+            except IndexError: # EOF ?
                 pass
-        finally :
+        finally:
             minfile.close() # reached EOF
         return pagecount

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@ import time
 
 __version__ = "3.51alpha"
 
-__doc__ = """pkpgcounter : a generic Page Description Languages parser."""
+__doc__ = """pkpgcounter: a generic Page Description Languages parser."""
 
 __author__ = "Jerome Alet"
 __authoremail__ = "alet@librelogiciel.com"

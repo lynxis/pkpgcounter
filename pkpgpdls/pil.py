@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -23,36 +23,36 @@
 
 from . import pdlparser
 
-try :
+try:
     from PIL import Image
-except ImportError :
+except ImportError:
     sys.stderr.write("ERROR: You MUST install the Python Imaging Library (python-imaging) for pkpgcounter to work.\n")
     raise pdlparser.PDLParserError("The Python Imaging Library is missing.")
 
 from . import version
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for plain text documents."""
     totiffcommands = [ 'convert "%(infname)s" "%(outfname)s"' ]
     required = [ "convert" ]
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is an image format supported by PIL, else False."""
-        try :
+        try:
             image = Image.open(self.filename)
-        except (IOError, OverflowError) :
+        except (IOError, OverflowError):
             return False
-        else :
+        else:
             self.format = "%s (%s)" % (image.format, image.format_description)
             return True
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in an image file."""
         index = 0
         image = Image.open(self.filename)
-        try :
-            while True :
+        try:
+            while True:
                 index += 1
                 image.seek(index)
-        except EOFError :
+        except EOFError:
             pass
         return index

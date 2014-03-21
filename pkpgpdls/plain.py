@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 from . import pdlparser
 from . import version
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for plain text documents."""
     totiffcommands = [ 'enscript --quiet --portrait --no-header --columns 1 --output - "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -',
                        'a2ps --borders 0 --quiet --portrait --no-header --columns 1 --output - "%(infname)s" | gs -sDEVICE=tiff24nc -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET -r"%(dpi)i" -sOutputFile="%(outfname)s" -',
@@ -32,7 +32,7 @@ class Parser(pdlparser.PDLParser) :
     required = [ "a2ps | enscript", "gs" ]
     openmode = "rU"
     format = "plain text"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is plain text, else False.
 
            It's hard to detect a plain text file, so we just try to
@@ -40,30 +40,30 @@ class Parser(pdlparser.PDLParser) :
            If it's impossible to find one we consider it's not plain text.
         """
         lines = self.firstblock.split(b"\r\n")
-        if len(lines) == 1 :
+        if len(lines) == 1:
             lines = lines[0].split(b"\r")
-            if len(lines) == 1 :
+            if len(lines) == 1:
                 lines = lines[0].split(b"\n")
-        if len(lines) > 1 :
+        if len(lines) > 1:
             return True
-        else :
+        else:
             return False
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in a plain text document."""
-        pagesize = 66   # TODO : Does this vary wrt the default page size ?
-                        # TODO : /etc/papersize and /etc/paper.config
+        pagesize = 66   # TODO: Does this vary wrt the default page size ?
+                        # TODO: /etc/papersize and /etc/paper.config
         pagecount = 0
         linecount = 0
-        for line in self.infile :
+        for line in self.infile:
             linecount += 1
-            if (linecount > pagesize) :
+            if (linecount > pagesize):
                 pagecount += 1
                 linecount = 0
-            else :
+            else:
                 cnt = line.count("\f")
-                if cnt :
+                if cnt:
                     pagecount += cnt
                     linecount = 0
 
-        return pagecount + 1    # NB : empty files are catched in isValid()
+        return pagecount + 1    # NB: empty files are catched in isValid()

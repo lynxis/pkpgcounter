@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pkpgcounter : a generic Page Description Language parser
+# pkpgcounter: a generic Page Description Language parser
 #
 # (c) 2003-2009 Jerome Alet <alet@librelogiciel.com>
 # This program is free software: you can redistribute it and/or modify
@@ -29,18 +29,18 @@ from struct import unpack
 from . import pdlparser
 from . import pjl
 
-class Parser(pdlparser.PDLParser) :
+class Parser(pdlparser.PDLParser):
     """A parser for ESC/PageS03 documents."""
     format = "ESC/PageS03"
-    def isValid(self) :
+    def isValid(self):
         """Returns True if data is TIFF, else False."""
         if self.firstblock.startswith(b"\033\1@EJL") and \
-            (self.firstblock.find(b"=ESC/PAGES03\n") != -1) :
+            (self.firstblock.find(b"=ESC/PAGES03\n") != -1):
             return True
-        else :
+        else:
             return False
 
-    def getJobSize(self) :
+    def getJobSize(self):
         """Counts pages in an ESC/PageS03 document.
 
            Algorithm by Jerome Alet.
@@ -52,42 +52,42 @@ class Parser(pdlparser.PDLParser) :
         marker = "=ESC/PAGES03\n"
         startpos = minfile.find(marker)
         startsequence = b"\x1d"
-        if startpos == -1 :
+        if startpos == -1:
             raise pdlparser.PDLParserError("Invalid ESC/PageS03 file.")
         startpos += len(marker)
-        if minfile[startpos] != startsequence :
+        if minfile[startpos] != startsequence:
             raise pdlparser.PDLParserError("Invalid ESC/PageS03 file.")
         endsequence = "eps{I"
         lgendsequence = len(endsequence)
-        try :
-            try :
-                while True :
-                    if minfile[startpos] == startsequence :
+        try:
+            try:
+                while True:
+                    if minfile[startpos] == startsequence:
                         skiplen = 0
-                        while True :
+                        while True:
                             startpos += 1
                             c = minfile[startpos]
-                            if not c.isdigit() :
+                            if not c.isdigit():
                                 break
-                            else :
+                            else:
                                 skiplen = (skiplen * 10) + int(c)
-                        if minfile[startpos:startpos+lgendsequence] == endsequence :
+                        if minfile[startpos:startpos+lgendsequence] == endsequence:
                             startpos += (skiplen + lgendsequence)
-                    else :
-                        if minfile[startpos:startpos+6] == "\033\1@EJL" :
+                    else:
+                        if minfile[startpos:startpos+6] == "\033\1@EJL":
                             # Probably near the end of the file.
                             # Test suite was too small to be sure.
                             ejlparser = pjl.EJLParser(minfile[startpos:])
                             pagecount = ejlparser.environment_variables.get("PAGES", "1")
-                            if pagecount.startswith('"') and pagecount.endswith('"') :
+                            if pagecount.startswith('"') and pagecount.endswith('"'):
                                 pagecount = pagecount[1:-1]
                             pagecount = int(pagecount)
-                            if pagecount <= 0 :
-                                pagecount = 1 # TODO : 0 or 1000000 ??? ;-)
+                            if pagecount <= 0:
+                                pagecount = 1 # TODO: 0 or 1000000 ??? ;-)
                             break
                         startpos += 1
-            except IndexError :
+            except IndexError:
                 pass
-        finally :
+        finally:
             minfile.close()
         return pagecount
