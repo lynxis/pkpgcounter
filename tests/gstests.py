@@ -26,7 +26,7 @@
 import sys
 import os
 import glob
-import md5
+from hashlib import md5
 import tempfile
 import time
 
@@ -50,7 +50,7 @@ class TestSuite :
 
     def computeChecksum(self) :
         """Computes an MD5 checksum for the input file's content."""
-        checksum = md5.new()
+        checksum = md5()
         istemp = False
         if self.inputfile == "-" :
             # Input is standard input, so we must use a temporary
