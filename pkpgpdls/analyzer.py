@@ -28,6 +28,7 @@ import sys
 import os
 import tempfile
 import logging
+import warnings
 
 from . import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, \
        pil, mscrap, cfax, lidil, escp2, dvi, tiff, ooo, zjstream, \
@@ -60,14 +61,15 @@ class PDLAnalyzer:
         self.filename = filename
         self.workfile = None
 
+        self._parser = None
+
     def getJobSize(self):
         """Returns the job's size."""
         size = 0
         self.openFile()
         try:
             try:
-                pdlhandler = self.detectPDLHandler()
-                size = pdlhandler.getJobSize()
+                self.pdlhandler.getJobSize()
             except pdlparser.PDLParserError as msg:
                 raise pdlparser.PDLParserError("Unsupported file format for %s (%s)" % (self.filename, msg))
         finally:
@@ -84,15 +86,13 @@ class PDLAnalyzer:
         self.openFile()
         try:
             try:
-                pdlhandler = self.detectPDLHandler()
-                print(self.detectPDLHandler())
                 dummyfile = tempfile.NamedTemporaryFile(mode="w+b",
                                                         prefix="pkpgcounter_",
                                                         suffix=".tiff",
                                                         dir=os.environ.get("PYKOTADIRECTORY") or tempfile.gettempdir())
                 filename = dummyfile.name
                 try:
-                    pdlhandler.convertToTiffMultiPage24NC(filename, self.options.resolution)
+                    self.pdlhandler.convertToTiffMultiPage24NC(filename, res)
                     result = inkcoverage.getInkCoverage(filename, cspace)
                 finally:
                     dummyfile.close()
@@ -145,11 +145,26 @@ class PDLAnalyzer:
             lastblock = ""
         return (firstblock, lastblock)
 
+
+    @property
+    def pdlhandler(self):
+        if not self._parser:
+            self._detectPDLHandler()
+        return self._parser
+
     def detectPDLHandler(self):
+        warnings.warn("deprecated - use property self.pdlhandler", DeprecationWarning)
+        return self.pdlhandler
+
+    def _detectPDLHandler(self):
         """Tries to autodetect the document format.
 
            Returns the correct PDL handler class or None if format is unknown
         """
+
+        if self._parser:
+            return
+
         if not os.stat(self.filename).st_size:
             raise pdlparser.PDLParserError("input file %s is empty !" % str(self.filename))
         (firstblock, lastblock) = self.readFirstAndLastBlocks(self.workfile)
@@ -175,11 +190,15 @@ class PDLAnalyzer:
                        mscrap, \
                        plain):     # IMPORTANT: don't move this one up !
             try:
-                return module.Parser(self, self.filename,
+                self._parser = module.Parser(self, self.filename,
                                            (firstblock, lastblock))
+                LOG.debug("Parser = %s" % module.__name__)
+                break
             except pdlparser.PDLParserError:
                 pass # try next parser
-        raise pdlparser.PDLParserError("Analysis of first data block failed.")
+
+        if not self._parser:
+            raise pdlparser.PDLParserError("Analysis of first data block failed.")
 
 def main():
     """Entry point for PDL Analyzer."""
