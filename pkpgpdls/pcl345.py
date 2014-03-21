@@ -128,7 +128,7 @@ class Parser(pdlparser.PDLParser) :
 
     def readByte(self) :
         """Reads a byte from the input stream."""
-        tag = ord(self.minfile[self.pos])
+        tag = self.minfile[self.pos]
         self.pos += 1
         return tag
 
@@ -362,7 +362,7 @@ class Parser(pdlparser.PDLParser) :
     def handleImageRunner(self) :
         """Handles Canon ImageRunner tags."""
         tag = self.readByte()
-        if tag == ord(self.imagerunnermarker1[-1]) :
+        if tag == self.imagerunnermarker1[-1] :
             oldpos = self.pos-2
             codop = self.minfile[self.pos:self.pos+2]
             length = unpack(">H", self.minfile[self.pos+6:self.pos+8])[0]

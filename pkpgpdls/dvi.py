@@ -36,8 +36,8 @@ class Parser(pdlparser.PDLParser) :
     def isValid(self) :
         """Returns True if data is DVI, else False."""
         try :
-            if (ord(self.firstblock[0]) == 0xf7) \
-                and (ord(self.lastblock[-1]) == 0xdf) :
+            if (self.firstblock[0] == 0xf7) \
+                and (self.lastblock[-1] == 0xdf) :
                 return True
             else :
                 return False

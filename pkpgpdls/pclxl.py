@@ -114,7 +114,7 @@ class Parser(pdlparser.PDLParser) :
         minfile = self.minfile
         pos = nextpos - 2
         while pos > 0 : # safety check : don't go back to far !
-            val = ord(minfile[pos])
+            val = minfile[pos]
             if val in (0x44, 0x48, 0x41) : # if previous endPage or openDataSource or beginSession (first page)
                 break
             if val == 0x26 :
