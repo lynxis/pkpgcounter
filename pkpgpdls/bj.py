@@ -24,7 +24,7 @@
 import os
 import mmap
 
-import pdlparser
+from . import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for Canon BJ documents."""

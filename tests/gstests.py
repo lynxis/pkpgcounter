@@ -170,7 +170,7 @@ class TestSuite :
         masterfilename = self.inputfile
         self.mastersize = mastersize = self.computeSize(masterfilename)
         if not mastersize :
-            raise RuntimeError, "Unable to compute the size of the testsuite's master file %(masterfilename)s" % locals()
+            raise RuntimeError("Unable to compute the size of the testsuite's master file %(masterfilename)s" % locals())
         else :
             sys.stdout.write("Master file's contains %(mastersize)i pages.\n" % locals())
         testsuite = glob.glob("testsuite.*")
@@ -200,9 +200,9 @@ class TestSuite :
                 result["result"] = "SUPPORTED"
                 result["details"] = None
             sys.stdout.write("%s\n" % result["result"])
-        self.supportedpct = 100.0 * len([True for r in self.results.values() if r["result"] == "SUPPORTED"]) / nbtests
-        self.failedpct = 100.0 * len([True for r in self.results.values() if r["result"] == "FAILED"]) / nbtests
-        self.unsupportedpct = 100.0 * len([True for r in self.results.values() if r["result"] == "UNSUPPORTED"]) / nbtests
+        self.supportedpct = 100.0 * len([True for r in list(self.results.values()) if r["result"] == "SUPPORTED"]) / nbtests
+        self.failedpct = 100.0 * len([True for r in list(self.results.values()) if r["result"] == "FAILED"]) / nbtests
+        self.unsupportedpct = 100.0 * len([True for r in list(self.results.values()) if r["result"] == "UNSUPPORTED"]) / nbtests
 
     def genHTMLReport(self, filename) :
         """Generates an HTML report."""
@@ -227,7 +227,7 @@ class TestSuite :
         out.write("<p><strong>Red</strong> means that pkpgcounter doesn't recognize the input file's format.</p>\n")
         out.write('<table border="1"><tr bgcolor="gold"><th width="15%">Device</th><th width="25%">Details</th><th width="60%">Command line</th></tr>\n')
         linecount = 0
-        keys = self.results.keys()
+        keys = list(self.results.keys())
         keys.sort()
         for key in keys :
             value = self.results[key]

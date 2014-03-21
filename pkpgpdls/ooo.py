@@ -24,7 +24,7 @@
 import sys
 import zipfile
 
-import pdlparser
+from . import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for OpenOffice.org documents."""
@@ -60,5 +60,5 @@ class Parser(pdlparser.PDLParser) :
             pagecount = self.contentxml.count("<draw:page ")
             if not pagecount :
                 # Probably a Spreadsheet document
-                raise pdlparser.PDLParserError, "OpenOffice.org's spreadsheet documents are not yet supported."
+                raise pdlparser.PDLParserError("OpenOffice.org's spreadsheet documents are not yet supported.")
         return pagecount

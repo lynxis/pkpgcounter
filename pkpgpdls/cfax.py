@@ -23,7 +23,7 @@
 
 import struct
 
-import pdlparser
+from . import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for Structured Fax documents."""
@@ -99,5 +99,5 @@ class Parser(pdlparser.PDLParser) :
                         break # End Of Document
                     self.infile.seek(offsetnextpage, 1)
         except struct.error :
-             raise pdlparser.PDLParserError, "Invalid Structured Fax datas"
+             raise pdlparser.PDLParserError("Invalid Structured Fax datas")
         return max(docpagecount, pagecount)

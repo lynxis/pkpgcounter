@@ -29,7 +29,7 @@
 
 import struct
 
-import pdlparser
+from . import pdlparser
 
 HEADERSIZE = 10 # LIDIL header is 10 bytes long
 
@@ -78,7 +78,7 @@ class Parser(pdlparser.PDLParser) :
                     break
                 if (len(header) != HEADERSIZE) or (header[0] != "$") :
                     # Invalid header or no Frame Sync byte.
-                    raise pdlparser.PDLParserError, "This file doesn't seem to be valid Hewlett-Packard LIDIL datas."
+                    raise pdlparser.PDLParserError("This file doesn't seem to be valid Hewlett-Packard LIDIL datas.")
                 (framesync,
                  cmdlength,
                  dummy,
@@ -93,7 +93,7 @@ class Parser(pdlparser.PDLParser) :
                         ejectpage += 1
                 self.infile.seek(cmdlength + datalength - len(header), 1) # relative seek
         except struct.error :
-            raise pdlparser.PDLParserError, "This file doesn't seem to be valid Hewlett-Packard LIDIL datas."
+            raise pdlparser.PDLParserError("This file doesn't seem to be valid Hewlett-Packard LIDIL datas.")
 
         # Number of page eject commands should be sufficient,
         # but we never know : someone could try to cheat the printer

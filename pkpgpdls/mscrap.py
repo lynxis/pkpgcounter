@@ -24,8 +24,8 @@
 import os
 import tempfile
 
-import pdlparser
-import version
+from . import pdlparser
+from . import version
 
 class Parser(pdlparser.PDLParser) :
     """A parser for that MS crap thing."""
@@ -68,11 +68,11 @@ class Parser(pdlparser.PDLParser) :
             infname = self.filename
             status = os.system(doctops % locals())
             if status or not os.stat(outfname).st_size :
-                raise pdlparser.PDLParserError, "Impossible to convert input document %(infname)s to PostScript" % locals()
+                raise pdlparser.PDLParserError("Impossible to convert input document %(infname)s to PostScript" % locals())
             psinputfile = open(outfname, "rb")
             try :
                 (first, last) = self.parent.readFirstAndLastBlocks(psinputfile)
-                import postscript
+                from . import postscript
                 return postscript.Parser(self.parent,
                                          outfname,
                                          (first, last)).getJobSize()
@@ -80,4 +80,4 @@ class Parser(pdlparser.PDLParser) :
                 psinputfile.close()
         finally :
             workfile.close()
-        raise pdlparser.PDLParserError, "Impossible to count pages in %(infname)s" % locals()
+        raise pdlparser.PDLParserError("Impossible to count pages in %(infname)s" % locals())

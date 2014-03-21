@@ -21,7 +21,7 @@
 
 """This modules implements a page counter for PNM (ascii) documents."""
 
-import pdlparser
+from . import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for PNM (ascii) documents."""

@@ -28,10 +28,10 @@ import sys
 import os
 import tempfile
 
-import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, \
+from . import version, pdlparser, postscript, pdf, pcl345, pclxl, hbp, \
        pil, mscrap, cfax, lidil, escp2, dvi, tiff, ooo, zjstream, \
        pnmascii, bj, qpdl, spl1, escpages03, plain
-import inkcoverage
+from . import inkcoverage
 
 class AnalyzerOptions :
     """A class for use as the options parameter to PDLAnalyzer's constructor."""
@@ -65,8 +65,8 @@ class PDLAnalyzer :
             try :
                 pdlhandler = self.detectPDLHandler()
                 size = pdlhandler.getJobSize()
-            except pdlparser.PDLParserError, msg :
-                raise pdlparser.PDLParserError, "Unsupported file format for %s (%s)" % (self.filename, msg)
+            except pdlparser.PDLParserError as msg :
+                raise pdlparser.PDLParserError("Unsupported file format for %s (%s)" % (self.filename, msg))
         finally :
             self.closeFile()
         return size
@@ -77,7 +77,7 @@ class PDLAnalyzer :
         cspace = colorspace or self.options.colorspace
         res = resolution or self.options.resolution
         if (not cspace) or (not res) :
-            raise ValueError, "Invalid colorspace (%s) or resolution (%s)" % (cspace, res)
+            raise ValueError("Invalid colorspace (%s) or resolution (%s)" % (cspace, res))
         self.openFile()
         try :
             try :
@@ -92,8 +92,8 @@ class PDLAnalyzer :
                     result = inkcoverage.getInkCoverage(filename, cspace)
                 finally :
                     dummyfile.close()
-            except pdlparser.PDLParserError, msg :
-                raise pdlparser.PDLParserError, "Unsupported file format for %s (%s)" % (self.filename, msg)
+            except pdlparser.PDLParserError as msg :
+                raise pdlparser.PDLParserError("Unsupported file format for %s (%s)" % (self.filename, msg))
         finally :
             self.closeFile()
         return result
@@ -147,7 +147,7 @@ class PDLAnalyzer :
            Returns the correct PDL handler class or None if format is unknown
         """
         if not os.stat(self.filename).st_size :
-            raise pdlparser.PDLParserError, "input file %s is empty !" % str(self.filename)
+            raise pdlparser.PDLParserError("input file %s is empty !" % str(self.filename))
         (firstblock, lastblock) = self.readFirstAndLastBlocks(self.workfile)
 
         # IMPORTANT : the order is important below. FIXME.
@@ -176,7 +176,7 @@ class PDLAnalyzer :
                                            (firstblock, lastblock))
             except pdlparser.PDLParserError :
                 pass # try next parser
-        raise pdlparser.PDLParserError, "Analysis of first data block failed."
+        raise pdlparser.PDLParserError("Analysis of first data block failed.")
 
 def main() :
     """Entry point for PDL Analyzer."""
@@ -248,7 +248,7 @@ def main() :
                                 except KeyError :
                                     pass
                             lines.append("      ".join(lineparts))
-                except (IOError, pdlparser.PDLParserError), msg :
+                except (IOError, pdlparser.PDLParserError) as msg :
                     sys.stderr.write("ERROR: %s\n" % msg)
                     sys.stderr.flush()
         except KeyboardInterrupt :

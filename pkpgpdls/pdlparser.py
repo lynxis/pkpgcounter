@@ -44,8 +44,9 @@ class PDLParser :
     required = []               # Default list of required commands
     openmode = "rb"             # Default file opening mode
     format = "Unknown"          # Default file format
-    def __init__(self, parent, filename, (firstblock, lastblock)) :
+    def __init__(self, parent, filename, xxx_todo_changeme) :
         """Initialize the generic parser."""
+        (firstblock, lastblock) = xxx_todo_changeme
         self.parent = parent
         # We need some copies for later inclusion of parsers which
         # would modify the parent's values
@@ -54,7 +55,7 @@ class PDLParser :
         self.lastblock = lastblock[:]
         self.infile = None
         if not self.isValid() :
-            raise PDLParserError, "Invalid file format !"
+            raise PDLParserError("Invalid file format !")
         else :
             self.logdebug("Input file is in the '%s' file format." % self.format)
         self.infile = open(self.filename, self.openmode)
@@ -95,11 +96,11 @@ class PDLParser :
 
     def isValid(self) :
         """Returns True if data is in the expected format, else False."""
-        raise RuntimeError, "Not implemented !"
+        raise RuntimeError("Not implemented !")
 
     def getJobSize(self) :
         """Counts pages in a document."""
-        raise RuntimeError, "Not implemented !"
+        raise RuntimeError("Not implemented !")
 
     def convertToTiffMultiPage24NC(self, outfname, dpi) :
         """Converts the input file to TIFF format, X dpi, 24 bits per pixel, uncompressed.
@@ -107,7 +108,7 @@ class PDLParser :
         """
         if self.totiffcommands :
             if self.isMissing(self.required) :
-                raise PDLParserError, "At least one of the following commands is missing and should be installed for the computation of ink coverage : %s" % repr(self.required)
+                raise PDLParserError("At least one of the following commands is missing and should be installed for the computation of ink coverage : %s" % repr(self.required))
             infname = self.filename
             for totiffcommand in self.totiffcommands :
                 error = False
@@ -127,6 +128,6 @@ class PDLParser :
                     break       # Conversion worked fine it seems.
                 sys.stderr.write("Command failed : %s\n" % repr(commandline))
             if error :
-                raise PDLParserError, "Problem during conversion to TIFF."
+                raise PDLParserError("Problem during conversion to TIFF.")
         else :
-            raise PDLParserError, "Impossible to compute ink coverage for this file format."
+            raise PDLParserError("Impossible to compute ink coverage for this file format.")

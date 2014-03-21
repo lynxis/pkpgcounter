@@ -26,8 +26,8 @@ import os
 import mmap
 from struct import unpack
 
-import pdlparser
-import pjl
+from . import pdlparser
+from . import pjl
 
 NUL = chr(0x00)
 LINEFEED = chr(0x0a)

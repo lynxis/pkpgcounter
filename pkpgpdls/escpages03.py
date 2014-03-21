@@ -26,8 +26,8 @@ import os
 import mmap
 from struct import unpack
 
-import pdlparser
-import pjl
+from . import pdlparser
+from . import pjl
 
 class Parser(pdlparser.PDLParser) :
     """A parser for ESC/PageS03 documents."""
@@ -53,10 +53,10 @@ class Parser(pdlparser.PDLParser) :
         startpos = minfile.find(marker)
         startsequence = chr(0x1d)
         if startpos == -1 :
-            raise pdlparser.PDLParserError, "Invalid ESC/PageS03 file."
+            raise pdlparser.PDLParserError("Invalid ESC/PageS03 file.")
         startpos += len(marker)
         if minfile[startpos] != startsequence :
-            raise pdlparser.PDLParserError, "Invalid ESC/PageS03 file."
+            raise pdlparser.PDLParserError("Invalid ESC/PageS03 file.")
         endsequence = "eps{I"
         lgendsequence = len(endsequence)
         try :

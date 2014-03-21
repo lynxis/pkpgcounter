@@ -26,7 +26,7 @@
 
 import re
 
-import pdlparser
+from . import pdlparser
 
 PDFWHITESPACE = chr(0) \
                 + chr(9) \
@@ -114,7 +114,7 @@ class Parser(pdlparser.PDLParser) :
         # which are empty and not displayed pages (in fact pages
         # used to redact existing content).
         pagecount = 0
-        for (major, (minor, content)) in objtokeep.items() :
+        for (major, (minor, content)) in list(objtokeep.items()) :
             count = len(npregexp.findall(content))
             if count :
                 emptycount = len(epregexp.findall(content))

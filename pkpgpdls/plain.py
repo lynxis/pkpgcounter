@@ -21,8 +21,8 @@
 
 """This modules implements a page counter for plain text documents."""
 
-import pdlparser
-import version
+from . import pdlparser
+from . import version
 
 class Parser(pdlparser.PDLParser) :
     """A parser for plain text documents."""

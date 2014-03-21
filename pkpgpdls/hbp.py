@@ -26,7 +26,7 @@ import os
 import mmap
 from struct import unpack
 
-import pdlparser
+from . import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for HBP documents."""

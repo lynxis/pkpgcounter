@@ -24,8 +24,8 @@
 import sys
 import os
 
-import pdlparser
-import inkcoverage
+from . import pdlparser
+from . import inkcoverage
 
 class Parser(pdlparser.PDLParser) :
     """A parser for PostScript documents."""
@@ -51,7 +51,7 @@ class Parser(pdlparser.PDLParser) :
         """Get the count through GhostScript, useful for non-DSC compliant PS files."""
         self.logdebug("Internal parser sucks, using GhostScript instead...")
         if self.isMissing(self.required) :
-            raise pdlparser.PDLParserError, "The gs interpreter is nowhere to be found in your PATH (%s)" % os.environ.get("PATH", "")
+            raise pdlparser.PDLParserError("The gs interpreter is nowhere to be found in your PATH (%s)" % os.environ.get("PATH", ""))
         infname = self.filename
         command = 'gs -sDEVICE=bbox -dPARANOIDSAFER -dNOPAUSE -dBATCH -dQUIET "%(infname)s" 2>&1 | grep -c "%%HiResBoundingBox:" 2>/dev/null'
         pagecount = 0
@@ -59,11 +59,11 @@ class Parser(pdlparser.PDLParser) :
         try :
             try :
                 pagecount = int(fromchild.readline().strip())
-            except (IOError, OSError, AttributeError, ValueError), msg :
-                raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document : %s" % msg
+            except (IOError, OSError, AttributeError, ValueError) as msg :
+                raise pdlparser.PDLParserError("Problem during analysis of Binary PostScript document : %s" % msg)
         finally :
             if fromchild.close() is not None :
-                raise pdlparser.PDLParserError, "Problem during analysis of Binary PostScript document"
+                raise pdlparser.PDLParserError("Problem during analysis of Binary PostScript document")
         self.logdebug("GhostScript said : %s pages" % pagecount)
         return pagecount * self.copies
 
@@ -159,7 +159,7 @@ class Parser(pdlparser.PDLParser) :
 
         # extract max number of copies to please the ghostscript parser, just
         # in case we will use it later
-        self.copies = max([ v["copies"] for (k, v) in self.pages.items() ])
+        self.copies = max([ v["copies"] for (k, v) in list(self.pages.items()) ])
 
         # now apply the number of copies to each page
         if not pagecount and pagescomment :
@@ -181,6 +181,6 @@ class Parser(pdlparser.PDLParser) :
         if notrust or not nbpages :
             try :
                 newnbpages = self.throughGhostScript()
-            except pdlparser.PDLParserError, msg :
+            except pdlparser.PDLParserError as msg :
                 self.logdebug(msg)
         return max(nbpages, newnbpages)

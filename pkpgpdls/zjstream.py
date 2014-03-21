@@ -23,7 +23,7 @@
 
 import struct
 
-import pdlparser
+from . import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for ZjStream documents."""
@@ -83,7 +83,7 @@ class Parser(pdlparser.PDLParser) :
                 #self.logdebug("signature : 0x%04x" % signature)
                 #self.logdebug("\n")
         except struct.error :
-            raise pdlparser.PDLParserError, "This file doesn't seem to be valid ZjStream datas."
+            raise pdlparser.PDLParserError("This file doesn't seem to be valid ZjStream datas.")
 
         # Number of endpage commands should be sufficient,
         # but we never know : someone could try to cheat the printer

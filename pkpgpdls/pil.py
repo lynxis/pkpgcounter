@@ -21,15 +21,15 @@
 
 """This modules implements a page counter for image formats supported by the Python Imaging Library."""
 
-import pdlparser
+from . import pdlparser
 
 try :
     from PIL import Image
 except ImportError :
     sys.stderr.write("ERROR: You MUST install the Python Imaging Library (python-imaging) for pkpgcounter to work.\n")
-    raise pdlparser.PDLParserError, "The Python Imaging Library is missing."
+    raise pdlparser.PDLParserError("The Python Imaging Library is missing.")
 
-import version
+from . import version
 
 class Parser(pdlparser.PDLParser) :
     """A parser for plain text documents."""

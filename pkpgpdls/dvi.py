@@ -26,7 +26,7 @@ import os
 import mmap
 from struct import unpack
 
-import pdlparser
+from . import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for DVI documents."""
@@ -65,10 +65,10 @@ class Parser(pdlparser.PDLParser) :
                     pos -= 1
                 idbyte = minfile[pos]
                 if idbyte != minfile[1] :
-                    raise IndexError, "Invalid DVI file."
+                    raise IndexError("Invalid DVI file.")
                 pos = unpack(">I", minfile[pos - 4:pos])[0]
                 if minfile[pos] != postchar :
-                    raise IndexError, "Invalid DVI file."
+                    raise IndexError("Invalid DVI file.")
                 pagecount = unpack(">H", minfile[pos + 27: pos + 29])[0]
             except IndexError : # EOF ?
                 pass

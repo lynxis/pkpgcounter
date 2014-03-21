@@ -26,8 +26,8 @@ import os
 import mmap
 from struct import unpack
 
-import pdlparser
-import pjl
+from . import pdlparser
+from . import pjl
 
 class Parser(pdlparser.PDLParser) :
     """A parser for QPDL (aka SPL2) documents."""
@@ -158,9 +158,9 @@ class Parser(pdlparser.PDLParser) :
 
            The documentation used for this was :
 
-           Spécification Technique (documentation non officielle)
+           Specification Technique (documentation non officielle)
            Le Language SPL2
-           par Aurélien Croc
+           par Aurelien Croc
            http://splix.ap2c.org
         """
         # Initialize table of tags

@@ -27,7 +27,7 @@ import os
 import shutil
 try :
     from distutils.core import setup
-except ImportError, msg :
+except ImportError as msg :
     sys.stderr.write("%s\n" % msg)
     sys.stderr.write("You need the DistUtils Python module.\nunder Debian, you may have to install the python-dev package.\nOf course, YMMV.\n")
     sys.exit(-1)

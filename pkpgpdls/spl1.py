@@ -25,8 +25,8 @@ import os
 import mmap
 import struct
 
-import pdlparser
-import version
+from . import pdlparser
+from . import version
 
 ESCAPECHARS = (chr(0x1b), chr(0x24))
 
@@ -111,7 +111,7 @@ class Parser(pdlparser.PDLParser) :
                         pos += self.escape(pos+1)
                     else :
                         if not self.isbitmap :
-                            raise pdlparser.PDLParserError, "Unfortunately SPL1 is incompletely recognized. Parsing aborted. Please report the problem to %s" % version.__authoremail__
+                            raise pdlparser.PDLParserError("Unfortunately SPL1 is incompletely recognized. Parsing aborted. Please report the problem to %s" % version.__authoremail__)
                         (offset,
                          seqnum) = unpack(">IH", minfile[pos:pos+6])
                         # self.logdebug("Offset : %i      Sequence Number : %i" % (offset, seqnum))
@@ -119,8 +119,8 @@ class Parser(pdlparser.PDLParser) :
                             # Sequence number resets to 0 for each new page.
                             self.pagecount += 1
                         pos += 4 + offset
-            except struct.error, msg :
-                raise pdlparser.PDLParserError, "Unfortunately SPL1 is incompletely recognized (%s). Parsing aborted. Please report the problem to %s" % (msg, version.__authoremail__)
+            except struct.error as msg :
+                raise pdlparser.PDLParserError("Unfortunately SPL1 is incompletely recognized (%s). Parsing aborted. Please report the problem to %s" % (msg, version.__authoremail__))
             except IndexError : # EOF ?
                 pass
         finally :

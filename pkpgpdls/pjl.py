@@ -59,11 +59,11 @@ class PJLParser :
         mybuffer = []
         if self.default_variables :
             mybuffer.append("Default variables :")
-            for (k, v) in self.default_variables.items() :
+            for (k, v) in list(self.default_variables.items()) :
                 mybuffer.append("  %s : %s" % (k, v))
         if self.environment_variables :
             mybuffer.append("Environment variables :")
-            for (k, v) in self.environment_variables.items() :
+            for (k, v) in list(self.environment_variables.items()) :
                 mybuffer.append("  %s : %s" % (k, v))
         return "\n".join(mybuffer)
 
@@ -76,7 +76,7 @@ class PJLParser :
         """Cleans the variables dictionnaries."""
         for dicname in ("default", "environment") :
             varsdic = getattr(self, "%s_variables" % dicname)
-            for (k, v) in varsdic.items() :
+            for (k, v) in list(varsdic.items()) :
                 if len(v) == 1 :
                     varsdic[k] = v[0]
 
@@ -141,7 +141,7 @@ def test() :
             mustclose = True
         try :
             parser = klass(infile.read(), debug=1)
-        except PJLParserError, msg :
+        except PJLParserError as msg :
             sys.stderr.write("ERROR: %s\n" % msg)
             sys.stderr.flush()
         if mustclose :

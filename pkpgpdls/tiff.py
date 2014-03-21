@@ -26,7 +26,7 @@ import os
 import mmap
 from struct import unpack
 
-import pdlparser
+from . import pdlparser
 
 class Parser(pdlparser.PDLParser) :
     """A parser for TIFF documents."""
@@ -63,7 +63,7 @@ class Parser(pdlparser.PDLParser) :
             integerbyteorder = ">I"
             shortbyteorder = ">H"
         else :
-            raise pdlparser.PDLParserError, "Unknown file endianness."
+            raise pdlparser.PDLParserError("Unknown file endianness.")
         pos = 4
         try :
             try :

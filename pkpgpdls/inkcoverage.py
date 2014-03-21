@@ -23,13 +23,14 @@
 
 import sys
 
-import pdlparser
+from . import pdlparser
+from functools import reduce
 
 try :
     from PIL import Image
 except ImportError :
     sys.stderr.write("ERROR: You MUST install the Python Imaging Library (python-imaging) for pkpgcounter to work.\n")
-    raise pdlparser.PDLParserError, "The Python Imaging Library is missing."
+    raise pdlparser.PDLParserError("The Python Imaging Library is missing.")
 
 def getPercent(img, nbpix) :
     """Extracts the percents per color component from a picture."""
@@ -103,8 +104,8 @@ def getInkCoverage(fname, colorspace) :
     index = 0
     try :
         image = Image.open(fname)
-    except (IOError, OverflowError), msg :
-        raise pdlparser.PDLParserError, "%s (%s)" % (msg, fname)
+    except (IOError, OverflowError) as msg :
+        raise pdlparser.PDLParserError("%s (%s)" % (msg, fname))
     else :
         try :
             while True :
