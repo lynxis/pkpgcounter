@@ -72,9 +72,9 @@ class Parser(pdlparser.PDLParser) :
 
     def isValid(self) :
         """Returns True if data is QPDL aka SPL2, else False."""
-        if ((self.firstblock[:128].find("\033%-12345X") != -1) and \
-             ((self.firstblock.find("LANGUAGE=QPDL") != -1) or \
-              (self.firstblock.find("LANGUAGE = QPDL") != -1))) :
+        if ((self.firstblock[:128].find(b"\033%-12345X") != -1) and \
+             ((self.firstblock.find(b"LANGUAGE=QPDL") != -1) or \
+              (self.firstblock.find(b"LANGUAGE = QPDL") != -1))) :
             return True
         else :
             return False

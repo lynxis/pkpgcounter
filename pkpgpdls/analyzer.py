@@ -82,6 +82,7 @@ class PDLAnalyzer :
         try :
             try :
                 pdlhandler = self.detectPDLHandler()
+                print(self.detectPDLHandler())
                 dummyfile = tempfile.NamedTemporaryFile(mode="w+b",
                                                         prefix="pkpgcounter_",
                                                         suffix=".tiff",

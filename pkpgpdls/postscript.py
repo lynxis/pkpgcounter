@@ -35,14 +35,14 @@ class Parser(pdlparser.PDLParser) :
     format = "PostScript"
     def isValid(self) :
         """Returns True if data is PostScript, else False."""
-        if self.firstblock.startswith("%!") or \
-           self.firstblock.startswith("\004%!") or \
-           self.firstblock.startswith("\033%-12345X%!PS") or \
-           ((self.firstblock[:128].find("\033%-12345X") != -1) and \
-             ((self.firstblock.find("LANGUAGE=POSTSCRIPT") != -1) or \
-              (self.firstblock.find("LANGUAGE = POSTSCRIPT") != -1) or \
-              (self.firstblock.find("LANGUAGE = Postscript") != -1))) or \
-              (self.firstblock.find("%!PS-Adobe") != -1) :
+        if self.firstblock.startswith(b"%!") or \
+           self.firstblock.startswith(b"\004%!") or \
+           self.firstblock.startswith(b"\033%-12345X%!PS") or \
+           ((self.firstblock[:128].find(b"\033%-12345X") != -1) and \
+             ((self.firstblock.find(b"LANGUAGE=POSTSCRIPT") != -1) or \
+              (self.firstblock.find(b"LANGUAGE = POSTSCRIPT") != -1) or \
+              (self.firstblock.find(b"LANGUAGE = Postscript") != -1))) or \
+              (self.firstblock.find(b"%!PS-Adobe") != -1) :
             return True
         else :
             return False
@@ -81,7 +81,7 @@ class Parser(pdlparser.PDLParser) :
         """Count pages in a DSC compliant PostScript document."""
         pagecount = 0
         self.pages = { 0 : { "copies" : 1 } }
-        oldpagenum = None
+        oldpagenum = 0
         previousline = ""
         notrust = False
         prescribe = False # Kyocera's Prescribe commands

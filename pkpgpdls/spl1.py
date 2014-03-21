@@ -35,10 +35,10 @@ class Parser(pdlparser.PDLParser) :
     format = "SPL1 (aka GDI)"
     def isValid(self) :
         """Returns True if data is SPL1, else False."""
-        if ((self.firstblock[:128].find("\033%-12345X") != -1) and \
-            (self.firstblock.find("$PJL ") != -1) and \
-             ((self.firstblock.find("LANGUAGE=SMART") != -1) or \
-              (self.firstblock.find("LANGUAGE = SMART") != -1))) :
+        if ((self.firstblock[:128].find(b"\033%-12345X") != -1) and \
+            (self.firstblock.find(b"$PJL ") != -1) and \
+             ((self.firstblock.find(b"LANGUAGE=SMART") != -1) or \
+              (self.firstblock.find(b"LANGUAGE = SMART") != -1))) :
             return True
         else :
             return False

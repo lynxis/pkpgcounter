@@ -84,14 +84,14 @@ class Parser(pdlparser.PDLParser) :
 
     def isValid(self) :
         """Returns True if data is HP PCLXL aka PCL6, or Brother's' XL2HB, else False."""
-        if (((self.firstblock[:128].find("\033%-12345X") != -1) and \
-             (self.firstblock.find(" HP-PCL XL;") != -1) and \
-             ((self.firstblock.find("LANGUAGE=PCLXL") != -1) or \
-              (self.firstblock.find("LANGUAGE = PCLXL") != -1)))) \
-             or ((self.firstblock.startswith(chr(0xcd)+chr(0xca)) and (self.firstblock.find(" HP-PCL XL;") != -1))) :
+        if (((self.firstblock[:128].find(b"\033%-12345X") != -1) and \
+             (self.firstblock.find(b" HP-PCL XL;") != -1) and \
+             ((self.firstblock.find(b"LANGUAGE=PCLXL") != -1) or \
+              (self.firstblock.find(b"LANGUAGE = PCLXL") != -1)))) \
+             or ((self.firstblock.startswith(b'\xcd\xca')) and (self.firstblock.find(b" HP-PCL XL;") != -1)):
             return True
-        elif (self.firstblock[:128].find("\033%-12345X") != -1) \
-            and (self.firstblock.find("BROTHER XL2HB;") != -1) :
+        elif (self.firstblock[:128].find(b"\033%-12345X") != -1) \
+            and (self.firstblock.find(b"BROTHER XL2HB;") != -1):
             self.format = "XL2HB"
             return True
         else :
